@@ -11,11 +11,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AnswerGs1QuestionsInputSchema } from '@/ai/schemas'; // Import schema object
 
-const AnswerGs1QuestionsInputSchema = z.object({
-  question: z.string().describe('The question about the GS1 standards document.'),
-  documentContent: z.string().describe('The content of the GS1 standards document.'),
-});
+// Type export remains, Zod object definition removed from here
 export type AnswerGs1QuestionsInput = z.infer<typeof AnswerGs1QuestionsInputSchema>;
 
 const AnswerGs1QuestionsOutputSchema = z.object({
@@ -29,7 +27,7 @@ export async function answerGs1Questions(input: AnswerGs1QuestionsInput): Promis
 
 const prompt = ai.definePrompt({
   name: 'answerGs1QuestionsPrompt',
-  input: {schema: AnswerGs1QuestionsInputSchema},
+  input: {schema: AnswerGs1QuestionsInputSchema}, // Use imported schema object
   output: {schema: AnswerGs1QuestionsOutputSchema},
   prompt: `You are an AI assistant that answers questions about GS1 standards documents.
 
@@ -39,13 +37,13 @@ const prompt = ai.definePrompt({
   Question: {{{question}}}
   Document Content: {{{documentContent}}}
 
-  Answer:`, // Provide more context or instructions here
+  Answer:`, 
 });
 
 const answerGs1QuestionsFlow = ai.defineFlow(
   {
     name: 'answerGs1QuestionsFlow',
-    inputSchema: AnswerGs1QuestionsInputSchema,
+    inputSchema: AnswerGs1QuestionsInputSchema, // Use imported schema object
     outputSchema: AnswerGs1QuestionsOutputSchema,
   },
   async input => {

@@ -10,14 +10,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { ConductIndependentResearchInputSchema } from '@/ai/schemas'; // Import schema object
 
-const ConductIndependentResearchInputSchema = z.object({
-  topic: z.string().describe('The topic for independent research.'),
-  researchQuestion: z
-    .string()
-    .optional()
-    .describe('Optional initial research question to guide the research.'),
-});
+// Type export remains, Zod object definition removed from here
 export type ConductIndependentResearchInput = z.infer<
   typeof ConductIndependentResearchInputSchema
 >;
@@ -55,13 +50,21 @@ const researchTool = ai.defineTool(
   async (input) => {
     // Placeholder implementation for web search.  Replace with actual web search.
     // implementation when available.
-    return {results: [`Web search results for: ${input.query}`]};
+    // Simulate a delay and varied results.
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
+    const possibleResults = [
+      `Summary of findings for: ${input.query}`,
+      `Key data points on ${input.query}`,
+      `No specific results found for ${input.query}, broader search recommended.`,
+      `Detailed report on ${input.query} available at example.com/report`,
+    ];
+    return { results: [possibleResults[Math.floor(Math.random() * possibleResults.length)]] };
   }
 );
 
 const prompt = ai.definePrompt({
   name: 'conductIndependentResearchPrompt',
-  input: {schema: ConductIndependentResearchInputSchema},
+  input: {schema: ConductIndependentResearchInputSchema}, // Use imported schema object
   output: {schema: ConductIndependentResearchOutputSchema},
   tools: [researchTool],
   prompt: `You are an AI assistant helping a standards expert conduct independent research.
@@ -76,14 +79,17 @@ const prompt = ai.definePrompt({
 
   Output the collected information, formulated research questions, and identified sources in the specified JSON format.
 
-  Make sure that you invoke the webSearch tool multiple times to collect enough information for the expert.
+  Make sure that you invoke the webSearch tool multiple times (at least 2, ideally 3-4 if the topic is broad) to collect enough information for the expert. For each search, use a refined or different query to gather diverse information.
+  Synthesize the search results into a coherent "collectedInformation" string.
+  List all unique, actionable "formulatedQuestions".
+  List the "sources" based on information provided by the webSearch tool if any (e.g. URLs mentioned in results).
   `,
 });
 
 const conductIndependentResearchFlow = ai.defineFlow(
   {
     name: 'conductIndependentResearchFlow',
-    inputSchema: ConductIndependentResearchInputSchema,
+    inputSchema: ConductIndependentResearchInputSchema, // Use imported schema object
     outputSchema: ConductIndependentResearchOutputSchema,
   },
   async input => {

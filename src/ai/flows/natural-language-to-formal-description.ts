@@ -10,12 +10,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { NaturalLanguageToFormalDescriptionInputSchema } from '@/ai/schemas'; // Import schema object
 
-const NaturalLanguageToFormalDescriptionInputSchema = z.object({
-  naturalLanguageDescription: z
-    .string()
-    .describe('A natural language description of a standard.'),
-});
+// Type export remains, Zod object definition removed from here
 export type NaturalLanguageToFormalDescriptionInput = z.infer<
   typeof NaturalLanguageToFormalDescriptionInputSchema
 >;
@@ -44,7 +41,7 @@ export async function naturalLanguageToFormalDescription(
 const prompt = ai.definePrompt({
   name: 'naturalLanguageToFormalDescriptionPrompt',
   input: {
-    schema: NaturalLanguageToFormalDescriptionInputSchema,
+    schema: NaturalLanguageToFormalDescriptionInputSchema, // Use imported schema object
   },
   output: {
     schema: NaturalLanguageToFormalDescriptionOutputSchema,
@@ -68,7 +65,7 @@ const prompt = ai.definePrompt({
 const naturalLanguageToFormalDescriptionFlow = ai.defineFlow(
   {
     name: 'naturalLanguageToFormalDescriptionFlow',
-    inputSchema: NaturalLanguageToFormalDescriptionInputSchema,
+    inputSchema: NaturalLanguageToFormalDescriptionInputSchema, // Use imported schema object
     outputSchema: NaturalLanguageToFormalDescriptionOutputSchema,
   },
   async input => {

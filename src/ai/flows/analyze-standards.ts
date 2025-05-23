@@ -11,12 +11,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AnalyzeStandardsInputSchema } from '@/ai/schemas'; // Import schema object
 
-const AnalyzeStandardsInputSchema = z.object({
-  documentContent: z
-    .string()
-    .describe('The content of the standards document to analyze.'),
-});
+// Type export remains, Zod object definition removed from here
 export type AnalyzeStandardsInput = z.infer<typeof AnalyzeStandardsInputSchema>;
 
 const AnalyzeStandardsOutputSchema = z.object({
@@ -36,7 +33,7 @@ export async function analyzeStandards(input: AnalyzeStandardsInput): Promise<An
 
 const analyzeStandardsPrompt = ai.definePrompt({
   name: 'analyzeStandardsPrompt',
-  input: {schema: AnalyzeStandardsInputSchema},
+  input: {schema: AnalyzeStandardsInputSchema}, // Use imported schema object
   output: {schema: AnalyzeStandardsOutputSchema},
   prompt: `You are an expert standards analyst. Your task is to analyze the provided standards document for inconsistencies and structural issues.
 
@@ -51,7 +48,7 @@ Output the inconsistencies and structural issues as lists of strings, and a summ
 const analyzeStandardsFlow = ai.defineFlow(
   {
     name: 'analyzeStandardsFlow',
-    inputSchema: AnalyzeStandardsInputSchema,
+    inputSchema: AnalyzeStandardsInputSchema, // Use imported schema object
     outputSchema: AnalyzeStandardsOutputSchema,
   },
   async input => {

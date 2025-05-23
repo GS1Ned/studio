@@ -2,23 +2,26 @@
 "use server";
 
 import {
-  answerGs1Questions,
   AnswerGs1QuestionsInputSchema,
+  AnalyzeStandardsInputSchema,
+  ConductIndependentResearchInputSchema,
+  NaturalLanguageToFormalDescriptionInputSchema,
+} from "@/ai/schemas"; // Import Zod schema objects from the new central file
+
+import {
+  answerGs1Questions,
   type AnswerGs1QuestionsInput,
   type AnswerGs1QuestionsOutput,
   analyzeStandards,
-  AnalyzeStandardsInputSchema,
   type AnalyzeStandardsInput,
   type AnalyzeStandardsOutput,
   conductIndependentResearch,
-  ConductIndependentResearchInputSchema,
   type ConductIndependentResearchInput,
   type ConductIndependentResearchOutput,
   naturalLanguageToFormalDescription,
-  NaturalLanguageToFormalDescriptionInputSchema,
   type NaturalLanguageToFormalDescriptionInput,
   type NaturalLanguageToFormalDescriptionOutput,
-} from "@/ai/flows";
+} from "@/ai/flows"; // Import async functions and types from flows index
 import { z } from "zod";
 
 interface ActionResult<T> {
