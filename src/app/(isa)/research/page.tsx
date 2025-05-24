@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { handleConductIndependentResearch } from "@/lib/actions/ai-actions";
 import type { ConductIndependentResearchOutput, ExplainableOutput } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
 const researchFormSchema = z.object({
   topic: z.string().min(5, "Topic must be at least 5 characters."),
@@ -60,6 +62,13 @@ export default function IndependentResearchPage() {
 
   const renderOutput = (data: ConductIndependentResearchOutput) => (
     <div className="space-y-6">
+      <Alert variant="default" className="mt-4">
+        <Info className="h-4 w-4" />
+        <AlertTitle>Developer Note</AlertTitle>
+        <AlertDescription>
+          The web search functionality used by this research tool is currently simulated. Results are placeholders and do not reflect live web searches.
+        </AlertDescription>
+      </Alert>
       <div>
         <h3 className="font-semibold text-lg mb-2">Collected Information</h3>
         <p className="text-sm bg-muted p-3 rounded-md">{data.collectedInformation}</p>
