@@ -6,7 +6,8 @@ import {
   AnalyzeStandardsInputSchema,
   ConductIndependentResearchInputSchema,
   NaturalLanguageToFormalDescriptionInputSchema,
-} from "@/ai/schemas"; // Import Zod schema objects from the new central file
+  DetectStandardErrorsInputSchema, // Added import
+} from "@/ai/schemas"; 
 
 import {
   answerGs1Questions,
@@ -21,7 +22,10 @@ import {
   naturalLanguageToFormalDescription,
   type NaturalLanguageToFormalDescriptionInput,
   type NaturalLanguageToFormalDescriptionOutput,
-} from "@/ai/flows"; // Import async functions and types from flows index
+  detectStandardErrors, // Added import
+  type DetectStandardErrorsInput, // Added import
+  type DetectStandardErrorsOutput, // Added import
+} from "@/ai/flows"; 
 import { z } from "zod";
 
 interface ActionResult<T> {
@@ -81,6 +85,21 @@ export async function handleNaturalLanguageToFormalDescription(
   try {
     const validatedInput = NaturalLanguageToFormalDescriptionInputSchema.parse(input);
     const result = await naturalLanguageToFormalDescription(validatedInput);
+    return { success: true, data: result };
+  } catch (e: any) {
+    if (e instanceof z.ZodError) {
+      return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
+    }
+    return { success: false, error: e.message || "An unexpected error occurred" };
+  }
+}
+
+export async function handleDetectStandardErrors(
+  input: DetectStandardErrorsInput
+): Promise<ActionResult<DetectStandardErrorsOutput>> {
+  try {
+    const validatedInput = DetectStandardErrorsInputSchema.parse(input);
+    const result = await detectStandardErrors(validatedInput);
     return { success: true, data: result };
   } catch (e: any) {
     if (e instanceof z.ZodError) {

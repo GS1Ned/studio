@@ -7,8 +7,10 @@ import type {
   ConductIndependentResearchInput,
   ConductIndependentResearchOutput,
   NaturalLanguageToFormalDescriptionInput,
-  NaturalLanguageToFormalDescriptionOutput
-} from "@/ai/flows"; // Assuming flows export their types from an index or directly
+  NaturalLanguageToFormalDescriptionOutput,
+  DetectStandardErrorsInput,  // Added import
+  DetectStandardErrorsOutput  // Added import
+} from "@/ai/flows"; 
 
 // Re-exporting for convenience, or define specific app-level types if needed
 export type {
@@ -19,7 +21,9 @@ export type {
   ConductIndependentResearchInput,
   ConductIndependentResearchOutput,
   NaturalLanguageToFormalDescriptionInput,
-  NaturalLanguageToFormalDescriptionOutput
+  NaturalLanguageToFormalDescriptionOutput,
+  DetectStandardErrorsInput, // Added export
+  DetectStandardErrorsOutput // Added export
 };
 
 export interface ExplainableOutput {
@@ -37,3 +41,5 @@ export type AnalysisResultWithExplainability = AnalyzeStandardsOutput & Explaina
 export type NLToFormalResultWithExplainability = NaturalLanguageToFormalDescriptionOutput & ExplainableOutput;
 
 export type ResearchResultWithExplainability = ConductIndependentResearchOutput & ExplainableOutput;
+
+export type ErrorDetectionResultWithExplainability = DetectStandardErrorsOutput & ExplainableOutput; // Added type
