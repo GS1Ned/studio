@@ -1,39 +1,38 @@
-# ISA Project Blueprint & Architectural Log
 
-This document serves as a living blueprint and log of key architectural decisions, changes, and their rationale for the Intelligent Standards Assistant (ISA) project. It complements the main "Strategic Roadmap and Architectural Direction for ISA" document.
+# ISA Project Blueprint
 
-## Phase 1: Foundational Strengthening & Core Capability Enhancement
+This document outlines the architecture, design decisions, and development log for the Intelligent Standards Assistant (ISA) project.
 
-### 1.A.1: Immediate Firebase Actions & Adjustments
+## Architectural Overview
 
-#### Optimize Cloud Functions Configuration (apphosting.yaml)
+(To be detailed - See "Strategic Roadmap and Architectural Direction for ISA" for the comprehensive vision)
 
-**Date:** October 26, 2023 (Simulated Date)
+*   **Frontend:** Next.js (App Router), React, ShadCN UI, Tailwind CSS
+*   **Backend (AI & Server Logic):** Next.js Server Actions, Genkit
+*   **AI Model Provider:** Google AI (Gemini)
+*   **Deployment:** Firebase App Hosting
 
-**Change:** Updated `apphosting.yaml` to enhance the scalability and efficiency of the Firebase App Hosting backend, which runs our Genkit flows (effectively our Cloud Functions).
+## Development Log & Key Decisions
 
-**Previous Configuration:**
-```yaml
-runConfig:
-  maxInstances: 1
-```
+### 2023-10-26 (Initial Setup & Foundational Strengthening - Phase 1)
 
-**New Configuration:**
-```yaml
-runConfig:
-  minInstances: 0
-  maxInstances: 10
-  concurrency: 80
-  memoryMiB: 512
-  timeoutSeconds: 60
-```
+*   **Task: Optimize Cloud Functions Configuration (via `apphosting.yaml`)**
+    *   **Change:** Modified `/apphosting.yaml`.
+    *   Updated `runConfig`:
+        *   `maxInstances`: from `1` to `10`.
+        *   `minInstances`: set to `0`.
+        *   `concurrency`: set to `80`.
+        *   `memoryMiB`: set to `512`.
+        *   `timeoutSeconds`: set to `60`.
+    *   **Rationale:** Addresses the critical scalability bottleneck identified in the "Strategic Roadmap" (Phase 1.A.1). The previous `maxInstances: 1` was unsuitable for any meaningful load. These new settings provide a more robust default, allowing for auto-scaling and cost-effectiveness during idle periods, subject to refinement based on future load testing.
+    *   **Roadmap Fit:** Phase 1: Foundational Strengthening & Core Capability Enhancement -> A.1. Immediate Firebase Actions & Adjustments.
 
-**Rationale:**
-- **Strategic Alignment:** This change directly addresses the critical scalability bottleneck identified in Phase 1.A.1 of the "Strategic Roadmap and Architectural Direction for ISA." The previous `maxInstances: 1` setting severely limited the system's ability to handle concurrent requests.
-- **`maxInstances: 10`**: Provides a significant improvement in concurrent request handling capacity. This is an initial setting and should be refined based on future load testing and performance monitoring. The strategic document suggests 10-20 as a starting range.
-- **`minInstances: 0`**: Allows the backend to scale down to zero instances during periods of no traffic. This optimizes costs by avoiding charges for idle instances, aligning with the serverless pay-per-use model.
-- **`concurrency: 80`**: Default value, indicating the number of concurrent requests an instance can handle. This may need tuning based on the typical workload of ISA's Genkit flows.
-- **`memoryMiB: 512`**: Default memory allocation. LLM interactions can sometimes be memory-intensive; this will need monitoring.
-- **`timeoutSeconds: 60`**: Default request timeout. AI flows can sometimes take longer; this will also need monitoring and potential adjustment.
+*   **Task: Harden Firestore Security Rules**
+    *   **Change:**
+        *   Created `/firestore.rules` with default "deny all" rules (`allow read, write: if false;`).
+        *   Created `/firebase.json` to configure Firestore to use `firestore.rules`, specify an empty `firestore.indexes.json`, and set up emulator ports.
+        *   Created an empty `/firestore.indexes.json`.
+    *   **Rationale:** Implements a secure-by-default posture for Firestore, adhering to the principle of least privilege as outlined in the "Strategic Roadmap" (Phase 1.A.1). Specific collection/document rules will be added as features requiring Firestore access are developed. The `firebase.json` also prepares for local Firebase emulator usage.
+    *   **Roadmap Fit:** Phase 1: Foundational Strengthening & Core Capability Enhancement -> A.1. Immediate Firebase Actions & Adjustments.
 
-This update is a crucial first step in ensuring the operational robustness required for ISA as it evolves.
+*(Further development logs will be appended here)*
