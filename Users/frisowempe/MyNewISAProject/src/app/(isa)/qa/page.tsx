@@ -84,11 +84,10 @@ export default function QAPage() {
   );
   
   const extractExplainability = (data: AnswerGs1QuestionsOutput): ExplainableOutput => {
-    // Placeholder: Real explainability data would come from the AI flow if supported
     return {
-      reasoningSteps: ["Analyzed document context based on provided chunks.", "Identified relevant sections for the question.", "Synthesized answer based on findings.", "Extracted source citations based on primary information used."],
-      confidenceScore: Math.random() * 0.3 + 0.7, // Random confidence between 0.7 and 1.0
-      modelEvaluationMetrics: { "Fidelity": Math.random() * 0.2 + 0.75, "Robustness": Math.random() * 0.2 + 0.7 },
+      reasoningSteps: data.reasoningSteps || ["No reasoning steps provided by the AI."], // Use actual reasoning steps
+      confidenceScore: Math.random() * 0.3 + 0.7, // Random confidence between 0.7 and 1.0 (still mocked)
+      modelEvaluationMetrics: { "Fidelity": Math.random() * 0.2 + 0.75, "Robustness": Math.random() * 0.2 + 0.7 }, // Still mocked
     };
   };
 
@@ -96,10 +95,10 @@ export default function QAPage() {
     <div className="container mx-auto py-8">
       <Card className="mb-8 shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-semibold">AI Document Q&A</CardTitle>
+          <CardTitle className="text-2xl font-semibold">AI Document Q&amp;A</CardTitle>
           <CardDescription>
             Ask questions about GS1 standards documents. Provide the document content and your question below.
-            The AI will use its knowledge and the provided text to give you an answer, citing sources where possible.
+            The AI will use its knowledge and the provided text to give you an answer, citing sources and explaining its reasoning where possible.
           </CardDescription>
         </CardHeader>
       </Card>

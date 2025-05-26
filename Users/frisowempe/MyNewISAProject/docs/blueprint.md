@@ -405,17 +405,17 @@ This section will chronologically log significant development activities, decisi
 
 **2. Enhance `answerGs1Questions` for Structured RAG Input & Citation**
 *   **Date:** October 26, 2023
-*   **Objective:** Modify the `answerGs1Questions` flow to accept structured document chunks and enable the AI to cite sources in its answers, moving towards a more mature RAG pipeline.
+*   **Objective:** Modify the `answerGs1Questions` flow to accept structured document chunks and enable the AI to cite sources in its answers, moving towards a more mature RAG pipeline. This includes asking the AI to generate its reasoning steps.
 *   **Changes:**
     *   **`src/ai/schemas.ts`**:
         *   `AnswerGs1QuestionsInputSchema` updated to expect `documentChunks: z.array(DocumentChunkSchema)` instead of `documentContent: z.string()`. `DocumentChunkSchema` includes `content`, `sourceName`, `pageNumber` (optional), and `sectionTitle` (optional).
     *   **`src/ai/flows/answer-gs1-questions.ts`**:
         *   Input type updated to use the new schema.
-        *   `AnswerGs1QuestionsOutputSchema` now includes `citedSources: z.array(CitedSourceSchema).optional()`. `CitedSourceSchema` mirrors the metadata fields of `DocumentChunkSchema`.
+        *   `AnswerGs1QuestionsOutputSchema` now includes `citedSources: z.array(CitedSourceSchema).optional()` and `reasoningSteps: z.array(z.string()).optional()`. `CitedSourceSchema` mirrors the metadata fields of `DocumentChunkSchema`.
         *   The prompt was revised to:
             *   Iterate through `documentChunks` using Handlebars `{{#each}}`.
             *   Display `content`, `sourceName`, `pageNumber`, and `sectionTitle` for each chunk to the LLM.
-            *   Instruct the LLM to base its answer solely on provided content and to populate the `citedSources` output field.
+            *   Instruct the LLM to base its answer solely on provided content, to populate the `citedSources` output field, and to generate `reasoningSteps`.
     *   **`src/lib/actions/ai-actions.ts`**:
         *   `handleAnswerGs1Questions` now expects `QaPageFormValues` (with `documentContent: string` and `question: string`) from the client.
         *   It transforms the `documentContent` string into a single-element `documentChunks` array (with a default `sourceName: "Provided Document"`) before passing it to the `answerGs1Questions` flow. This maintains UI simplicity for now.
@@ -423,7 +423,8 @@ This section will chronologically log significant development activities, decisi
     *   **`src/app/(isa)/qa/page.tsx`**:
         *   The form schema (`qaFormSchema`) remains unchanged (still uses `documentContent: string`).
         *   The `renderOutput` function was updated to display `citedSources` using Badges if present.
-*   **Rationale:** This is a significant step towards a mature RAG system as outlined in Phase 1.A.2 ("Mature Core RAG Pipeline"). By structuring the input as document chunks with metadata, ISA can provide more precise source citations, enhancing traceability and user trust, a key requirement. The current transformation in the server action allows backend progress without immediate complex UI changes for chunk management.
+        *   The `extractExplainability` function was updated to use the `reasoningSteps` from the AI's output if available, while still mocking confidence and other metrics.
+*   **Rationale:** This is a significant step towards a mature RAG system as outlined in Phase 1.A.2 ("Mature Core RAG Pipeline") and "Initial Explainability Features". By structuring the input as document chunks with metadata, ISA can provide more precise source citations, enhancing traceability and user trust. The generation of reasoning steps directly by the LLM makes the explainability feature more genuine. The current transformation in the server action allows backend progress without immediate complex UI changes for chunk management.
 *   **Files Modified/Affected:** `src/ai/schemas.ts`, `src/ai/flows/answer-gs1-questions.ts`, `src/lib/actions/ai-actions.ts`, `src/lib/types.ts`, `src/app/(isa)/qa/page.tsx`.
 
 **3. Prototype Embedding Generation Flow**

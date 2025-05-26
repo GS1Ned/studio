@@ -24,6 +24,7 @@ const CitedSourceSchema = z.object({
 const AnswerGs1QuestionsOutputSchema = z.object({
   answer: z.string().describe('The answer to the question about the GS1 standards document.'),
   citedSources: z.array(CitedSourceSchema).optional().describe('A list of sources cited by the AI in generating the answer.'),
+  reasoningSteps: z.array(z.string()).optional().describe('The steps the AI took to arrive at the answer, explaining its thought process.'),
 });
 export type AnswerGs1QuestionsOutput = z.infer<typeof AnswerGs1QuestionsOutputSchema>;
 
@@ -55,6 +56,11 @@ Based solely on the provided content snippets:
 1. Answer the question clearly and concisely.
 2. If your answer draws from specific snippets, try to implicitly refer to the source (e.g., "According to [sourceName]...").
 3. Populate the 'citedSources' field in your output with a list of the document chunks you primarily used to formulate your answer. Each item in 'citedSources' should include the 'sourceName', 'pageNumber' (if available), and 'sectionTitle' (if available) from the input chunks. If multiple snippets contributed, list all primary ones. If the answer is general or synthesized from many snippets, you might cite the most representative ones or leave 'citedSources' empty if no specific snippet is overwhelmingly dominant.
+4. Provide a list of 'reasoningSteps' outlining your thought process to arrive at the answer. For example:
+   - "Identified keywords in the question: [keywords]"
+   - "Scanned document chunks for relevance to these keywords."
+   - "Found relevant information in chunk from '{{documentChunks.0.sourceName}}' (Page {{documentChunks.0.pageNumber}})."
+   - "Synthesized the answer based on this information."
 
 Answer:`, 
 });
@@ -70,3 +76,4 @@ const answerGs1QuestionsFlow = ai.defineFlow(
     return output!;
   }
 );
+
