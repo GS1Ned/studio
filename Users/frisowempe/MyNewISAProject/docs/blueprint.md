@@ -22,15 +22,15 @@ The Intelligent Standards Assistant (ISA) is an advanced AI system to transform 
 *(High-level summary, referencing the "Strategic Roadmap" for full details)*
 
 *   **Frontend:** Next.js (App Router), React, TypeScript, ShadCN UI, Tailwind CSS. Hosted on Firebase Hosting.
-*   **Backend & AI Orchestration:** Next.js Server Actions, Genkit, Cloud Functions for Firebase.
+*   **Backend & AI Orchestration:** Next.js Server Actions, Genkit, Cloud Functions for Firebase (deployed via Firebase App Hosting).
 *   **AI Models:** Google AI (Gemini Flash default, potentially others like Gemini Pro).
-*   **Data Storage:**
+*   **Data Storage (Conceptual):**
     *   Application State/User Data: Firestore.
     *   Vector Embeddings & KG: AlloyDB AI (pgvector) / Vertex AI Vector Search (proposed).
     *   Raw Documents: Cloud Storage.
-*   **Document Processing:** Document AI (proposed).
-*   **MLOps:** Vertex AI Pipelines (proposed).
-*   **Authentication:** Firebase Authentication (user-facing), IAM (service-to-service).
+*   **Document Processing (Proposed):** Document AI.
+*   **MLOps (Proposed):** Vertex AI Pipelines.
+*   **Authentication (Proposed):** Firebase Authentication (user-facing), IAM (service-to-service).
 *   **Monitoring:** Firebase Console, Google Cloud Monitoring & Logging.
 
 ## 3. Development Log & Decisions
@@ -130,5 +130,104 @@ This section will chronologically log significant development activities, decisi
 *   **Files Created/Modified:** `.gitignore`, `.env`.
 *   **Future Action:** Detailed instructions for configuring Google Secret Manager and IAM permissions for deployed environments will be added to operational documentation as deployment approaches.
 
+**4. Establish CI/CD Pipelines (Initial Outline)**
+*   **Date:** October 26, 2023
+*   **Objective:** Outline the structure for an automated Continuous Integration/Continuous Deployment pipeline using GitHub Actions to ensure reliable builds, tests, and deployments to Firebase App Hosting.
+*   **Rationale:** Automated CI/CD is crucial for development velocity, reducing manual errors, and ensuring consistent deployments. This aligns with Phase 1.A.1 of the Strategic Roadmap.
+*   **Proposed GitHub Actions Workflow (`.github/workflows/main.yml` - *To be created manually in GitHub*):**
+    ```yaml
+    # .github/workflows/main.yml
+    name: ISA CI/CD Pipeline
+
+    on:
+      push:
+        branches:
+          - main # Or your primary development branch
+      pull_request:
+        branches:
+          - main # Or your primary development branch
+
+    jobs:
+      build_and_test:
+        name: Build, Lint & Test
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+
+          - name: Set up Node.js
+            uses: actions/setup-node@v4
+            with:
+              node-version: '20' # Match project's Node version
+              cache: 'npm'
+
+          - name: Install dependencies
+            run: npm ci # Use npm ci for faster, more reliable installs in CI
+
+          - name: Lint and Type Check
+            run: npm test # Runs 'next lint && tsc --noEmit'
+
+          # Add actual test runner step here when tests are implemented
+          # - name: Run Unit/Integration Tests
+          #   run: npm run actual-test-script
+
+          - name: Build Next.js app
+            run: npm run build
+
+          - name: Archive production artifacts
+            uses: actions/upload-artifact@v4
+            with:
+              name: nextjs-build
+              path: .next/ # Or 'out/' if using static export
+
+      deploy_to_firebase_app_hosting:
+        name: Deploy to Firebase App Hosting
+        needs: build_and_test
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' # Deploy only on push to main
+
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+
+          - name: Set up Node.js
+            uses: actions/setup-node@v4
+            with:
+              node-version: '20'
+              cache: 'npm'
+
+          - name: Install dependencies
+            run: npm ci
+
+          - name: Build Next.js app
+            run: npm run build # Re-build or download artifact; re-build is simpler for App Hosting
+
+          - name: Deploy to Firebase App Hosting
+            uses: FirebaseExtended/action-hosting-deploy@v0 # Or specific App Hosting deploy action
+            with:
+              repoToken: '${{ secrets.GITHUB_TOKEN }}'
+              firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ISA_PROJECT }}' # Secret for your Firebase project
+              projectId: 'your-firebase-project-id' # Replace with actual project ID
+              channelId: live # Deploy to live channel; consider 'preview' for PRs
+    ```
+*   **Key Pipeline Components:**
+    *   **Triggers:** Runs on pushes and pull requests to the `main` branch.
+    *   **Jobs:**
+        *   `build_and_test`: Checks out code, sets up Node.js, installs dependencies, runs linters and type checks (`npm test`), and builds the Next.js application.
+        *   `deploy_to_firebase_app_hosting`: Deploys the application to Firebase App Hosting upon a push to `main`, after successful build and test.
+*   **Secrets Required in GitHub:**
+    *   `FIREBASE_SERVICE_ACCOUNT_ISA_PROJECT`: A JSON service account key for your Firebase project with permissions to deploy to App Hosting. This should be stored as a secure secret in GitHub repository settings.
+*   **Next Steps:**
+    *   Manually create the `.github/workflows/main.yml` file in the GitHub repository.
+    *   Configure the `FIREBASE_SERVICE_ACCOUNT_ISA_PROJECT` secret in the GitHub repository.
+    *   Replace `'your-firebase-project-id'` with the actual Firebase Project ID.
+    *   Implement actual test scripts and uncomment/add the "Run Unit/Integration Tests" step when tests are available.
+    *   Consider separate workflows or conditional steps for deploying to different environments (dev, staging, prod) if needed.
+*   **Scripts:**
+    *   Added `test: "npm run lint && npm run typecheck"` to `package.json`.
+
 ---
 *This document will be updated continuously as development progresses.*
+
+```
+
