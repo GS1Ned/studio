@@ -1,3 +1,4 @@
+
 # ISA - Intelligent Standards Assistant: Blueprint & Development Log
 
 This document serves as the central blueprint and evolving development log for the Intelligent Standards Assistant (ISA) project. It will track architectural decisions, feature implementations, and adherence to the strategic roadmap.
@@ -226,8 +227,45 @@ This section will chronologically log significant development activities, decisi
 *   **Scripts:**
     *   Added `test: "npm run lint && npm run typecheck"` to `package.json`.
 
+**5. Configure Basic Monitoring & Alerting (Documentation)**
+*   **Date:** October 26, 2023
+*   **Objective:** Document recommendations for monitoring and alerting to be manually configured in Firebase/GCP consoles.
+*   **Rationale:** While direct configuration is outside file-editing scope, providing guidance ensures operational visibility is considered, aligning with Phase 1.A.1.
+*   **Recommendations Documented:**
+    *   **Firebase Console Dashboards:** Utilize for overview of Hosting, Functions, Firestore (usage, performance, errors).
+    *   **Google Cloud Monitoring:**
+        *   Track key metrics: Cloud Function invocation rates, error percentages, execution durations (especially for Genkit flows), and latencies. Track API latencies for Server Actions. Monitor Hosting availability and request latency.
+        *   Consider metrics for Firestore (read/write ops, active connections) and any other GCP services used.
+    *   **Alerting:**
+        *   Set up basic alerts in Google Cloud Monitoring for critical errors in Cloud Functions (e.g., high error rate spikes).
+        *   Alert on sustained high latencies for key AI flows or user-facing endpoints.
+        *   Alert on Hosting availability issues.
+    *   **Genkit Tracing:** Emphasize the use of Genkit's built-in tracing capabilities (viewable in the Genkit Developer UI locally) for debugging AI flows. For production, recommend integrating with a dedicated tracing system like LangSmith or Google Cloud Trace for persistent and detailed traces.
+    *   **Logging:**
+        *   Ensure structured logging from Cloud Functions and Server Actions to Google Cloud Logging for easier querying and analysis.
+        *   Log key events, input parameters (sanitized if sensitive), and outcomes of AI flows.
+
+#### A.2. Key Feature Enhancements (e.g., RAG, Basic Agentic Flows)
+
+**1. Enhance `webSearch` Tool in `conductIndependentResearch` Flow**
+*   **Date:** October 26, 2023
+*   **Objective:** Make the `webSearch` Genkit tool more realistic by defining a structured output and updating the flow's prompt and output schema to utilize this structured information. This is a precursor to integrating a real search API.
+*   **Changes:**
+    *   Modified `src/ai/flows/conduct-independent-research.ts`:
+        *   The `webSearch` tool's `outputSchema` changed from `z.object({ results: z.array(z.string()) })` to `WebSearchOutputSchema` (an alias for `z.object({ searchResults: z.array(SearchResultItemSchema) })`), where `SearchResultItemSchema` is `z.object({ title: z.string(), link: z.string().url(), snippet: z.string() })`.
+        *   The mock implementation of `webSearch` was updated to return data conforming to this new structured schema.
+        *   Comments were added about future real API integration and API key management.
+        *   The `ConductIndependentResearchOutputSchema`'s `sources` field was updated from `z.array(z.string())` to `z.array(z.object({ title: z.string(), url: z.string().url() }))`.
+        *   The main prompt (`conductIndependentResearchPrompt`) was significantly updated to instruct the LLM on how to:
+            *   Iterate through the structured `searchResults`.
+            *   Synthesize `collectedInformation` from titles, links, and snippets.
+            *   Extract `title` and `url` for the `sources` output field.
+            *   Formulate diverse search queries.
+*   **Rationale:** This enhancement moves the `conductIndependentResearch` flow closer to production readiness by simulating a more realistic interaction with a search tool. It improves the quality and structure of data the LLM works with and prepares the system for easier integration with an actual search API. This aligns with Phase 1.A.2 of the Strategic Roadmap ("Implement Real webSearch Tool" and "Basic Agentic Behavior with Genkit").
+*   **Files Modified:** `src/ai/flows/conduct-independent-research.ts`.
+
 ---
 *This document will be updated continuously as development progresses.*
 
-```
 
+    
