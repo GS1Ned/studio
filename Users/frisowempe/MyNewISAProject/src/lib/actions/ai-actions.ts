@@ -1,8 +1,8 @@
-
 "use server";
 
 import {
-  AnswerGs1QuestionsInputSchema as ClientAnswerGs1QuestionsInputSchema, // For client-side form schema
+  // AnswerGs1QuestionsInputSchema is defined in schemas.ts and used by the flow.
+  // We use a local QaPageFormSchema here for the specific form input from the client.
   AnalyzeStandardsInputSchema,
   ConductIndependentResearchInputSchema,
   NaturalLanguageToFormalDescriptionInputSchema,
@@ -11,7 +11,7 @@ import {
 
 import {
   answerGs1Questions,
-  type AnswerGs1QuestionsInput, // This is the flow's input type (with documentChunks)
+  type AnswerGs1QuestionsInput, 
   type AnswerGs1QuestionsOutput,
   analyzeStandards,
   type AnalyzeStandardsInput,
@@ -37,17 +37,30 @@ interface ActionResult<T> {
 // Schema for the form data coming from the client-side Q&A page
 const QaPageFormSchema = z.object({
   documentContent: z.string().min(50, "Document content must be at least 50 characters."),
+  sourceName: z.string().optional(),
+  pageNumber: z.string().optional().refine(val => val === undefined || val === "" || /^\d+$/.test(val), {
+    message: "Page number must be a positive integer if provided.",
+  }),
+  sectionTitle: z.string().optional(),
   question: z.string().min(5, "Question must be at least 5 characters."),
 });
 type QaPageFormValues = z.infer<typeof QaPageFormSchema>;
 
 
 export async function handleAnswerGs1Questions(
-  clientInput: QaPageFormValues // Input comes from the simple form
+  clientInput: QaPageFormValues // Input comes from the form
 ): Promise<ActionResult<AnswerGs1QuestionsOutput>> {
   try {
     // Validate the client input against the form schema first
     const validatedClientInput = QaPageFormSchema.parse(clientInput);
+
+    let pageNum: number | undefined = undefined;
+    if (validatedClientInput.pageNumber && validatedClientInput.pageNumber.trim() !== "") {
+      const parsed = parseInt(validatedClientInput.pageNumber, 10);
+      if (!isNaN(parsed)) {
+        pageNum = parsed;
+      }
+    }
 
     // Transform client input to the flow's expected input structure
     const flowInput: AnswerGs1QuestionsInput = {
@@ -55,8 +68,9 @@ export async function handleAnswerGs1Questions(
       documentChunks: [
         {
           content: validatedClientInput.documentContent,
-          sourceName: "Provided Document", // Default source name for now
-          // pageNumber and sectionTitle can be omitted as they are optional
+          sourceName: validatedClientInput.sourceName?.trim() || "Provided Document",
+          pageNumber: pageNum,
+          sectionTitle: validatedClientInput.sectionTitle?.trim() || undefined,
         },
       ],
     };

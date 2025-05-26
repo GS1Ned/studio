@@ -1,4 +1,3 @@
-
 "use client";
 
 import { z } from "zod";
@@ -10,12 +9,17 @@ import { handleAnswerGs1Questions } from "@/lib/actions/ai-actions";
 import type { AnswerGs1QuestionsOutput, ExplainableOutput } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookText } from "lucide-react";
+import { BookText, Info } from "lucide-react";
 
-// This schema matches the form fields on the page, not the AI flow's direct input.
+// This schema matches the form fields on the page.
 // The transformation to documentChunks happens in the server action.
 const qaFormSchema = z.object({
   documentContent: z.string().min(50, "Document content must be at least 50 characters."),
+  sourceName: z.string().optional(),
+  pageNumber: z.string().optional().refine(val => val === undefined || val === "" || /^\d+$/.test(val), {
+    message: "Page number must be a positive integer if provided.",
+  }),
+  sectionTitle: z.string().optional(),
   question: z.string().min(5, "Question must be at least 5 characters."),
 });
 type QaFormValues = z.infer<typeof qaFormSchema>;
@@ -37,13 +41,58 @@ export default function QAPage() {
               />
             </FormControl>
             <FormDescription>
-              Provide the full text of the GS1 document you want to ask questions about. 
-              The AI will treat this as a single document source.
+              Provide the full text of the GS1 document or snippet you want to ask questions about.
             </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormField
+          control={form.control}
+          name="sourceName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Source Name (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., GS1 General Specifications" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="pageNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Page Number (Optional)</FormLabel>
+              <FormControl>
+                <Input type="text" inputMode="numeric" placeholder="e.g., 42" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="sectionTitle"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Section Title (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., 2D Barcodes" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+       <FormDescription className="flex items-center text-xs text-muted-foreground pt-1">
+        <Info className="w-3 h-3 mr-1.5 shrink-0" />
+        Providing optional details helps the AI give more precise citations.
+      </FormDescription>
+
       <FormField
         control={form.control}
         name="question"
@@ -85,9 +134,9 @@ export default function QAPage() {
   
   const extractExplainability = (data: AnswerGs1QuestionsOutput): ExplainableOutput => {
     return {
-      reasoningSteps: data.reasoningSteps || ["No reasoning steps provided by the AI."], // Use actual reasoning steps
-      confidenceScore: Math.random() * 0.3 + 0.7, // Random confidence between 0.7 and 1.0 (still mocked)
-      modelEvaluationMetrics: { "Fidelity": Math.random() * 0.2 + 0.75, "Robustness": Math.random() * 0.2 + 0.7 }, // Still mocked
+      reasoningSteps: data.reasoningSteps || ["No reasoning steps provided by the AI."],
+      confidenceScore: Math.random() * 0.3 + 0.7, 
+      modelEvaluationMetrics: { "Fidelity": Math.random() * 0.2 + 0.75, "Robustness": Math.random() * 0.2 + 0.7 },
     };
   };
 
@@ -97,7 +146,7 @@ export default function QAPage() {
         <CardHeader>
           <CardTitle className="text-2xl font-semibold">AI Document Q&amp;A</CardTitle>
           <CardDescription>
-            Ask questions about GS1 standards documents. Provide the document content and your question below.
+            Ask questions about GS1 standards documents. Provide the document content (and optionally, its source details) and your question below.
             The AI will use its knowledge and the provided text to give you an answer, citing sources and explaining its reasoning where possible.
           </CardDescription>
         </CardHeader>
@@ -105,7 +154,7 @@ export default function QAPage() {
 
       <ClientAiForm<QaFormValues, AnswerGs1QuestionsOutput>
         formSchema={qaFormSchema}
-        defaultValues={{ documentContent: "", question: "" }}
+        defaultValues={{ documentContent: "", sourceName: "", pageNumber: "", sectionTitle: "", question: "" }}
         serverAction={handleAnswerGs1Questions}
         renderFormFields={renderFormFields}
         renderOutput={renderOutput}

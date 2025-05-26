@@ -1,4 +1,3 @@
-
 # ISA - Intelligent Standards Assistant: Blueprint & Development Log
 
 This document serves as the central blueprint and evolving development log for the Intelligent Standards Assistant (ISA) project. It will track architectural decisions, feature implementations, and adherence to the strategic roadmap.
@@ -417,14 +416,14 @@ This section will chronologically log significant development activities, decisi
             *   Display `content`, `sourceName`, `pageNumber`, and `sectionTitle` for each chunk to the LLM.
             *   Instruct the LLM to base its answer solely on provided content, to populate the `citedSources` output field, and to generate `reasoningSteps`.
     *   **`src/lib/actions/ai-actions.ts`**:
-        *   `handleAnswerGs1Questions` now expects `QaPageFormValues` (with `documentContent: string` and `question: string`) from the client.
-        *   It transforms the `documentContent` string into a single-element `documentChunks` array (with a default `sourceName: "Provided Document"`) before passing it to the `answerGs1Questions` flow. This maintains UI simplicity for now.
+        *   `handleAnswerGs1Questions` now expects `QaPageFormValues` (with `documentContent: string` and `question: string`, plus optional metadata fields `sourceName`, `pageNumber`, `sectionTitle`) from the client.
+        *   It transforms the input into a single-element `documentChunks` array, using user-provided metadata if available or defaults if not, before passing it to the `answerGs1Questions` flow. This maintains UI simplicity for now.
     *   **`src/lib/types.ts`**: Updated to reflect schema changes.
     *   **`src/app/(isa)/qa/page.tsx`**:
-        *   The form schema (`qaFormSchema`) remains unchanged (still uses `documentContent: string`).
+        *   The form schema (`qaFormSchema`) updated to include optional `sourceName`, `pageNumber` (as string), and `sectionTitle`. New input fields added.
         *   The `renderOutput` function was updated to display `citedSources` using Badges if present.
         *   The `extractExplainability` function was updated to use the `reasoningSteps` from the AI's output if available, while still mocking confidence and other metrics.
-*   **Rationale:** This is a significant step towards a mature RAG system as outlined in Phase 1.A.2 ("Mature Core RAG Pipeline") and "Initial Explainability Features". By structuring the input as document chunks with metadata, ISA can provide more precise source citations, enhancing traceability and user trust. The generation of reasoning steps directly by the LLM makes the explainability feature more genuine. The current transformation in the server action allows backend progress without immediate complex UI changes for chunk management.
+*   **Rationale:** This is a significant step towards a mature RAG system as outlined in Phase 1.A.2 ("Mature Core RAG Pipeline") and "Initial Explainability Features". By structuring the input as document chunks with metadata, ISA can provide more precise source citations, enhancing traceability and user trust. The generation of reasoning steps directly by the LLM makes the explainability feature more genuine. The transformation in the server action allows backend progress without immediate complex UI changes for chunk management.
 *   **Files Modified/Affected:** `src/ai/schemas.ts`, `src/ai/flows/answer-gs1-questions.ts`, `src/lib/actions/ai-actions.ts`, `src/lib/types.ts`, `src/app/(isa)/qa/page.tsx`.
 
 **3. Prototype Embedding Generation Flow**
