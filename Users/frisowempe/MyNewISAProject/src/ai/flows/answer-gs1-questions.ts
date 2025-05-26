@@ -1,0 +1,72 @@
+// src/ai/flows/answer-gs1-questions.ts
+'use server';
+
+/**
+ * @fileOverview An AI agent that answers questions about GS1 standards documents using provided document chunks.
+ *
+ * - answerGs1Questions - A function that answers questions about GS1 standards documents.
+ * - AnswerGs1QuestionsInput - The input type for the answerGs1Questions function.
+ * - AnswerGs1QuestionsOutput - The return type for the answerGs1Questions function.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+import { AnswerGs1QuestionsInputSchema } from '@/ai/schemas'; 
+
+export type AnswerGs1QuestionsInput = z.infer<typeof AnswerGs1QuestionsInputSchema>;
+
+const CitedSourceSchema = z.object({
+  sourceName: z.string().describe('The name or identifier of the cited source document.'),
+  pageNumber: z.number().optional().describe('The page number in the cited source document.'),
+  sectionTitle: z.string().optional().describe('The title of the section in the cited source document.'),
+});
+
+const AnswerGs1QuestionsOutputSchema = z.object({
+  answer: z.string().describe('The answer to the question about the GS1 standards document.'),
+  citedSources: z.array(CitedSourceSchema).optional().describe('A list of sources cited by the AI in generating the answer.'),
+});
+export type AnswerGs1QuestionsOutput = z.infer<typeof AnswerGs1QuestionsOutputSchema>;
+
+export async function answerGs1Questions(input: AnswerGs1QuestionsInput): Promise<AnswerGs1QuestionsOutput> {
+  return answerGs1QuestionsFlow(input);
+}
+
+const prompt = ai.definePrompt({
+  name: 'answerGs1QuestionsPrompt',
+  input: {schema: AnswerGs1QuestionsInputSchema},
+  output: {schema: AnswerGs1QuestionsOutputSchema},
+  prompt: `You are an AI assistant that answers questions about GS1 standards documents based *only* on the provided content.
+
+Here is the content from the document(s) you should use:
+{{#each documentChunks}}
+---
+Source Document: "{{this.sourceName}}"
+{{#if this.pageNumber}}Page: {{this.pageNumber}}{{/if}}
+{{#if this.sectionTitle}}Section: "{{this.sectionTitle}}"{{/if}}
+
+Content Snippet:
+{{{this.content}}}
+---
+{{/each}}
+
+Question: {{{question}}}
+
+Based solely on the provided content snippets:
+1. Answer the question clearly and concisely.
+2. If your answer draws from specific snippets, try to implicitly refer to the source (e.g., "According to [sourceName]...").
+3. Populate the 'citedSources' field in your output with a list of the document chunks you primarily used to formulate your answer. Each item in 'citedSources' should include the 'sourceName', 'pageNumber' (if available), and 'sectionTitle' (if available) from the input chunks. If multiple snippets contributed, list all primary ones. If the answer is general or synthesized from many snippets, you might cite the most representative ones or leave 'citedSources' empty if no specific snippet is overwhelmingly dominant.
+
+Answer:`, 
+});
+
+const answerGs1QuestionsFlow = ai.defineFlow(
+  {
+    name: 'answerGs1QuestionsFlow',
+    inputSchema: AnswerGs1QuestionsInputSchema,
+    outputSchema: AnswerGs1QuestionsOutputSchema,
+  },
+  async input => {
+    const {output} = await prompt(input);
+    return output!;
+  }
+);
