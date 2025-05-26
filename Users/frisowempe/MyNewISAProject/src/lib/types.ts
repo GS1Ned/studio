@@ -1,6 +1,6 @@
 
 import type {
-  AnswerGs1QuestionsInput, // This is the flow's input with documentChunks
+  AnswerGs1QuestionsInput, 
   AnswerGs1QuestionsOutput,
   AnalyzeStandardsInput,
   AnalyzeStandardsOutput,
@@ -9,7 +9,9 @@ import type {
   NaturalLanguageToFormalDescriptionInput,
   NaturalLanguageToFormalDescriptionOutput,
   DetectStandardErrorsInput,
-  DetectStandardErrorsOutput
+  DetectStandardErrorsOutput,
+  GenerateDocumentEmbeddingsInput, // Added import
+  GenerateDocumentEmbeddingsOutput // Added import
 } from "@/ai/flows"; 
 
 // Re-exporting for convenience, or define specific app-level types if needed
@@ -23,7 +25,9 @@ export type {
   NaturalLanguageToFormalDescriptionInput,
   NaturalLanguageToFormalDescriptionOutput,
   DetectStandardErrorsInput,
-  DetectStandardErrorsOutput
+  DetectStandardErrorsOutput,
+  GenerateDocumentEmbeddingsInput, // Added export
+  GenerateDocumentEmbeddingsOutput // Added export
 };
 
 export interface ExplainableOutput {
@@ -43,3 +47,5 @@ export type NLToFormalResultWithExplainability = NaturalLanguageToFormalDescript
 export type ResearchResultWithExplainability = ConductIndependentResearchOutput & ExplainableOutput;
 
 export type ErrorDetectionResultWithExplainability = DetectStandardErrorsOutput & ExplainableOutput;
+
+// No specific UI for embeddings yet, so no "WithExplainability" type needed for now.

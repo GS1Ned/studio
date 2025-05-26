@@ -426,5 +426,19 @@ This section will chronologically log significant development activities, decisi
 *   **Rationale:** This is a significant step towards a mature RAG system as outlined in Phase 1.A.2 ("Mature Core RAG Pipeline"). By structuring the input as document chunks with metadata, ISA can provide more precise source citations, enhancing traceability and user trust, a key requirement. The current transformation in the server action allows backend progress without immediate complex UI changes for chunk management.
 *   **Files Modified/Affected:** `src/ai/schemas.ts`, `src/ai/flows/answer-gs1-questions.ts`, `src/lib/actions/ai-actions.ts`, `src/lib/types.ts`, `src/app/(isa)/qa/page.tsx`.
 
+**3. Prototype Embedding Generation Flow**
+*   **Date:** October 26, 2023
+*   **Objective:** Create a conceptual Genkit flow to represent the process of generating embeddings for document chunks, laying the groundwork for the data ingestion part of the RAG pipeline.
+*   **Changes:**
+    *   Created `src/ai/flows/generate-document-embeddings.ts`:
+        *   Defines `GenerateDocumentEmbeddingsInputSchema` (expects an array of `DocumentChunkSchema`).
+        *   Defines `GenerateDocumentEmbeddingsOutputSchema` (outputs an array of `DocumentChunkWithEmbeddingSchema`, where each chunk includes a simulated `embedding` vector).
+        *   The `generateDocumentEmbeddingsFlow` iterates through input chunks and uses a mock Genkit tool (`mockEmbeddingGeneratorTool`) to simulate generating an embedding for each chunk's content.
+        *   Comments within the flow indicate where a real embedding model (e.g., from Vertex AI Embeddings API) would be called.
+    *   Updated `src/ai/schemas.ts` to include `GenerateDocumentEmbeddingsInputSchema` and `DocumentChunkSchema`.
+    *   Updated `src/ai/flows/index.ts` and `src/ai/dev.ts` to include the new flow.
+    *   Updated `src/lib/types.ts` to include the new input/output types.
+*   **Rationale:** This flow serves as a structural placeholder and conceptual model for how ISA will handle the critical step of generating embeddings from document content. It prepares for future integration with actual embedding models (like Google's `text-embedding-preview-0409`) and subsequent storage in a vector database. This aligns with Phase 1.A.2 ("Mature Core RAG Pipeline") by addressing a key component of the "Ultimate Quality ETL" process.
+*   **Files Created/Modified:** `src/ai/flows/generate-document-embeddings.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
 ---
 *This document will be updated continuously as development progresses.*
