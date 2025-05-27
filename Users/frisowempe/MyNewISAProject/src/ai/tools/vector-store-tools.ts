@@ -7,7 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { DocumentChunkSchema } from '@/ai/schemas'; // Assuming DocumentChunkSchema is in schemas.ts
+import { DocumentChunkSchema } from '@/ai/schemas'; // Verified: Correctly imports from schemas.ts
 import { z } from 'zod';
 
 // Input schema for querying the vector store

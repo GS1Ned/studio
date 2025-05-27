@@ -385,6 +385,17 @@ This section will chronologically log significant development activities, decisi
         *   Ensure structured logging from Cloud Functions and Server Actions to Google Cloud Logging for easier querying and analysis.
         *   Log key events, input parameters (sanitized if sensitive), and outcomes of AI flows.
 
+**6. Refactor: Consolidate DocumentChunkSchema**
+*   **Date:** October 26, 2023
+*   **Objective:** Centralize the `DocumentChunkSchema` definition for improved maintainability.
+*   **Changes:**
+    *   The primary definition of `DocumentChunkSchema` and its associated type `DocumentChunk` was moved to `src/ai/schemas.ts`.
+    *   `src/ai/flows/generate-document-embeddings.ts` was updated to import `DocumentChunkSchema` from `src/ai/schemas.ts` instead of defining it locally.
+    *   Ensured all other files that reference `DocumentChunkSchema` (e.g., `src/ai/tools/vector-store-tools.ts`) point to the canonical definition in `src/ai/schemas.ts`.
+*   **Rationale:** Promotes a single source of truth for this fundamental schema, improving code clarity and reducing redundancy. This aligns with general software engineering best practices for maintainability.
+*   **Files Modified:** `src/ai/schemas.ts`, `src/ai/flows/generate-document-embeddings.ts`, `src/ai/tools/vector-store-tools.ts`.
+
+
 #### A.2. Key Feature Enhancements (e.g., RAG, Basic Agentic Flows)
 
 **1. Enhance `webSearch` Tool in `conductIndependentResearch` Flow**

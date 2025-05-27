@@ -13,12 +13,12 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
-import { GenerateDocumentEmbeddingsInputSchema, DocumentChunkSchema } from '@/ai/schemas';
+import { GenerateDocumentEmbeddingsInputSchema, DocumentChunkSchema } from '@/ai/schemas'; // Import DocumentChunkSchema
 
 export type GenerateDocumentEmbeddingsInput = z.infer<typeof GenerateDocumentEmbeddingsInputSchema>;
 
 // Define the schema for a document chunk that includes an embedding
-const DocumentChunkWithEmbeddingSchema = DocumentChunkSchema.extend({
+const DocumentChunkWithEmbeddingSchema = DocumentChunkSchema.extend({ // Uses imported DocumentChunkSchema
   embedding: z.array(z.number()).describe('The embedding vector for the document chunk.'),
 });
 export type DocumentChunkWithEmbedding = z.infer<typeof DocumentChunkWithEmbeddingSchema>;
