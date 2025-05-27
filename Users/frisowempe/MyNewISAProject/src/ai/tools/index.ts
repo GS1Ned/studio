@@ -5,4 +5,5 @@
  */
 
 export * from './vector-store-tools';
-// Add exports for other tool files here as they are created (e.g., knowledge-graph-tools.ts)
+export * from './knowledge-graph-tools'; // Added export
+// Add exports for other tool files here as they are created
