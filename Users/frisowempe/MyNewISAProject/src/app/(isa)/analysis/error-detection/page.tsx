@@ -2,6 +2,7 @@
 "use client";
 
 import { z } from "zod";
+import Image from "next/image";
 import { ClientAiForm } from "@/components/features/client-ai-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +19,7 @@ const errorDetectionFormSchema = z.object({
 type ErrorDetectionFormValues = z.infer<typeof errorDetectionFormSchema>;
 
 export default function ErrorDetectionPage() {
-  const renderFormFields = (form: any) => ( // form type is UseFormReturn<ErrorDetectionFormValues>
+  const renderFormFields = (form: any) => (
     <FormField
       control={form.control}
       name="documentContent"
@@ -45,7 +46,7 @@ export default function ErrorDetectionPage() {
     <div className="space-y-6">
       <div>
         <h3 className="font-semibold text-lg mb-2">Summary of Findings</h3>
-        <p className="text-sm">{data.summary}</p>
+        <p className="text-sm whitespace-pre-wrap">{data.summary}</p>
       </div>
       {data.detectedIssues && data.detectedIssues.length > 0 ? (
         <div>
@@ -85,20 +86,13 @@ export default function ErrorDetectionPage() {
   );
 
   const extractExplainability = (data: DetectStandardErrorsOutput): ExplainableOutput => {
-    // Placeholder: Real explainability data would come from the AI flow if supported
     return {
-      reasoningSteps: [
-        "Parsed and segmented document content.", 
-        "Applied rule-based checks for common error patterns.",
-        "Utilized language model to identify semantic inconsistencies and ambiguities.",
-        "Cross-referenced definitions for overlaps.",
-        "Synthesized findings into a structured report."
-      ],
-      confidenceScore: Math.random() * 0.20 + 0.75, // Random confidence between 0.75 and 0.95
+      reasoningSteps: data.reasoningSteps || ["AI did not provide specific reasoning steps for this analysis."],
+      confidenceScore: Math.random() * 0.20 + 0.75, 
       modelEvaluationMetrics: { 
-        "Issue Recall": Math.random() * 0.15 + 0.70, // Simulated
-        "Correction Precision": Math.random() * 0.20 + 0.65, // Simulated
-        "False Positive Rate": (Math.random() * 0.1 + 0.05).toFixed(3) // Simulated low FP rate
+        "Issue Recall (Simulated)": (Math.random() * 0.15 + 0.70).toFixed(2), 
+        "Correction Precision (Simulated)": (Math.random() * 0.20 + 0.65).toFixed(2), 
+        "False Positive Rate (Simulated)": (Math.random() * 0.1 + 0.05).toFixed(3) 
       },
     };
   };
@@ -113,6 +107,16 @@ export default function ErrorDetectionPage() {
             overlapping definitions, and formatting issues. It can also provide suggestions for corrections.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <Image
+            src="https://placehold.co/800x300.png"
+            alt="AI detecting errors in standards documents"
+            width={800}
+            height={300}
+            className="rounded-lg object-cover w-full"
+            data-ai-hint="error detection"
+          />
+        </CardContent>
       </Card>
 
       <ClientAiForm<ErrorDetectionFormValues, DetectStandardErrorsOutput>

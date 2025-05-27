@@ -1,6 +1,6 @@
 
 import type {
-  AnswerGs1QuestionsInput,
+  AnswerGs1QuestionsInput, 
   AnswerGs1QuestionsOutput,
   AnalyzeStandardsInput,
   AnalyzeStandardsOutput,
@@ -8,8 +8,12 @@ import type {
   ConductIndependentResearchOutput,
   NaturalLanguageToFormalDescriptionInput,
   NaturalLanguageToFormalDescriptionOutput,
-  DetectStandardErrorsInput,  // Added import
-  DetectStandardErrorsOutput  // Added import
+  DetectStandardErrorsInput,
+  DetectStandardErrorsOutput,
+  GenerateDocumentEmbeddingsInput,
+  GenerateDocumentEmbeddingsOutput,
+  AnswerGs1QuestionsWithVectorSearchInput, // Added import
+  AnswerGs1QuestionsWithVectorSearchOutput // Added import
 } from "@/ai/flows"; 
 
 // Re-exporting for convenience, or define specific app-level types if needed
@@ -22,8 +26,12 @@ export type {
   ConductIndependentResearchOutput,
   NaturalLanguageToFormalDescriptionInput,
   NaturalLanguageToFormalDescriptionOutput,
-  DetectStandardErrorsInput, // Added export
-  DetectStandardErrorsOutput // Added export
+  DetectStandardErrorsInput,
+  DetectStandardErrorsOutput,
+  GenerateDocumentEmbeddingsInput,
+  GenerateDocumentEmbeddingsOutput,
+  AnswerGs1QuestionsWithVectorSearchInput, // Added export
+  AnswerGs1QuestionsWithVectorSearchOutput // Added export
 };
 
 export interface ExplainableOutput {
@@ -42,4 +50,7 @@ export type NLToFormalResultWithExplainability = NaturalLanguageToFormalDescript
 
 export type ResearchResultWithExplainability = ConductIndependentResearchOutput & ExplainableOutput;
 
-export type ErrorDetectionResultWithExplainability = DetectStandardErrorsOutput & ExplainableOutput; // Added type
+export type ErrorDetectionResultWithExplainability = DetectStandardErrorsOutput & ExplainableOutput;
+
+// No specific UI for embeddings yet, so no "WithExplainability" type needed for now.
+// No specific UI for the conceptual vector search flow yet.
