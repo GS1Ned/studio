@@ -84,6 +84,11 @@ export const queryVectorStoreTool = ai.defineTool(
     console.log(`[MOCK] queryVectorStoreTool called with queryText: "${input.queryText}", topK: ${input.topK}`);
     console.log(`[MOCK] Received queryEmbedding (first 3 dims): [${input.queryEmbedding.slice(0,3).join(', ')}, ...]`);
     
+    if (input.queryText.toLowerCase().includes("empty test")) {
+         console.log("[MOCK] Simulating empty results for 'empty test' query.");
+         return { results: [] };
+    }
+
     // Simulate retrieving document chunks.
     // In a real implementation, this would:
     // 1. Use input.queryEmbedding to query a vector database (e.g., Vertex AI Vector Search, AlloyDB AI with pgvector).
@@ -101,11 +106,6 @@ export const queryVectorStoreTool = ai.defineTool(
     
     // Simulate some delay
     await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 400));
-
-    if (retrievedChunks.length === 0 && input.queryText.toLowerCase().includes("empty test")) {
-         console.log("[MOCK] Simulating empty results for 'empty test' query.");
-         return { results: [] };
-    }
 
     return { results: retrievedChunks };
   }

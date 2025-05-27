@@ -56,7 +56,7 @@ The Intelligent Standards Assistant (ISA) is architected as a Next.js (v15.2.3) 
 
 **Conceptual/Prototyped AI Components:**
 *   **Embedding Generation (`generate-document-embeddings.ts`):** A conceptual flow demonstrating how embeddings for document chunks would be generated using Genkit, preparing for actual embedding model integration.
-*   **Vector Store Query Tool (`vector-store-tools.ts`):** A conceptual Genkit tool (`queryVectorStoreTool`) simulating queries against a vector store, now enhanced to accept a mock `queryEmbedding` and interact with an internal mock vector database.
+*   **Vector Store Query Tool (`vector-store-tools.ts`):** A conceptual Genkit tool (`queryVectorStoreTool`) simulating queries against a vector store, now enhanced to accept a mock `queryEmbedding` and interact with an internal mock vector database. This tool can simulate returning empty results for specific test queries.
 *   **Knowledge Graph Query Tool (`knowledge-graph-tools.ts`):** A new conceptual Genkit tool (`queryKnowledgeGraphTool`) simulating queries against a knowledge graph, returning mock structured data. This is a foundational step for Phase 2 KG integration.
 
 The system has significantly matured from an early-stage prototype. While key backend components like a live vector store, real web search API integration, and comprehensive MLOps pipelines are part of Phase 2, the foundational AI flows, UI, and operational configurations established in Phase 1 provide a robust platform for these future enhancements. The focus on Genkit for AI orchestration, Server Actions for backend logic, and a well-defined schema system using Zod ensures a maintainable and scalable architecture.
@@ -133,14 +133,20 @@ Core AI capabilities were made functional and more reliable through these enhanc
     *   **Files Created/Modified:** `src/ai/flows/generate-document-embeddings.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
 
 *   **Conceptual Vector Store Interaction & Advanced Q&A Flow:**
-    *   **Tool Creation & Enhancement:** Created `src/ai/tools/vector-store-tools.ts` defining `QueryVectorStoreInputSchema`, `QueryVectorStoreOutputSchema`, and a conceptual (mocked) `queryVectorStoreTool`. The tool was enhanced to accept a mock `queryEmbedding` and `queryText`, and simulate search against an internal mock vector database of `DocumentChunkWithEmbedding` objects.
+    *   **Tool Creation & Enhancement:** Created `src/ai/tools/vector-store-tools.ts` defining `QueryVectorStoreInputSchema`, `QueryVectorStoreOutputSchema`, and a conceptual (mocked) `queryVectorStoreTool`. The tool was enhanced to accept a mock `queryEmbedding` and `queryText`, and simulate search against an internal mock vector database of `DocumentChunkWithEmbedding` objects. It can now simulate returning empty results.
     *   **Flow Creation & Refactoring:** The `src/ai/flows/answer-gs1-questions-with-vector-search.ts` flow was created and later refactored to:
         *   Simulate generating an embedding for the input question.
         *   Directly call the enhanced `queryVectorStoreTool` with this embedding.
-        *   Use a new, simpler LLM prompt (`synthesizeAnswerFromChunksPrompt`) for answer synthesis based on the retrieved chunks, removing the previous LLM-driven tool calling approach for this flow.
+        *   Use a new, simpler LLM prompt (`synthesizeAnswerFromChunksPrompt`) for answer synthesis based on the retrieved chunks, removing the previous LLM-driven tool calling approach for this flow. The prompt was enhanced to handle cases where no chunks are retrieved.
     *   **UI Implementation:** Created `src/app/(isa)/advanced/qa-vector-search/page.tsx` to interact with this conceptual flow.
-    *   **Rationale:** Architectural groundwork for Phase 2 vector data storage and advanced RAG, making the advanced RAG pattern user-testable conceptually. The refactoring provides a clearer, more explicit RAG pipeline (embed -> search -> synthesize).
+    *   **Rationale:** Architectural groundwork for Phase 2 vector data storage and advanced RAG, making the advanced RAG pattern user-testable conceptually. The refactoring provides a clearer, more explicit RAG pipeline (embed -> search -> synthesize) and ensures robust handling of empty search results.
     *   **Files Created/Modified:** `src/ai/tools/*`, `src/ai/flows/answer-gs1-questions-with-vector-search.ts`, `src/app/(isa)/advanced/qa-vector-search/page.tsx`, and related schema/type/index files.
+
+*   **Conceptual Knowledge Graph Interaction Tool (Created - Phase 1):**
+    *   **Change:** Created `src/ai/tools/knowledge-graph-tools.ts` defining `QueryKnowledgeGraphInputSchema`, `QueryKnowledgeGraphOutputSchema`, and a conceptual (mocked) `queryKnowledgeGraphTool`. This tool simulates querying a KG and returning structured entity and relationship data.
+    *   **Rationale:** Provides an architectural placeholder for KG interaction, enabling future flows (like KG-RAG or advanced reasoning flows) to be designed with KG integration in mind. This is a foundational step for Phase 2 KG work.
+    *   **Files Created/Modified:** `src/ai/tools/knowledge-graph-tools.ts`, `src/ai/tools/index.ts`.
+
 
 *   **Code Structure & Refinements:**
     *   **Centralized Schemas:** `DocumentChunkSchema` and other flow input Zod schemas consolidated into `src/ai/schemas.ts`.
@@ -241,10 +247,6 @@ With a maturing infrastructure, ISA can begin to incorporate more advanced AI ca
 *   **Neuro-Symbolic AI (NeSy) Exploration:** Begin prototyping NeSy approaches, integrating symbolic rule engines (potentially hosted on Cloud Functions) with LLM outputs and the KG.
 *   **Causal Inference (Exploratory):** Research and experiment with causal inference capabilities.
 *   **Multi-modal Understanding (Initial Implementation):** Integrate multi-modal capabilities of Vertex AI Gemini models to parse tables, diagrams, etc., from standards documents.
-*   **Conceptual Knowledge Graph Interaction Tool (Created - Phase 1):**
-    *   **Change:** Created `src/ai/tools/knowledge-graph-tools.ts` defining `QueryKnowledgeGraphInputSchema`, `QueryKnowledgeGraphOutputSchema`, and a conceptual (mocked) `queryKnowledgeGraphTool`. This tool simulates querying a KG and returning structured entity and relationship data.
-    *   **Rationale:** Provides an architectural placeholder for KG interaction, enabling future flows (like KG-RAG or advanced reasoning flows) to be designed with KG integration in mind. This is a foundational step for Phase 2 KG work.
-
 
 These features represent a significant step towards ISA achieving deeper, more human-like understanding and reasoning capabilities. The success of these advanced AI features is predicated on the successful infrastructure maturation in the preceding steps. For example, effective KG-RAG integration and NeSy are impossible without a functional, well-populated KG and a robust RAG system. Firebase's role is to ensure that Genkit is powerful and flexible enough to orchestrate these complex interactions (LLM + KG + Symbolic Engine + Multi-modal inputs). This may necessitate new Genkit features or plugins. Furthermore, Firebase should provide guidance on cost-effectively utilizing powerful models like Gemini models for these reasoning-intensive tasks, perhaps through optimized Genkit configurations or by facilitating batch processing for non-real-time analyses.
 
@@ -418,8 +420,10 @@ This section will now serve as a concise log, complementing the detailed narrati
     *   **Task: UI Enhancements & Consistency (Placeholder Images, Error Detection UI Card)** - *Completed*
     *   **Task: Resolve Gemini Code Assist Feedback (AI Flow Robustness, Deployment Config)** - *Completed*
     *   **Task: Comprehensive Update of `docs/blueprint.md`** - *Completed*
+    *   **Task: Refine `answerGs1QuestionsWithVectorSearch` flow and `queryVectorStoreTool` for robustness (empty search results)** - *Completed (Mock tool updated, synthesis prompt enhanced)*
 
 ---
 This updated document now serves as the comprehensive strategic guide and living blueprint for the ISA project, reflecting all progress made in Phase 1 and setting a clear direction for subsequent phases. It aligns with the structure and content of the "Internal Firebase Briefing" while incorporating the development log and current technical state.
 It has been updated to reflect the commencement of Phase 2 and the specific refactoring of the conceptual vector search flow, the addition of the conceptual Knowledge Graph query tool, and the conceptual design for a KG-Augmented RAG flow.
 The development log is now a concise summary, with detailed achievements integrated into the main roadmap sections. The error handling in AI flows has been made more robust.
+The `answerGs1QuestionsWithVectorSearch` flow and `queryVectorStoreTool` mock have been refined to better handle empty search results.
