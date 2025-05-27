@@ -395,8 +395,20 @@ This section will chronologically log significant development activities, decisi
     *   **`src/components/features/ai-output-card.tsx`**:
         *   Imported `AlertTriangle` icon from `lucide-react`.
         *   When displaying an error, the `CardTitle` now includes the `AlertTriangle` icon for better visual prominence of the error state.
+        *   The `data` prop in `AiOutputCardProps` was made nullable (`T | null`) to better reflect its state.
 *   **Rationale:** Improves the robustness and user experience of error handling. Consistent server-side logging aids debugging, while clearer client-side messages and visual cues help users understand when something has gone wrong. Aligns with overall foundational strengthening.
 *   **Files Modified:** `src/lib/actions/ai-actions.ts`, `src/components/features/ai-output-card.tsx`.
+
+**7. Review `package.json` for Technical Debt**
+*   **Date:** October 26, 2023
+*   **Objective:** Perform a quick review of `package.json` for obvious technical debt or improvements.
+*   **Findings:**
+    *   The deprecated `@types/handlebars` was already removed in a previous step.
+    *   No other immediate deprecations or problematic versions were identified.
+    *   NPM scripts (`dev`, `build`, `lint`, `typecheck`, `test`, `genkit:dev`, `genkit:watch`) are standard and well-defined.
+    *   The presence of `patch-package` is noted. This indicates a specific patch is applied to a dependency, which might require attention during future dependency updates. No action is taken on this now.
+*   **Rationale:** Regular review of dependencies and scripts helps maintain project health. No immediate code changes were required for `package.json` itself.
+*   **Files Modified:** None.
 
 #### A.2. Key Feature Enhancements (e.g., RAG, Basic Agentic Flows)
 
@@ -406,7 +418,7 @@ This section will chronologically log significant development activities, decisi
 *   **Changes:**
     *   Modified `src/ai/flows/conduct-independent-research.ts`:
         *   The `webSearch` tool's `outputSchema` changed from `z.object({ results: z.array(z.string()) })` to `WebSearchOutputSchema` (an alias for `z.object({ searchResults: z.array(SearchResultItemSchema) })`), where `SearchResultItemSchema` is `z.object({ title: z.string(), link: z.string().url(), snippet: z.string() })`.
-        *   The mock implementation of `webSearch` was updated to return data conforming to this new structured schema, with more varied placeholder content.
+        *   The mock implementation of `webSearch` was updated to return data conforming to this new structured schema, with more varied placeholder content, and ensuring at least one result is always returned.
         *   Comments were added about future real API integration and API key management.
         *   The `ConductIndependentResearchOutputSchema`'s `sources` field was updated from `z.array(z.string())` to `z.array(z.object({ title: z.string(), url: z.string().url() }))`.
         *   The main prompt (`conductIndependentResearchPrompt`) was significantly updated to instruct the LLM on how to:
@@ -423,7 +435,8 @@ This section will chronologically log significant development activities, decisi
 *   **Objective:** Modify the `answerGs1Questions` flow to accept structured document chunks and enable the AI to cite sources in its answers, moving towards a more mature RAG pipeline. This includes asking the AI to generate its reasoning steps and allowing users to provide optional metadata.
 *   **Changes:**
     *   **`src/ai/schemas.ts`**:
-        *   `AnswerGs1QuestionsInputSchema` updated to expect `documentChunks: z.array(DocumentChunkSchema)` instead of `documentContent: z.string()`. `DocumentChunkSchema` includes `content`, `sourceName`, `pageNumber` (optional), and `sectionTitle` (optional).
+        *   `DocumentChunkSchema` (content, sourceName, pageNumber, sectionTitle) was defined/centralized.
+        *   `AnswerGs1QuestionsInputSchema` updated to expect `documentChunks: z.array(DocumentChunkSchema)` instead of `documentContent: z.string()`.
     *   **`src/ai/flows/answer-gs1-questions.ts`**:
         *   Input type updated to use the new schema.
         *   `AnswerGs1QuestionsOutputSchema` now includes `citedSources: z.array(CitedSourceSchema).optional()` and `reasoningSteps: z.array(z.string()).optional()`. `CitedSourceSchema` mirrors the metadata fields of `DocumentChunkSchema`.
@@ -433,7 +446,7 @@ This section will chronologically log significant development activities, decisi
             *   Instruct the LLM to base its answer solely on provided content, to populate the `citedSources` output field, and to generate `reasoningSteps`.
     *   **`src/lib/actions/ai-actions.ts`**:
         *   `handleAnswerGs1Questions` now expects `QaPageFormValues` (with `documentContent: string` and `question: string`, plus optional metadata fields `sourceName`, `pageNumber`, `sectionTitle`) from the client.
-        *   It transforms the input into a single-element `documentChunks` array, using user-provided metadata if available or defaults if not, before passing it to the `answerGs1Questions` flow. This maintains UI simplicity for now.
+        *   It transforms the input into a single-element `documentChunks` array, using user-provided metadata if available or defaults if not, before passing it to the `answerGs1Questions` flow. This maintains UI simplicity for now while preparing the backend.
     *   **`src/lib/types.ts`**: Updated to reflect schema changes.
     *   **`src/app/(isa)/qa/page.tsx`**:
         *   The form schema (`qaFormSchema`) updated to include optional `sourceName`, `pageNumber` (as string), and `sectionTitle`. New input fields added.
@@ -530,12 +543,15 @@ This section will chronologically log significant development activities, decisi
 *   **Changes:**
     *   Created `src/ai/flows/answer-gs1-questions-with-vector-search.ts`:
         *   Defines `AnswerGs1QuestionsWithVectorSearchInputSchema` (input: question string, topK).
-        *   The flow calls the `queryVectorStoreTool` to retrieve relevant `documentChunks`.
-        *   It then uses these chunks and the original question to prompt an LLM (using a locally defined prompt similar to the original `answerGs1QuestionsPrompt`) for an answer, citations, and reasoning steps.
+        *   The initial implementation explicitly called `queryVectorStoreTool` to retrieve `documentChunks`, then passed these to a separate prompt for answer generation.
+        *   **Refinement (Later on October 26):** The flow was refactored. It now invokes a single main prompt (`vectorSearchAgentPrompt`). This prompt is provided with the `queryVectorStoreTool` and is instructed by its system message to:
+            1. Use the `queryVectorStoreTool` to retrieve document chunks.
+            2. Synthesize an answer based on these chunks (or state if no chunks were found).
+            3. Populate `citedSources` and `reasoningSteps`.
         *   The output schema is `AnswerGs1QuestionsWithVectorSearchOutputSchema`, mirroring the structure of `AnswerGs1QuestionsOutputSchema`.
     *   Updated `src/ai/schemas.ts` to include the new input schema.
     *   Updated `src/ai/flows/index.ts`, `src/ai/dev.ts`, and `src/lib/types.ts` to include the new flow and its types.
-*   **Rationale:** This conceptual flow serves as a clear code example of how future RAG pipelines in ISA will integrate with a vector store for dynamic, relevant context retrieval. It directly illustrates the intended use of tools like `queryVectorStoreTool` and informs the design for Phase 2 infrastructure and flow development. This flow is not yet integrated into the UI.
+*   **Rationale:** This conceptual flow serves as a clear code example of how future RAG pipelines in ISA will integrate with a vector store for dynamic, relevant context retrieval. The refactoring to an LLM-driven tool call explores Genkit's agentic capabilities, aligning with the roadmap's goals for advanced AI interaction, even if explicit retrieval might be more direct for pure RAG. It directly illustrates the intended use of tools like `queryVectorStoreTool` and informs the design for Phase 2 infrastructure and flow development. This flow is not yet integrated into the UI.
 *   **Files Created/Modified:** `src/ai/flows/answer-gs1-questions-with-vector-search.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
 
 **3. UI for Conceptual Q&A with Vector Search Flow**
