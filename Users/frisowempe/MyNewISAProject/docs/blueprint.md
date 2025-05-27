@@ -1,3 +1,4 @@
+
 # ISA - Intelligent Standards Assistant: Blueprint & Development Log
 
 This document serves as the central blueprint and evolving development log for the Intelligent Standards Assistant (ISA) project. It will track architectural decisions, feature implementations, and adherence to the strategic roadmap.
@@ -440,5 +441,16 @@ This section will chronologically log significant development activities, decisi
     *   Updated `src/lib/types.ts` to include the new input/output types.
 *   **Rationale:** This flow serves as a structural placeholder and conceptual model for how ISA will handle the critical step of generating embeddings from document content. It prepares for future integration with actual embedding models (like Google's `text-embedding-preview-0409`) and subsequent storage in a vector database. This aligns with Phase 1.A.2 ("Mature Core RAG Pipeline") by addressing a key component of the "Ultimate Quality ETL" process.
 *   **Files Created/Modified:** `src/ai/flows/generate-document-embeddings.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
+
+**4. Enhance UI with Placeholder Images**
+*   **Date:** October 26, 2023
+*   **Objective:** Add placeholder images to key feature pages for improved visual appeal and to adhere to project guidelines regarding `next/image` and `data-ai-hint` attributes.
+*   **Changes:**
+    *   Modified `src/app/(isa)/qa/page.tsx`, `src/app/(isa)/analysis/standards/page.tsx`, `src/app/(isa)/analysis/error-detection/page.tsx`, `src/app/(isa)/research/page.tsx`, and `src/app/(isa)/transformation/nl-to-formal/page.tsx`.
+    *   Imported `next/image` and added an `Image` component to the introductory `Card` on each of these pages.
+    *   Used `https://placehold.co/800x300.png` as the source.
+    *   Included descriptive `alt` text and relevant `data-ai-hint` attributes (e.g., "knowledge document", "analysis structure").
+*   **Rationale:** Improves the visual presentation of core feature pages, aligns with established coding guidelines, and sets a pattern for future image integration. This is a minor UI enhancement contributing to the overall polish of the application.
+*   **Files Modified:** `src/app/(isa)/qa/page.tsx`, `src/app/(isa)/analysis/standards/page.tsx`, `src/app/(isa)/analysis/error-detection/page.tsx`, `src/app/(isa)/research/page.tsx`, `src/app/(isa)/transformation/nl-to-formal/page.tsx`.
 ---
 *This document will be updated continuously as development progresses.*

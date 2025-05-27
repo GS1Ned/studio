@@ -1,18 +1,18 @@
+
 "use client";
 
 import { z } from "zod";
+import Image from "next/image"; // Added import
 import { ClientAiForm } from "@/components/features/client-ai-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { handleAnswerGs1Questions } from "@/lib/actions/ai-actions";
 import type { AnswerGs1QuestionsOutput, ExplainableOutput } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardContent
 import { Badge } from "@/components/ui/badge";
 import { BookText, Info } from "lucide-react";
 
-// This schema matches the form fields on the page.
-// The transformation to documentChunks happens in the server action.
 const qaFormSchema = z.object({
   documentContent: z.string().min(50, "Document content must be at least 50 characters."),
   sourceName: z.string().optional(),
@@ -25,7 +25,7 @@ const qaFormSchema = z.object({
 type QaFormValues = z.infer<typeof qaFormSchema>;
 
 export default function QAPage() {
-  const renderFormFields = (form: any) => ( // form type is UseFormReturn<QaFormValues>
+  const renderFormFields = (form: any) => (
     <>
       <FormField
         control={form.control}
@@ -144,12 +144,23 @@ export default function QAPage() {
     <div className="container mx-auto py-8">
       <Card className="mb-8 shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-semibold">AI Document Q&amp;A</CardTitle>
+          <CardTitle className="text-2xl font-semibold">AI Document Q&A</CardTitle>
           <CardDescription>
             Ask questions about GS1 standards documents. Provide the document content (and optionally, its source details) and your question below.
             The AI will use its knowledge and the provided text to give you an answer, citing sources and explaining its reasoning where possible.
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <Image
+            src="https://placehold.co/800x300.png"
+            alt="Conceptual image for AI Document Q&A"
+            width={800}
+            height={300}
+            className="rounded-lg object-cover w-full"
+            data-ai-hint="knowledge document"
+            priority 
+          />
+        </CardContent>
       </Card>
 
       <ClientAiForm<QaFormValues, AnswerGs1QuestionsOutput>
