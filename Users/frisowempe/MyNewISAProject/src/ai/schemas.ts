@@ -52,3 +52,11 @@ export const DetectStandardErrorsInputSchema = z.object({
 export const GenerateDocumentEmbeddingsInputSchema = z.object({
   documentChunks: z.array(DocumentChunkSchema).min(1, "At least one document chunk must be provided.").describe('An array of document chunks to generate embeddings for.'),
 });
+
+// Schema for src/ai/flows/answer-gs1-questions-with-vector-search.ts
+export const AnswerGs1QuestionsWithVectorSearchInputSchema = z.object({
+  question: z.string().describe('The question to ask.'),
+  topK: z.number().optional().default(5).describe('The number of document chunks to retrieve from the vector store.'),
+  // Potentially add other filters here in the future, e.g., sourceNameFilter, dateFilter
+});
+export type AnswerGs1QuestionsWithVectorSearchInput = z.infer<typeof AnswerGs1QuestionsWithVectorSearchInputSchema>;

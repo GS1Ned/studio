@@ -448,7 +448,7 @@ This section will chronologically log significant development activities, decisi
         *   Defines `GenerateDocumentEmbeddingsOutputSchema` (outputs an array of `DocumentChunkWithEmbeddingSchema`, where each chunk includes a simulated `embedding` vector).
         *   The `generateDocumentEmbeddingsFlow` iterates through input chunks and uses a mock Genkit tool (`mockEmbeddingGeneratorTool`) to simulate generating an embedding for each chunk's content.
         *   Comments within the flow indicate where a real embedding model (e.g., from Vertex AI Embeddings API) would be called.
-    *   Updated `src/ai/schemas.ts` to include `GenerateDocumentEmbeddingsInputSchema` and `DocumentChunkSchema`.
+    *   Updated `src/ai/schemas.ts` to include `GenerateDocumentEmbeddingsInputSchema` and ensure `DocumentChunkSchema` is used consistently.
     *   Updated `src/ai/flows/index.ts` and `src/ai/dev.ts` to include the new flow.
     *   Updated `src/lib/types.ts` to include the new input/output types.
 *   **Rationale:** This flow serves as a structural placeholder and conceptual model for how ISA will handle the critical step of generating embeddings from document content. It prepares for future integration with actual embedding models (like Google's `text-embedding-preview-0409`) and subsequent storage in a vector database. This aligns with Phase 1.A.2 ("Mature Core RAG Pipeline") by addressing a key component of the "Ultimate Quality ETL" process.
@@ -495,6 +495,19 @@ This section will chronologically log significant development activities, decisi
 *   **Rationale:** This conceptual step prepares for Phase 2's focus on scaling vector data storage. By defining the tool interface, we can start to envision how flows like `answerGs1Questions` might evolve to call such a tool to retrieve context dynamically, rather than relying solely on user-provided input. This makes the RAG pipeline more sophisticated and scalable. The actual implementation of vector store integration, data ingestion, and embedding generation for the store are larger, subsequent tasks.
 *   **Files Created/Modified:** `src/ai/tools/vector-store-tools.ts`, `src/ai/tools/index.ts`.
 
+**2. Conceptual Flow for RAG with Vector Store Integration**
+*   **Date:** October 26, 2023
+*   **Objective:** Architecturally demonstrate how a Q&A flow would use a vector store tool for dynamic context retrieval.
+*   **Changes:**
+    *   Created `src/ai/flows/answer-gs1-questions-with-vector-search.ts`:
+        *   Defines `AnswerGs1QuestionsWithVectorSearchInputSchema` (input: question string, topK).
+        *   The flow calls the `queryVectorStoreTool` to retrieve relevant `documentChunks`.
+        *   It then uses these chunks and the original question to prompt an LLM (using a locally defined prompt similar to the original `answerGs1QuestionsPrompt`) for an answer, citations, and reasoning steps.
+        *   The output schema is `AnswerGs1QuestionsWithVectorSearchOutputSchema`, mirroring the structure of `AnswerGs1QuestionsOutputSchema`.
+    *   Updated `src/ai/schemas.ts` to include the new input schema.
+    *   Updated `src/ai/flows/index.ts`, `src/ai/dev.ts`, and `src/lib/types.ts` to include the new flow and its types.
+*   **Rationale:** This conceptual flow serves as a clear code example of how future RAG pipelines in ISA will integrate with a vector store for dynamic, relevant context retrieval. It directly illustrates the intended use of tools like `queryVectorStoreTool` and informs the design for Phase 2 infrastructure and flow development. This flow is not yet integrated into the UI.
+*   **Files Created/Modified:** `src/ai/flows/answer-gs1-questions-with-vector-search.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
+
 ---
 *This document will be updated continuously as development progresses.*
-
