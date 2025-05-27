@@ -402,7 +402,7 @@ This section will chronologically log significant development activities, decisi
 
 **1. Enhance `webSearch` Tool in `conductIndependentResearch` Flow**
 *   **Date:** October 26, 2023
-*   **Objective:** Make the `webSearch` Genkit tool more realistic by defining a structured output and updating the flow's prompt and output schema to utilize this structured information. This is a precursor to integrating a real search API. The mock tool's data was also diversified.
+*   **Objective:** Make the `webSearch` Genkit tool more realistic by defining a structured output and updating the flow's prompt and output schema to utilize this structured information. This is a precursor to integrating a real search API. The mock tool's data was also diversified, and the main prompt refined to better guide iterative searching and synthesis.
 *   **Changes:**
     *   Modified `src/ai/flows/conduct-independent-research.ts`:
         *   The `webSearch` tool's `outputSchema` changed from `z.object({ results: z.array(z.string()) })` to `WebSearchOutputSchema` (an alias for `z.object({ searchResults: z.array(SearchResultItemSchema) })`), where `SearchResultItemSchema` is `z.object({ title: z.string(), link: z.string().url(), snippet: z.string() })`.
@@ -410,11 +410,12 @@ This section will chronologically log significant development activities, decisi
         *   Comments were added about future real API integration and API key management.
         *   The `ConductIndependentResearchOutputSchema`'s `sources` field was updated from `z.array(z.string())` to `z.array(z.object({ title: z.string(), url: z.string().url() }))`.
         *   The main prompt (`conductIndependentResearchPrompt`) was significantly updated to instruct the LLM on how to:
-            *   Iterate through the structured `searchResults`.
-            *   Synthesize `collectedInformation` from titles, links, and snippets.
+            *   Formulate 2-3 diverse search queries.
+            *   Iterate through the structured `searchResults` from each query.
+            *   Synthesize `collectedInformation` from all search results (titles, links, snippets).
             *   Extract `title` and `url` for the `sources` output field.
-            *   Formulate diverse search queries.
-*   **Rationale:** This enhancement moves the `conductIndependentResearch` flow closer to production readiness by simulating a more realistic interaction with a search tool. It improves the quality and structure of data the LLM works with and prepares the system for easier integration with an actual search API. This aligns with Phase 1.A.2 of the Strategic Roadmap ("Implement Real webSearch Tool" and "Basic Agentic Behavior with Genkit"). The current structure and prompt instructions for the `conductIndependentResearch` flow, with its multi-query guidance and synthesis steps, satisfy the Phase 1 requirement for "Basic Agentic Behavior with Genkit." The mock data was also enhanced for better testing of the LLM's synthesis capabilities.
+            *   Formulate insightful research questions based on the synthesized information.
+*   **Rationale:** This enhancement moves the `conductIndependentResearch` flow closer to production readiness by simulating a more realistic interaction with a search tool and guiding the LLM through a more structured, iterative research process. It improves the quality and structure of data the LLM works with and prepares the system for easier integration with an actual search API. This aligns with Phase 1.A.2 of the Strategic Roadmap ("Implement Real webSearch Tool" and "Basic Agentic Behavior with Genkit"). The current structure and prompt instructions for the `conductIndependentResearch` flow, with its multi-query guidance and synthesis steps, satisfy the Phase 1 requirement for "Basic Agentic Behavior with Genkit." The mock data was also enhanced for better testing of the LLM's synthesis capabilities.
 *   **Files Modified:** `src/ai/flows/conduct-independent-research.ts`.
 
 **2. Enhance `answerGs1Questions` for Structured RAG Input & Citation**
