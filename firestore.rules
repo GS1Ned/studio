@@ -7,7 +7,7 @@ service cloud.firestore {
     // Specific rules for collections will be added here as needed when features
     // requiring Firestore access are implemented. This ensures a secure-by-default posture.
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
   }
 }
