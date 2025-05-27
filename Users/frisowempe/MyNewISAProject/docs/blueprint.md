@@ -489,6 +489,21 @@ This section will chronologically log significant development activities, decisi
 *   **Rationale:** Promotes a single source of truth for this fundamental schema, improving code clarity and reducing redundancy. This aligns with general software engineering best practices for maintainability.
 *   **Files Modified:** `src/ai/schemas.ts`, `src/ai/flows/generate-document-embeddings.ts`, `src/ai/tools/vector-store-tools.ts`.
 
+**7. Detail "Ultimate Quality ETL Process" Planning for RAG**
+*   **Date:** October 26, 2023
+*   **Objective:** Architecturally outline the key steps and considerations for a high-fidelity Extract, Transform, Load (ETL) pipeline necessary for a mature RAG system.
+*   **Changes:**
+    *   Expanded the "Mature Core RAG Pipeline" section within Phase 1.A.2 in `docs/blueprint.md`.
+    *   Detailed the conceptual stages of the ETL process:
+        *   **Source Document Ingestion:** e.g., GS1 documents (PDFs, XML) uploaded to Cloud Storage, triggering processing via Eventarc.
+        *   **Preprocessing & Parsing:** Leveraging Document AI for accurate text, table, and layout extraction from complex PDFs. Strategies for handling other formats (XML, DOCX).
+        *   **Intelligent Chunking:** Discussed various strategies (fixed-size, recursive, semantic, content-aware like section/table breaks) to optimize chunk relevance and context preservation.
+        *   **Metadata Extraction & Enrichment:** Emphasized capturing comprehensive metadata (source ID, version, title, page numbers, section titles, table IDs, etc.) to support filtered retrieval and citation.
+        *   **Embedding Generation:** Referencing the conceptual `generateDocumentEmbeddingsFlow` and the intended use of Vertex AI Embeddings API.
+        *   **Vector Store Ingestion:** Outlining the process of loading embeddings and their metadata into target vector stores like Vertex AI Vector Search or AlloyDB AI.
+        *   **Orchestration:** Mentioning potential orchestration tools like Cloud Functions, Cloud Dataflow, or Vertex AI Pipelines.
+*   **Rationale:** This detailed planning aligns with the strategic roadmap's ambition for an "Ultimate Quality ETL" process. It provides a clear architectural vision for how ISA will ingest and prepare standards documents for effective use in advanced RAG applications, serving as a foundation for future implementation work in Phase 2. This directly supports the goal of providing accurate, traceable, and contextually rich information to users.
+*   **Files Modified:** `docs/blueprint.md`.
 
 ### Phase 2: Infrastructure Maturation & Advanced Feature Integration
 
@@ -539,3 +554,4 @@ This section will chronologically log significant development activities, decisi
 
 ---
 *This document will be updated continuously as development progresses.*
+
