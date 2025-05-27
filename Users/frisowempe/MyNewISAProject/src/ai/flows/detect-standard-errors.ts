@@ -94,6 +94,14 @@ const detectStandardErrorsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await detectStandardErrorsPrompt(input);
-    return output!;
+    if (!output) {
+      console.error('detectStandardErrorsPrompt did not return a valid output.');
+      return {
+        detectedIssues: [],
+        summary: 'Error analysis could not be completed due to an internal AI model issue. Please try again.',
+        reasoningSteps: ['AI model failed to produce a structured response for error detection.'],
+      };
+    }
+    return output;
   }
 );

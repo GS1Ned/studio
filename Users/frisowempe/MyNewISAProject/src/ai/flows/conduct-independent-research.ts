@@ -154,6 +154,14 @@ const conductIndependentResearchFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      console.error('conductIndependentResearchPrompt did not return a valid output.');
+      return {
+        collectedInformation: 'Failed to collect information due to an internal AI model error. Please try again.',
+        formulatedQuestions: [],
+        sources: [],
+      };
+    }
+    return output;
   }
 );

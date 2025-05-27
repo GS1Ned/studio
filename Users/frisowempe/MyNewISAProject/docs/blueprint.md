@@ -23,8 +23,9 @@ The Intelligent Standards Assistant (ISA) is an advanced AI system to transform 
 ## 2. Architectural Design
 *(High-level summary, referencing the "Strategic Roadmap" for full details)*
 
-*   **Frontend:** Next.js (App Router), React, TypeScript, ShadCN UI, Tailwind CSS. Hosted on Firebase Hosting.
-*   **Backend & AI Orchestration:** Next.js Server Actions, Genkit, Cloud Functions for Firebase (deployed via Firebase App Hosting).
+*   **Frontend & Backend Framework:** Next.js (App Router), React, TypeScript. The entire Next.js application, including frontend UI and backend server logic (Server Actions invoking Genkit flows), is designed for deployment via **Firebase App Hosting**.
+*   **UI Components & Styling:** ShadCN UI, Tailwind CSS.
+*   **AI Orchestration:** Genkit, orchestrating AI flows that run as part of the Next.js backend within the Firebase App Hosting environment.
 *   **AI Models:** Google AI (Gemini Flash default, potentially others like Gemini Pro).
 *   **Data Storage (Conceptual):**
     *   Application State/User Data: Firestore.
@@ -51,7 +52,7 @@ This section will chronologically log significant development activities, decisi
     *   `concurrency`: `80`.
     *   `memoryMiB`: `512`.
     *   `timeoutSeconds`: `60`.
-*   **Rationale:** The previous `maxInstances: 1` setting was a critical scalability bottleneck. The new configuration provides a more reasonable starting point for scalability and cost-effectiveness, allowing the system to scale down to zero during idle periods. These values are initial settings and will be subject to refinement based on future load testing and performance monitoring of Genkit flows. This aligns with Phase 1.A.1 of the Strategic Roadmap.
+*   **Rationale:** The previous `maxInstances: 1` setting was a critical scalability bottleneck. The new configuration provides a more reasonable starting point for scalability and cost-effectiveness for the Firebase App Hosting backend, allowing the system to scale down to zero during idle periods. These values are initial settings and will be subject to refinement based on future load testing and performance monitoring of Genkit flows. This aligns with Phase 1.A.1 of the Strategic Roadmap.
 *   **Files Modified:** `apphosting.yaml`.
 
 **2. Harden Firestore Security Rules**
@@ -69,212 +70,42 @@ This section will chronologically log significant development activities, decisi
           }
         }
         ```
-    *   Created `firebase.json` to configure Firebase services, including Firestore rules and emulator settings.
+    *   Created `firebase.json` to configure Firebase services, primarily for Firestore rules and emulator settings. The `hosting` section, if previously present for deploying the Next.js app, is removed as the primary deployment mechanism for the Next.js app is Firebase App Hosting (configured via `apphosting.yaml`). The `functions` block, typically for standalone Cloud Functions, has also been removed as the Next.js backend server logic (Server Actions, Genkit flows) is managed by Firebase App Hosting. The `firebase.json` `hosting` section might be used for auxiliary static assets on a separate Firebase Hosting site if needed in the future.
         ```json
         {
           "firestore": {
             "rules": "firestore.rules",
             "indexes": "firestore.indexes.json"
           },
-          "hosting": {
-            "public": "public_assets", 
-            "ignore": [
-              "firebase.json",
-              "**/.*",
-              "**/node_modules/**"
-            ]
-          },
-          "functions": [ 
-            {
-              "source": ".firebase/functions", 
-              "codebase": "default",
-              "ignore": [
-                "node_modules",
-                ".git",
-                "firebase-debug.log",
-                "firebase-debug.*.log",
-                "*.log"
-              ],
-              "predeploy": [
-                "npm --prefix \"$RESOURCE_DIR\" run build" 
-              ]
-            }
-          ],
           "emulators": {
             "auth": { "port": 9099 },
-            "functions": { "port": 5001 },
+            "functions": { "port": 5001 }, // Emulator port for functions, even if no separate functions deployed
             "firestore": { "port": 8080 },
-            "hosting": { "port": 9003 },
+            "hosting": { "port": 9003 }, // Port for hosting emulator
             "ui": { "enabled": true, "port": 4000 },
             "storage": { "port": 9199 }
           }
         }
         ```
     *   Created an empty `firestore.indexes.json`.
-*   **Rationale:** Adheres to the principle of least privilege for database security. Starting with deny-all rules ensures that explicit permissions must be granted as features are developed. The `firebase.json` file enables local testing with the Firebase Emulator Suite. This aligns with Phase 1.A.1 of the Strategic Roadmap.
+*   **Rationale:** Adheres to the principle of least privilege for database security. Starting with deny-all rules ensures that explicit permissions must be granted as features are developed. The `firebase.json` file enables local testing with the Firebase Emulator Suite. Clarified that Firebase App Hosting is the target for the Next.js app and its integrated backend. This aligns with Phase 1.A.1 of the Strategic Roadmap.
 *   **Files Created/Modified:** `firestore.rules`, `firebase.json`, `firestore.indexes.json`.
 
 **3. Implement Robust Secrets Management**
 *   **Date:** October 26, 2023
 *   **Change:**
-    *   Created `.gitignore` to exclude sensitive files and common development artifacts from version control, notably including `.env*`. Patterns include:
-        ```
-        # Logs
-        logs
-        *.log
-        npm-debug.log*
-        yarn-debug.log*
-        yarn-error.log*
-        pnpm-debug.log*
-        lerna-debug.log*
-
-        # Diagnostic reports (https://nodejs.org/api/report.html)
-        report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-        # Runtime data
-        pids
-        *.pid
-        *.seed
-        *.pid.lock
-
-        # Directory for instrumented libs generated by jscoverage/JSCover
-        lib-cov
-
-        # Coverage directory used by tools like istanbul
-        coverage
-        *.lcov
-
-        # nyc test coverage
-        .nyc_output
-
-        # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
-        .grunt
-
-        # Bower dependency directory (https://bower.io/)
-        bower_components
-
-        # node-waf configuration
-        .lock-wscript
-
-        # Compiled binary addons (https://nodejs.org/api/addons.html)
-        build/Release
-
-        # Dependency directories
-        node_modules/
-        jspm_packages/
-
-        # Snowpack dependency directory (https://snowpack.dev/)
-        web_modules/
-
-        # TypeScript cache
-        *.tsbuildinfo
-
-        # Optional npm cache directory
-        .npm
-
-        # Optional eslint cache
-        .eslintcache
-
-        # Microbundle cache
-        .rpt2_cache/
-        .rts2_cache_cjs/
-        .rts2_cache_es/
-        .rts2_cache_umd/
-
-        # Optional REPL history
-        .node_repl_history
-
-        # Output of 'npm pack'
-        *.tgz
-
-        # Yarn Integrity file
-        .yarn-integrity
-
-        # dotenv environment variables file
-        .env
-        .env*.local
-        .env.development.local
-        .env.test.local
-        .env.production.local
-        .env.local
-
-        # parcel-bundler cache files
-        .cache
-        .parcel-cache
-
-        # Next.js build output
-        .next
-        out
-
-        # Nuxt.js build / generate output
-        .nuxt
-        dist
-
-        # Gatsby files
-        .cache/
-        # Comment in the public line in if your project uses Gatsby and not Next.js
-        # https://nextjs.org/blog/next-9-1#public-directory-support
-        # public
-
-        # vuepress build output
-        .vuepress/dist
-
-        # Docusaurus build output
-        .docusaurus
-
-        # SvelteKit build output
-        .svelte-kit
-
-        # Remix build output
-        build/
-        public/build/
-
-        # Astro build output
-        dist/
-        .astro/
-
-        # Vercel serverless functions
-        .vercel
-
-        # SST /.sst
-        .sst/
-
-        # StaticKit
-        .statickit
-
-        # Temporary folders
-        .tmp/
-        tmp/
-
-        # System files
-        .DS_Store
-        Thumbs.db
-
-        # Firebase
-        .firebase/
-        *.firebase.*
-        firebase-debug.log
-        firebase-debug.*.log
-        firestore-debug.log
-        firestore-debug.*.log
-        ui-debug.log
-        ui-debug.*.log
-
-        # IDX specific
-        .idx/
-        ```
+    *   Created `.gitignore` to exclude sensitive files and common development artifacts from version control, notably including `.env*`.
     *   Added `GOOGLE_API_KEY=""` to the `.env` file as a placeholder for the Google AI API key required by Genkit's Google AI plugin.
 *   **Rationale:**
-    *   **Local Development:** The `.env` file allows developers to securely store their local API keys without committing them to the repository. `src/ai/dev.ts` already uses `dotenv` to load these.
-    *   **Production/Deployed Environments (Firebase App Hosting):** Actual secrets for deployed environments *must* be managed using Google Secret Manager. The App Hosting backend service identity will need IAM permissions to access these secrets. This setup ensures that API keys are not hardcoded or insecurely stored.
-    *   The `.gitignore` file is essential for preventing accidental exposure of secrets and keeping the repository clean.
+    *   **Local Development:** The `.env` file allows developers to securely store their local API keys. `src/ai/dev.ts` uses `dotenv` to load these.
+    *   **Production/Deployed Environments (Firebase App Hosting):** Actual secrets for deployed environments *must* be managed using Google Secret Manager. The App Hosting backend service identity will need IAM permissions to access these secrets.
+    *   The `.gitignore` file is essential for preventing accidental exposure of secrets.
 *   **Files Created/Modified:** `.gitignore`, `.env`.
-*   **Future Action:** Detailed instructions for configuring Google Secret Manager and IAM permissions for deployed environments will be added to operational documentation as deployment approaches.
 
 **4. Establish CI/CD Pipelines (Initial Outline)**
 *   **Date:** October 26, 2023
-*   **Objective:** Outline the structure for an automated Continuous Integration/Continuous Deployment pipeline using GitHub Actions to ensure reliable builds, tests, and deployments to Firebase App Hosting.
-*   **Rationale:** Automated CI/CD is crucial for development velocity, reducing manual errors, and ensuring consistent deployments. This aligns with Phase 1.A.1 of the Strategic Roadmap.
+*   **Objective:** Outline the structure for an automated CI/CD pipeline using GitHub Actions for builds, tests, and deployments to Firebase App Hosting.
+*   **Rationale:** Automated CI/CD is crucial for development velocity and consistent deployments. This aligns with Phase 1.A.1 of the Strategic Roadmap.
 *   **Proposed GitHub Actions Workflow (`.github/workflows/main.yml` - *To be created manually in GitHub*):**
     ```yaml
     # .github/workflows/main.yml
@@ -303,228 +134,175 @@ This section will chronologically log significant development activities, decisi
               cache: 'npm'
 
           - name: Install dependencies
-            run: npm ci # Use npm ci for faster, more reliable installs in CI
+            run: npm ci
 
           - name: Lint and Type Check
             run: npm test # Runs 'next lint && tsc --noEmit'
-
+            
           # Add actual test runner step here when tests are implemented
           # - name: Run Unit/Integration Tests
           #   run: npm run actual-test-script
 
-          - name: Build Next.js app
+          - name: Build Next.js app (for App Hosting)
             run: npm run build
-
-          - name: Archive production artifacts
-            uses: actions/upload-artifact@v4
-            with:
-              name: nextjs-build
-              path: .next/ # Or 'out/' if using static export
+            # No separate artifact upload needed if deploying full source for App Hosting
 
       deploy_to_firebase_app_hosting:
         name: Deploy to Firebase App Hosting
         needs: build_and_test
         runs-on: ubuntu-latest
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' # Deploy only on push to main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' 
 
         steps:
           - name: Checkout code
             uses: actions/checkout@v4
 
-          - name: Set up Node.js
-            uses: actions/setup-node@v4
+          - name: Authenticate to Google Cloud
+            uses: 'google-github-actions/auth@v2'
             with:
-              node-version: '20'
-              cache: 'npm'
+              credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ISA_PROJECT }}'
 
-          - name: Install dependencies
-            run: npm ci
+          - name: Set up Cloud SDK
+            uses: 'google-github-actions/setup-gcloud@v2'
 
-          - name: Build Next.js app
-            run: npm run build # Re-build or download artifact; re-build is simpler for App Hosting
+          - name: Install Firebase CLI
+            run: npm install -g firebase-tools
 
+          # Note: The exact commands for deploying to Firebase App Hosting via CLI
+          # might involve 'firebase apphosting:backends:update' or similar.
+          # This is a conceptual step; refer to latest Firebase App Hosting documentation.
+          # The apphosting.yaml file in the repository will guide the deployment.
           - name: Deploy to Firebase App Hosting
-            uses: FirebaseExtended/action-hosting-deploy@v0 # Or specific App Hosting deploy action
-            with:
-              repoToken: '${{ secrets.GITHUB_TOKEN }}'
-              firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ISA_PROJECT }}' # Secret for your Firebase project
-              projectId: 'your-firebase-project-id' # Replace with actual project ID
-              channelId: live # Deploy to live channel; consider 'preview' for PRs
+            run: |
+              firebase deploy --only apphosting --project ${{ secrets.FIREBASE_PROJECT_ID }} -m "GitHub Actions Deploy: ${{ github.sha }}" --non-interactive
+            env:
+              FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN_FOR_CI }} # Alternative to service account for CLI, or use service account with gcloud
+              
     ```
-*   **Key Pipeline Components:**
-    *   **Triggers:** Runs on pushes and pull requests to the `main` branch.
-    *   **Jobs:**
-        *   `build_and_test`: Checks out code, sets up Node.js, installs dependencies, runs linters and type checks (`npm test`), and builds the Next.js application.
-        *   `deploy_to_firebase_app_hosting`: Deploys the application to Firebase App Hosting upon a push to `main`, after successful build and test.
+*   **Key Pipeline Components (Updated for App Hosting):**
+    *   Builds, lints, and tests the Next.js application.
+    *   Deploys to Firebase App Hosting using Firebase CLI commands (the exact command sequence may need verification with latest App Hosting CLI features, e.g., `firebase deploy --only apphosting`). `apphosting.yaml` in the repo defines the backend.
 *   **Secrets Required in GitHub:**
-    *   `FIREBASE_SERVICE_ACCOUNT_ISA_PROJECT`: A JSON service account key for your Firebase project with permissions to deploy to App Hosting. This should be stored as a secure secret in GitHub repository settings.
+    *   `FIREBASE_SERVICE_ACCOUNT_ISA_PROJECT`: A JSON service account key for your Firebase project with permissions to deploy to App Hosting (used by `google-github-actions/auth`).
+    *   `FIREBASE_PROJECT_ID`: Your Firebase Project ID.
+    *   `FIREBASE_TOKEN_FOR_CI`: (Optional, if using Firebase token for CLI) A Firebase CI token.
 *   **Next Steps:**
-    *   Manually create the `.github/workflows/main.yml` file in the GitHub repository.
-    *   Configure the `FIREBASE_SERVICE_ACCOUNT_ISA_PROJECT` secret in the GitHub repository.
-    *   Replace `'your-firebase-project-id'` with the actual Firebase Project ID.
-    *   Implement actual test scripts and uncomment/add the "Run Unit/Integration Tests" step when tests are available.
-    *   Consider separate workflows or conditional steps for deploying to different environments (dev, staging, prod) if needed.
-*   **Scripts:**
-    *   Added `test: "npm run lint && npm run typecheck"` to `package.json`.
+    *   Manually create `.github/workflows/main.yml`.
+    *   Configure required secrets in GitHub repository settings.
+    *   Verify exact Firebase CLI commands for App Hosting deployment.
+*   **Scripts Added:**
+    *   `test: "npm run lint && npm run typecheck"` in `package.json`.
 
 **5. Configure Basic Monitoring & Alerting (Documentation)**
 *   **Date:** October 26, 2023
-*   **Objective:** Document recommendations for monitoring and alerting to be manually configured in Firebase/GCP consoles.
-*   **Rationale:** While direct configuration is outside file-editing scope, providing guidance ensures operational visibility is considered, aligning with Phase 1.A.1.
+*   **Objective:** Document recommendations for monitoring and alerting in Firebase/GCP.
+*   **Rationale:** Ensures operational visibility. Aligns with Phase 1.A.1.
 *   **Recommendations Documented:**
-    *   **Firebase Console Dashboards:** Utilize for overview of Hosting, Functions, Firestore (usage, performance, errors).
-    *   **Google Cloud Monitoring:**
-        *   Track key metrics: Cloud Function invocation rates, error percentages, execution durations (especially for Genkit flows), and latencies. Track API latencies for Server Actions. Monitor Hosting availability and request latency.
-        *   Consider metrics for Firestore (read/write ops, active connections) and any other GCP services used.
-    *   **Alerting:**
-        *   Set up basic alerts in Google Cloud Monitoring for critical errors in Cloud Functions (e.g., high error rate spikes).
-        *   Alert on sustained high latencies for key AI flows or user-facing endpoints.
-        *   Alert on Hosting availability issues.
-    *   **Genkit Tracing:** Emphasize the use of Genkit's built-in tracing capabilities (viewable in the Genkit Developer UI locally) for debugging AI flows. For production, recommend integrating with a dedicated tracing system like LangSmith or Google Cloud Trace for persistent and detailed traces.
-    *   **Logging:**
-        *   Ensure structured logging from Cloud Functions and Server Actions to Google Cloud Logging for easier querying and analysis.
-        *   Log key events, input parameters (sanitized if sensitive), and outcomes of AI flows.
+    *   Firebase Console Dashboards (App Hosting, Functions if separate, Firestore).
+    *   Google Cloud Monitoring for key metrics (App Hosting service health, invocation rates, error percentages, latencies for Genkit flows/Server Actions).
+    *   Alerting for critical errors, high latencies, App Hosting availability.
+    *   Genkit Tracing and potential integration with LangSmith or Google Cloud Trace.
+    *   Structured logging from Server Actions to Google Cloud Logging.
 
 **6. Refine Error Handling for AI Flows**
 *   **Date:** October 26, 2023
 *   **Objective:** Standardize error handling and user feedback for AI flow interactions.
 *   **Changes:**
-    *   **`src/lib/actions/ai-actions.ts`**: Updated catch blocks in all server actions to:
-        *   Consistently use `console.error` for logging unexpected errors.
-        *   Return more user-friendly and specific fallback error messages (e.g., "An unexpected error occurred while processing your Q&A request. Please try again.").
-    *   **`src/components/features/ai-output-card.tsx`**:
-        *   Imported `AlertTriangle` icon from `lucide-react`.
-        *   When displaying an error, the `CardTitle` now includes the `AlertTriangle` icon for better visual prominence of the error state.
-        *   The `data` prop in `AiOutputCardProps` was made nullable (`T | null`) to better reflect its state.
-*   **Rationale:** Improves the robustness and user experience of error handling. Consistent server-side logging aids debugging, while clearer client-side messages and visual cues help users understand when something has gone wrong. Aligns with overall foundational strengthening.
-*   **Files Modified:** `src/lib/actions/ai-actions.ts`, `src/components/features/ai-output-card.tsx`.
+    *   **`src/lib/actions/ai-actions.ts`**: Updated catch blocks to use `console.error` and return more user-friendly, specific fallback error messages. Ensured AI flows themselves now return structured error outputs instead of throwing.
+    *   **`src/components/features/ai-output-card.tsx`**: Imported `AlertTriangle` icon. CardTitle includes the icon for error states. `data` prop made nullable.
+    *   **AI Flows (e.g., `answer-gs1-questions.ts`, `conduct-independent-research.ts`, `detect-standard-errors.ts`)**: Modified to check for `null` or `undefined` `output` from prompt calls and return a structured error object conforming to the flow's output schema, rather than relying on `output!`.
+*   **Rationale:** Improves robustness and user experience of error handling. Consistent server-side logging aids debugging. Aligns with overall foundational strengthening.
+*   **Files Modified:** `src/lib/actions/ai-actions.ts`, `src/components/features/ai-output-card.tsx`, `src/ai/flows/answer-gs1-questions.ts`, `src/ai/flows/conduct-independent-research.ts`, `src/ai/flows/detect-standard-errors.ts`.
 
 **7. Review `package.json` for Technical Debt**
 *   **Date:** October 26, 2023
-*   **Objective:** Perform a quick review of `package.json` for obvious technical debt or improvements.
+*   **Objective:** Quick review for obvious technical debt.
 *   **Findings:**
-    *   The deprecated `@types/handlebars` was already removed in a previous step.
-    *   No other immediate deprecations or problematic versions were identified.
-    *   NPM scripts (`dev`, `build`, `lint`, `typecheck`, `test`, `genkit:dev`, `genkit:watch`) are standard and well-defined.
-    *   The presence of `patch-package` is noted. This indicates a specific patch is applied to a dependency, which might require attention during future dependency updates. No action is taken on this now.
-*   **Rationale:** Regular review of dependencies and scripts helps maintain project health. No immediate code changes were required for `package.json` itself.
+    *   Deprecated `@types/handlebars` was already removed.
+    *   No other immediate deprecations or problematic versions identified.
+    *   NPM scripts are standard.
+    *   Presence of `patch-package` noted for future dependency update awareness.
+*   **Rationale:** Regular review maintains project health. No immediate code changes needed for `package.json`.
 *   **Files Modified:** None.
 
 **8. Complete UI for Error Detection Page**
 *   **Date:** October 26, 2023
-*   **Objective:** Bring the UI for the Error Detection page in line with other feature pages by adding an introductory card with title, description, and a placeholder image.
+*   **Objective:** Align Error Detection page UI with other feature pages.
 *   **Changes:**
-    *   Modified `src/app/(isa)/analysis/error-detection/page.tsx`: Added an introductory `Card` component with `CardHeader` (title, description) and `CardContent` (placeholder `next/image`).
-*   **Rationale:** Ensures UI consistency across primary feature pages, improving overall polish.
+    *   Modified `src/app/(isa)/analysis/error-detection/page.tsx`: Added introductory `Card` with `CardHeader` (title, description) and `CardContent` (placeholder `next/image`).
+*   **Rationale:** Ensures UI consistency.
 *   **Files Modified:** `src/app/(isa)/analysis/error-detection/page.tsx`.
 
 #### A.2. Key Feature Enhancements (e.g., RAG, Basic Agentic Flows)
 
 **1. Enhance `webSearch` Tool in `conductIndependentResearch` Flow**
 *   **Date:** October 26, 2023
-*   **Objective:** Make the `webSearch` Genkit tool more realistic by defining a structured output and updating the flow's prompt and output schema to utilize this structured information. This is a precursor to integrating a real search API. The mock tool's data was also diversified, and the main prompt refined to better guide iterative searching and synthesis.
+*   **Objective:** Make `webSearch` Genkit tool more realistic, precursor to real API integration. Diversified mock data and refined prompt for iterative searching.
 *   **Changes:**
     *   Modified `src/ai/flows/conduct-independent-research.ts`:
-        *   The `webSearch` tool's `outputSchema` changed from `z.object({ results: z.array(z.string()) })` to `WebSearchOutputSchema` (an alias for `z.object({ searchResults: z.array(SearchResultItemSchema) })`), where `SearchResultItemSchema` is `z.object({ title: z.string(), link: z.string().url(), snippet: z.string() })`.
-        *   The mock implementation of `webSearch` was updated to return data conforming to this new structured schema, with more varied placeholder content, and ensuring at least one result is always returned.
-        *   Comments were added about future real API integration and API key management.
-        *   The `ConductIndependentResearchOutputSchema`'s `sources` field was updated from `z.array(z.string())` to `z.array(z.object({ title: z.string(), url: z.string().url() }))`.
-        *   The main prompt (`conductIndependentResearchPrompt`) was significantly updated to instruct the LLM on how to:
-            *   Formulate 2-3 diverse search queries.
-            *   Iterate through the structured `searchResults` from each query.
-            *   Synthesize `collectedInformation` from all search results (titles, links, snippets).
-            *   Extract `title` and `url` for the `sources` output field.
-            *   Formulate insightful research questions based on the synthesized information.
-*   **Rationale:** This enhancement moves the `conductIndependentResearch` flow closer to production readiness by simulating a more realistic interaction with a search tool and guiding the LLM through a more structured, iterative research process. It improves the quality and structure of data the LLM works with and prepares the system for easier integration with an actual search API. This aligns with Phase 1.A.2 of the Strategic Roadmap ("Implement Real webSearch Tool" and "Basic Agentic Behavior with Genkit"). The current structure and prompt instructions for the `conductIndependentResearch` flow, with its multi-query guidance and synthesis steps, satisfy the Phase 1 requirement for "Basic Agentic Behavior with Genkit." The mock data was also enhanced for better testing of the LLM's synthesis capabilities.
+        *   `webSearch` tool's `outputSchema` changed to `WebSearchOutputSchema` (array of `SearchResultItemSchema` with `title`, `link`, `snippet`).
+        *   Mock implementation updated to return structured data, more varied content, and ensure at least one result.
+        *   Comments added about future real API integration.
+        *   `ConductIndependentResearchOutputSchema`'s `sources` field updated to array of objects with `title` and `url`.
+        *   Main prompt (`conductIndependentResearchPrompt`) updated to instruct LLM on formulating diverse queries, iterating through structured search results, synthesizing `collectedInformation`, extracting `sources`, and formulating research questions.
+*   **Rationale:** Moves flow closer to production readiness, improves quality of data LLM works with, and prepares for actual search API. Satisfies Phase 1 "Basic Agentic Behavior with Genkit."
 *   **Files Modified:** `src/ai/flows/conduct-independent-research.ts`.
 
 **2. Enhance `answerGs1Questions` for Structured RAG Input & Citation**
 *   **Date:** October 26, 2023
-*   **Objective:** Modify the `answerGs1Questions` flow to accept structured document chunks and enable the AI to cite sources in its answers, moving towards a more mature RAG pipeline. This includes asking the AI to generate its reasoning steps and allowing users to provide optional metadata.
+*   **Objective:** Modify flow to accept structured document chunks and enable AI to cite sources and generate reasoning steps.
 *   **Changes:**
-    *   **`src/ai/schemas.ts`**:
-        *   `DocumentChunkSchema` (content, sourceName, pageNumber, sectionTitle) was defined/centralized.
-        *   `AnswerGs1QuestionsInputSchema` updated to expect `documentChunks: z.array(DocumentChunkSchema)` instead of `documentContent: z.string()`.
-    *   **`src/ai/flows/answer-gs1-questions.ts`**:
-        *   Input type updated to use the new schema.
-        *   `AnswerGs1QuestionsOutputSchema` now includes `citedSources: z.array(CitedSourceSchema).optional()` and `reasoningSteps: z.array(z.string()).optional()`. `CitedSourceSchema` mirrors the metadata fields of `DocumentChunkSchema`.
-        *   The prompt was revised to:
-            *   Iterate through `documentChunks` using Handlebars `{{#each}}`.
-            *   Display `content`, `sourceName`, `pageNumber`, and `sectionTitle` for each chunk to the LLM.
-            *   Instruct the LLM to base its answer solely on provided content, to populate the `citedSources` output field, and to generate `reasoningSteps`.
-    *   **`src/lib/actions/ai-actions.ts`**:
-        *   `handleAnswerGs1Questions` now expects `QaPageFormValues` (with `documentContent: string` and `question: string`, plus optional metadata fields `sourceName`, `pageNumber`, `sectionTitle`) from the client.
-        *   It transforms the input into a single-element `documentChunks` array, using user-provided metadata if available or defaults if not, before passing it to the `answerGs1Questions` flow. This maintains UI simplicity for now while preparing the backend.
-    *   **`src/lib/types.ts`**: Updated to reflect schema changes.
-    *   **`src/app/(isa)/qa/page.tsx`**:
-        *   The form schema (`qaFormSchema`) updated to include optional `sourceName`, `pageNumber` (as string), and `sectionTitle`. New input fields added.
-        *   The `renderOutput` function was updated to display `citedSources` using Badges if present.
-        *   The `extractExplainability` function was updated to use the `reasoningSteps` from the AI's output if available, while still mocking confidence and other metrics.
-*   **Rationale:** This is a significant step towards a mature RAG system as outlined in Phase 1.A.2 ("Mature Core RAG Pipeline") and "Initial Explainability Features". By structuring the input as document chunks with metadata, ISA can provide more precise source citations, enhancing traceability and user trust. The generation of reasoning steps directly by the LLM makes the explainability feature more genuine. The transformation in the server action allows backend progress without immediate complex UI changes for chunk management.
+    *   **`src/ai/schemas.ts`**: `DocumentChunkSchema` defined/centralized. `AnswerGs1QuestionsInputSchema` updated to expect `documentChunks: z.array(DocumentChunkSchema)`.
+    *   **`src/ai/flows/answer-gs1-questions.ts`**: Input type updated. `AnswerGs1QuestionsOutputSchema` now includes `citedSources` and `reasoningSteps`. Prompt revised to iterate `documentChunks`, display metadata to LLM, and instruct on citation and reasoning.
+    *   **`src/lib/actions/ai-actions.ts`**: `handleAnswerGs1Questions` now expects `QaPageFormValues` (with optional metadata), transforms input into single-element `documentChunks` array.
+    *   **`src/lib/types.ts`**: Updated.
+    *   **`src/app/(isa)/qa/page.tsx`**: Form schema (`qaFormSchema`) updated for optional metadata inputs. `renderOutput` displays `citedSources`. `extractExplainability` uses `reasoningSteps`.
+*   **Rationale:** Significant step towards mature RAG (Phase 1.A.2 "Mature Core RAG Pipeline") and "Initial Explainability Features." Enhances traceability and user trust.
 *   **Files Modified/Affected:** `src/ai/schemas.ts`, `src/ai/flows/answer-gs1-questions.ts`, `src/lib/actions/ai-actions.ts`, `src/lib/types.ts`, `src/app/(isa)/qa/page.tsx`.
 
 **3. Prototype Embedding Generation Flow**
 *   **Date:** October 26, 2023
-*   **Objective:** Create a conceptual Genkit flow to represent the process of generating embeddings for document chunks, laying the groundwork for the data ingestion part of the RAG pipeline.
+*   **Objective:** Create conceptual Genkit flow for generating embeddings.
 *   **Changes:**
-    *   Created `src/ai/flows/generate-document-embeddings.ts`:
-        *   Defines `GenerateDocumentEmbeddingsInputSchema` (expects an array of `DocumentChunkSchema`).
-        *   Defines `GenerateDocumentEmbeddingsOutputSchema` (outputs an array of `DocumentChunkWithEmbeddingSchema`, where each chunk includes a simulated `embedding` vector).
-        *   The `generateDocumentEmbeddingsFlow` iterates through input chunks and uses a mock Genkit tool (`mockEmbeddingGeneratorTool`) to simulate generating an embedding for each chunk's content.
-        *   Comments within the flow indicate where a real embedding model (e.g., from Vertex AI Embeddings API) would be called.
-    *   Updated `src/ai/schemas.ts` to include `GenerateDocumentEmbeddingsInputSchema` and ensure `DocumentChunkSchema` is used consistently.
-    *   Updated `src/ai/flows/index.ts` and `src/ai/dev.ts` to include the new flow.
-    *   Updated `src/lib/types.ts` to include the new input/output types.
-*   **Rationale:** This flow serves as a structural placeholder and conceptual model for how ISA will handle the critical step of generating embeddings from document content. It prepares for future integration with actual embedding models (like Google's `text-embedding-preview-0409`) and subsequent storage in a vector database. This aligns with Phase 1.A.2 ("Mature Core RAG Pipeline") by addressing a key component of the "Ultimate Quality ETL" process.
+    *   Created `src/ai/flows/generate-document-embeddings.ts`: Defines input/output schemas (`GenerateDocumentEmbeddingsInputSchema`, `GenerateDocumentEmbeddingsOutputSchema` with `DocumentChunkWithEmbeddingSchema`). Flow uses a mock `mockEmbeddingGeneratorTool` to simulate embedding generation. Comments indicate where real embedding model would be called.
+    *   Updated `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
+*   **Rationale:** Structural placeholder for embedding generation, preparing for actual embedding models and vector database integration (Phase 1.A.2 "Mature Core RAG Pipeline").
 *   **Files Created/Modified:** `src/ai/flows/generate-document-embeddings.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
 
 **4. Enhance "Error Detection" Flow with AI-Generated Reasoning Steps**
 *   **Date:** October 26, 2023
-*   **Objective:** Improve the explainability of the Error Detection feature by having the AI generate its own reasoning steps, similar to the Q&A flow.
+*   **Objective:** Improve explainability by having AI generate reasoning steps.
 *   **Changes:**
-    *   Modified `src/ai/flows/detect-standard-errors.ts`:
-        *   Added `reasoningSteps: z.array(z.string()).optional().describe('The steps the AI took to identify the issues and arrive at the summary and suggestions.')` to `DetectStandardErrorsOutputSchema`.
-        *   Updated the prompt to instruct the LLM to generate these `reasoningSteps`.
-    *   Modified `src/app/(isa)/analysis/error-detection/page.tsx`:
-        *   Updated `extractExplainability` function to use `data.reasoningSteps` from the AI output.
-*   **Rationale:** This brings more genuine explainability to another core feature, aligning with the Phase 1.A.2 goal of "Initial Explainability Features" and moving beyond mocked data.
+    *   Modified `src/ai/flows/detect-standard-errors.ts`: Added `reasoningSteps` to `DetectStandardErrorsOutputSchema`. Updated prompt to instruct LLM generation.
+    *   Modified `src/app/(isa)/analysis/error-detection/page.tsx`: Updated `extractExplainability` to use `data.reasoningSteps`.
+*   **Rationale:** More genuine explainability, aligns with Phase 1.A.2 "Initial Explainability Features."
 *   **Files Modified:** `src/ai/flows/detect-standard-errors.ts`, `src/app/(isa)/analysis/error-detection/page.tsx`.
 
 **5. Enhance UI with Placeholder Images**
 *   **Date:** October 26, 2023
-*   **Objective:** Add placeholder images to key feature pages for improved visual appeal and to adhere to project guidelines regarding `next/image` and `data-ai-hint` attributes.
+*   **Objective:** Add placeholder images to key feature pages.
 *   **Changes:**
     *   Modified `src/app/(isa)/qa/page.tsx`, `src/app/(isa)/analysis/standards/page.tsx`, `src/app/(isa)/analysis/error-detection/page.tsx`, `src/app/(isa)/research/page.tsx`, and `src/app/(isa)/transformation/nl-to-formal/page.tsx`.
-    *   Imported `next/image` and added an `Image` component to the introductory `Card` on each of these pages.
-    *   Used `https://placehold.co/800x300.png` as the source.
-    *   Included descriptive `alt` text and relevant `data-ai-hint` attributes (e.g., "knowledge document", "analysis structure").
-*   **Rationale:** Improves the visual presentation of core feature pages, aligns with established coding guidelines, and sets a pattern for future image integration. This is a minor UI enhancement contributing to the overall polish of the application.
+    *   Added `next/image` component with `https://placehold.co/800x300.png`, `alt` text, and `data-ai-hint`.
+*   **Rationale:** Improves visual presentation, aligns with coding guidelines.
 *   **Files Modified:** `src/app/(isa)/qa/page.tsx`, `src/app/(isa)/analysis/standards/page.tsx`, `src/app/(isa)/analysis/error-detection/page.tsx`, `src/app/(isa)/research/page.tsx`, `src/app/(isa)/transformation/nl-to-formal/page.tsx`.
 
 **6. Refactor: Consolidate DocumentChunkSchema**
 *   **Date:** October 26, 2023
-*   **Objective:** Centralize the `DocumentChunkSchema` definition for improved maintainability.
+*   **Objective:** Centralize `DocumentChunkSchema` definition.
 *   **Changes:**
-    *   The primary definition of `DocumentChunkSchema` and its associated type `DocumentChunk` was moved to `src/ai/schemas.ts`.
-    *   `src/ai/flows/generate-document-embeddings.ts` was updated to import `DocumentChunkSchema` from `src/ai/schemas.ts` instead of defining it locally.
-    *   Ensured all other files that reference `DocumentChunkSchema` (e.g., `src/ai/tools/vector-store-tools.ts`) point to the canonical definition in `src/ai/schemas.ts`.
-*   **Rationale:** Promotes a single source of truth for this fundamental schema, improving code clarity and reducing redundancy. This aligns with general software engineering best practices for maintainability.
+    *   Primary definition of `DocumentChunkSchema` moved to `src/ai/schemas.ts`.
+    *   `src/ai/flows/generate-document-embeddings.ts` and `src/ai/tools/vector-store-tools.ts` updated to import from `src/ai/schemas.ts`.
+*   **Rationale:** Single source of truth, improves maintainability.
 *   **Files Modified:** `src/ai/schemas.ts`, `src/ai/flows/generate-document-embeddings.ts`, `src/ai/tools/vector-store-tools.ts`.
 
 **7. Detail "Ultimate Quality ETL Process" Planning for RAG**
 *   **Date:** October 26, 2023
-*   **Objective:** Architecturally outline the key steps and considerations for a high-fidelity Extract, Transform, Load (ETL) pipeline necessary for a mature RAG system.
+*   **Objective:** Architecturally outline key steps for a high-fidelity ETL pipeline for RAG.
 *   **Changes:**
-    *   Expanded the "Mature Core RAG Pipeline" section within Phase 1.A.2 in `docs/blueprint.md`.
-    *   Detailed the conceptual stages of the ETL process:
-        *   **Source Document Ingestion:** e.g., GS1 documents (PDFs, XML) uploaded to Cloud Storage, triggering processing via Eventarc.
-        *   **Preprocessing & Parsing:** Leveraging Document AI for accurate text, table, and layout extraction from complex PDFs. Strategies for handling other formats (XML, DOCX).
-        *   **Intelligent Chunking:** Discussed various strategies (fixed-size, recursive, semantic, content-aware like section/table breaks) to optimize chunk relevance and context preservation.
-        *   **Metadata Extraction & Enrichment:** Emphasized capturing comprehensive metadata (source ID, version, title, page numbers, section titles, table IDs, etc.) to support filtered retrieval and citation.
-        *   **Embedding Generation:** Referencing the conceptual `generateDocumentEmbeddingsFlow` and the intended use of Vertex AI Embeddings API.
-        *   **Vector Store Ingestion:** Outlining the process of loading embeddings and their metadata into target vector stores like Vertex AI Vector Search or AlloyDB AI.
-        *   **Orchestration:** Mentioning potential orchestration tools like Cloud Functions, Cloud Dataflow, or Vertex AI Pipelines.
-*   **Rationale:** This detailed planning aligns with the strategic roadmap's ambition for an "Ultimate Quality ETL" process. It provides a clear architectural vision for how ISA will ingest and prepare standards documents for effective use in advanced RAG applications, serving as a foundation for future implementation work in Phase 2. This directly supports the goal of providing accurate, traceable, and contextually rich information to users.
+    *   Expanded "Mature Core RAG Pipeline" section in `docs/blueprint.md`.
+    *   Detailed conceptual stages: Source Document Ingestion (Cloud Storage, Eventarc), Preprocessing & Parsing (Document AI), Intelligent Chunking, Metadata Extraction & Enrichment, Embedding Generation (Vertex AI Embeddings API), Vector Store Ingestion (Vertex AI Vector Search/AlloyDB AI), Orchestration (Cloud Functions/Dataflow/Vertex AI Pipelines).
+*   **Rationale:** Provides clear architectural vision for RAG data ingestion, supporting Phase 2 goals.
 *   **Files Modified:** `docs/blueprint.md`.
 
 ### Phase 2: Infrastructure Maturation & Advanced Feature Integration
@@ -533,50 +311,33 @@ This section will chronologically log significant development activities, decisi
 
 **1. Conceptual AI Tool Design for Vector Store Interaction**
 *   **Date:** October 26, 2023
-*   **Objective:** Architecturally outline how Genkit tools would facilitate interaction with a vector store, a key component for advanced RAG.
+*   **Objective:** Architecturally outline Genkit tool interaction with a vector store.
 *   **Changes:**
-    *   Created `src/ai/tools/vector-store-tools.ts`:
-        *   Defines `QueryVectorStoreInputSchema` (input: query string, topK results).
-        *   Defines `QueryVectorStoreOutputSchema` (output: array of `DocumentChunkSchema`).
-        *   Defines a conceptual `queryVectorStoreTool` using `ai.defineTool`.
-        *   The tool's mock implementation simulates generating an embedding for the query and retrieving relevant document chunks.
-        *   Comments explicitly state this is a MOCK and would integrate with services like Vertex AI Vector Search or AlloyDB AI.
-    *   Created `src/ai/tools/index.ts` to export tools from this new directory.
-*   **Rationale:** This conceptual step prepares for Phase 2's focus on scaling vector data storage. By defining the tool interface, we can start to envision how flows like `answerGs1Questions` might evolve to call such a tool to retrieve context dynamically, rather than relying solely on user-provided input. This makes the RAG pipeline more sophisticated and scalable. The actual implementation of vector store integration, data ingestion, and embedding generation for the store are larger, subsequent tasks.
+    *   Created `src/ai/tools/vector-store-tools.ts`: Defines `QueryVectorStoreInputSchema`, `QueryVectorStoreOutputSchema`, and a conceptual `queryVectorStoreTool` (mocked).
+    *   Created `src/ai/tools/index.ts` to export tools.
+*   **Rationale:** Prepares for Phase 2 vector data storage and advanced RAG.
 *   **Files Created/Modified:** `src/ai/tools/vector-store-tools.ts`, `src/ai/tools/index.ts`.
 
 **2. Conceptual Flow for RAG with Vector Store Integration**
 *   **Date:** October 26, 2023
-*   **Objective:** Architecturally demonstrate how a Q&A flow would use a vector store tool for dynamic context retrieval.
+*   **Objective:** Architecturally demonstrate Q&A flow using a vector store tool.
 *   **Changes:**
-    *   Created `src/ai/flows/answer-gs1-questions-with-vector-search.ts`:
-        *   Defines `AnswerGs1QuestionsWithVectorSearchInputSchema` (input: question string, topK).
-        *   The initial implementation explicitly called `queryVectorStoreTool` to retrieve `documentChunks`, then passed these to a separate prompt for answer generation.
-        *   **Refinement (Later on October 26):** The flow was refactored. It now invokes a single main prompt (`vectorSearchAgentPrompt`). This prompt is provided with the `queryVectorStoreTool` and is instructed by its system message to:
-            1. Use the `queryVectorStoreTool` to retrieve document chunks.
-            2. Synthesize an answer based on these chunks (or state if no chunks were found).
-            3. Populate `citedSources` and `reasoningSteps`.
-        *   The output schema is `AnswerGs1QuestionsWithVectorSearchOutputSchema`, mirroring the structure of `AnswerGs1QuestionsOutputSchema`.
-    *   Updated `src/ai/schemas.ts` to include the new input schema.
-    *   Updated `src/ai/flows/index.ts`, `src/ai/dev.ts`, and `src/lib/types.ts` to include the new flow and its types.
-*   **Rationale:** This conceptual flow serves as a clear code example of how future RAG pipelines in ISA will integrate with a vector store for dynamic, relevant context retrieval. The refactoring to an LLM-driven tool call explores Genkit's agentic capabilities, aligning with the roadmap's goals for advanced AI interaction, even if explicit retrieval might be more direct for pure RAG. It directly illustrates the intended use of tools like `queryVectorStoreTool` and informs the design for Phase 2 infrastructure and flow development. This flow is not yet integrated into the UI.
+    *   Created `src/ai/flows/answer-gs1-questions-with-vector-search.ts`: Defines input schema. Initial version called `queryVectorStoreTool` then a separate prompt.
+    *   **Refinement:** Flow refactored to invoke a single main prompt (`vectorSearchAgentPrompt`) which is provided the `queryVectorStoreTool` and instructed to use it for chunk retrieval before answer synthesis.
+    *   Updated `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
+*   **Rationale:** Conceptual flow for RAG with dynamic context retrieval. Refactoring explores Genkit's agentic capabilities.
 *   **Files Created/Modified:** `src/ai/flows/answer-gs1-questions-with-vector-search.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
 
 **3. UI for Conceptual Q&A with Vector Search Flow**
 *   **Date:** October 26, 2023
-*   **Objective:** Create a user interface to interact with the conceptual `answerGs1QuestionsWithVectorSearch` flow, making the advanced RAG pattern user-testable even with a mocked vector store.
+*   **Objective:** Create UI to interact with the conceptual `answerGs1QuestionsWithVectorSearch` flow.
 *   **Changes:**
-    *   Created `src/app/(isa)/advanced/qa-vector-search/page.tsx`:
-        *   Implemented a form using `ClientAiForm` to take user's question and optional `topK` parameter.
-        *   The page calls a new server action `handleAnswerGs1QuestionsWithVectorSearch`.
-        *   Displays the AI's answer, cited sources (from the simulated vector search), and reasoning steps.
-        *   Includes a clear notice that the vector search functionality is currently mocked.
-    *   Updated `src/lib/actions/ai-actions.ts` to include `handleAnswerGs1QuestionsWithVectorSearch` which calls the `answerGs1QuestionsWithVectorSearch` Genkit flow.
-    *   Updated `src/components/layout/sidebar-nav-items.tsx` to add "Q&A (Vector Search)" under "Advanced Tools".
-*   **Rationale:** This provides a tangible way to test and demonstrate the logic of a RAG pipeline that uses dynamic context retrieval from a vector store. It makes the architectural groundwork more concrete and allows for early feedback on the user experience for such a feature, even before the actual vector store infrastructure is in place. This aligns with iterative development and preparing for Phase 2.
+    *   Created `src/app/(isa)/advanced/qa-vector-search/page.tsx`: Implemented `ClientAiForm` for question and `topK`, calls `handleAnswerGs1QuestionsWithVectorSearch`, displays output, notes mocked functionality.
+    *   Updated `src/lib/actions/ai-actions.ts` with `handleAnswerGs1QuestionsWithVectorSearch`.
+    *   Updated `src/components/layout/sidebar-nav-items.tsx` to add "Q&A (Vector Search)" to navigation.
+*   **Rationale:** Makes advanced RAG pattern user-testable conceptually, allows early feedback.
 *   **Files Created/Modified:** `src/app/(isa)/advanced/qa-vector-search/page.tsx`, `src/lib/actions/ai-actions.ts`, `src/components/layout/sidebar-nav-items.tsx`.
 
 
 ---
 *This document will be updated continuously as development progresses.*
-

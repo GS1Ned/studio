@@ -73,7 +73,14 @@ const answerGs1QuestionsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      console.error('answerGs1QuestionsPrompt did not return a valid output.');
+      return {
+        answer: 'An error occurred while generating the answer. The AI model failed to produce a structured response. Please try again.',
+        citedSources: [],
+        reasoningSteps: ['AI model failed to produce a structured response.'],
+      };
+    }
+    return output;
   }
 );
-
