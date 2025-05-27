@@ -44,7 +44,25 @@ const DetectStandardErrorsOutputSchema = z.object({
 export type DetectStandardErrorsOutput = z.infer<typeof DetectStandardErrorsOutputSchema>;
 
 export async function detectStandardErrors(input: DetectStandardErrorsInput): Promise<DetectStandardErrorsOutput> {
-  return detectStandardErrorsFlow(input);
+  try {
+    const {output} = await detectStandardErrorsPrompt(input);
+    if (!output) {
+      console.error('detectStandardErrorsPrompt did not return a valid output.');
+      return {
+        detectedIssues: [],
+        summary: 'Error analysis could not be completed due to an internal AI model issue. Please try again.',
+        reasoningSteps: ['AI model failed to produce a structured response for error detection.'],
+      };
+    }
+    return output;
+  } catch (error) {
+    console.error("Error in detectStandardErrors flow:", error);
+    return {
+      detectedIssues: [],
+      summary: "An unexpected error occurred during error detection. Please check the input or try again later.",
+      reasoningSteps: ["An unexpected error occurred in the AI flow."]
+    };
+  }
 }
 
 const detectStandardErrorsPrompt = ai.definePrompt({
@@ -86,22 +104,5 @@ Structure your output according to the provided JSON schema. Focus on actionable
 `,
 });
 
-const detectStandardErrorsFlow = ai.defineFlow(
-  {
-    name: 'detectStandardErrorsFlow',
-    inputSchema: DetectStandardErrorsInputSchema,
-    outputSchema: DetectStandardErrorsOutputSchema,
-  },
-  async input => {
-    const {output} = await detectStandardErrorsPrompt(input);
-    if (!output) {
-      console.error('detectStandardErrorsPrompt did not return a valid output.');
-      return {
-        detectedIssues: [],
-        summary: 'Error analysis could not be completed due to an internal AI model issue. Please try again.',
-        reasoningSteps: ['AI model failed to produce a structured response for error detection.'],
-      };
-    }
-    return output;
-  }
-);
+// Previous flow definition removed for brevity and direct error handling in exported function
+// const detectStandardErrorsFlow = ai.defineFlow( ... );

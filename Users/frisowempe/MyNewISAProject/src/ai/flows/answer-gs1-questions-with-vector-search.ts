@@ -16,13 +16,13 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { AnswerGs1QuestionsWithVectorSearchInputSchema, DocumentChunkSchema } from '@/ai/schemas'; // Ensure DocumentChunkSchema is available
+import { AnswerGs1QuestionsWithVectorSearchInputSchema, DocumentChunkSchema } from '@/ai/schemas'; 
 import { queryVectorStoreTool } from '@/ai/tools/vector-store-tools';
 
-// Re-export input type
+
 export type AnswerGs1QuestionsWithVectorSearchInput = z.infer<typeof AnswerGs1QuestionsWithVectorSearchInputSchema>;
 
-// Define Output Schema (consistent structure for AI answers)
+
 const CitedSourceSchema = z.object({
   sourceName: z.string().describe('The name or identifier of the cited source document.'),
   pageNumber: z.number().optional().describe('The page number in the cited source document.'),
@@ -37,25 +37,24 @@ const AnswerGs1QuestionsWithVectorSearchOutputSchema = z.object({
 });
 export type AnswerGs1QuestionsWithVectorSearchOutput = z.infer<typeof AnswerGs1QuestionsWithVectorSearchOutputSchema>;
 
-// Simple mock embedding generator for the query
+
 async function generateMockQueryEmbedding(queryText: string): Promise<number[]> {
   console.log(`[MOCK] Generating embedding for query: "${queryText}"`);
-  // Simulate a fixed-dimension embedding vector (e.g., 10 dimensions)
-  await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50)); // Simulate small delay
+  await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50)); 
   return Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4)));
 }
 
-// Define the schema for the input to the synthesis prompt
+
 const SynthesisPromptInputSchema = z.object({
   question: z.string(),
   documentChunks: z.array(DocumentChunkSchema),
 });
 
-// This prompt synthesizes an answer from given chunks. It does not call tools.
+
 const synthesizeAnswerFromChunksPrompt = ai.definePrompt({
   name: 'synthesizeAnswerFromChunksPrompt',
   input: { schema: SynthesisPromptInputSchema },
-  output: { schema: AnswerGs1QuestionsWithVectorSearchOutputSchema.omit({ retrievedChunksCount: true }) }, // LLM provides answer, sources, reasoning
+  output: { schema: AnswerGs1QuestionsWithVectorSearchOutputSchema.omit({ retrievedChunksCount: true }) }, 
   prompt: `You are an AI assistant that answers questions about GS1 standards based *only* on the provided document content snippets.
 
 Provided Document Chunks:
@@ -90,30 +89,27 @@ export async function answerGs1QuestionsWithVectorSearch(
   input: AnswerGs1QuestionsWithVectorSearchInput
 ): Promise<AnswerGs1QuestionsWithVectorSearchOutput> {
   try {
-    // Step 1: Simulate generating an embedding for the input question
+    
     const questionEmbedding = await generateMockQueryEmbedding(input.question);
 
-    // Step 2: Call the queryVectorStoreTool directly with the generated embedding
     const { results: retrievedDocumentChunks } = await queryVectorStoreTool({
-      queryText: input.question, // Pass original query for context/logging in the mock tool
+      queryText: input.question, 
       queryEmbedding: questionEmbedding,
       topK: input.topK,
     });
     
-    // Step 3: Prepare input for the LLM synthesis prompt
     const synthesisInput = {
       question: input.question,
       documentChunks: retrievedDocumentChunks,
     };
 
-    // Step 4: Call the LLM prompt to synthesize an answer based on the retrieved chunks
     const { output: synthesisOutputP } = await synthesizeAnswerFromChunksPrompt(synthesisInput);
-    const synthesisOutput = await synthesisOutputP; // Ensure the promise is resolved
+    const synthesisOutput = await synthesisOutputP; 
 
     if (!synthesisOutput) {
       console.error('synthesizeAnswerFromChunksPrompt did not return a valid output.');
       return {
-        answer: "I encountered an issue generating an answer from the retrieved information. Please try again.",
+        answer: "I encountered an issue generating an answer from the retrieved information. The AI model failed to produce a structured response. Please try again.",
         citedSources: [],
         reasoningSteps: ["The AI model failed to produce a structured response during the synthesis stage."],
         retrievedChunksCount: retrievedDocumentChunks.length,
@@ -128,10 +124,13 @@ export async function answerGs1QuestionsWithVectorSearch(
   } catch (error) {
     console.error("Error in answerGs1QuestionsWithVectorSearch flow:", error);
     return {
-      answer: "An unexpected error occurred while processing your request with vector search. Please try again.",
+      answer: "An unexpected error occurred while processing your request with vector search. Please check the input or try again later.",
       citedSources: [],
       reasoningSteps: ["An unexpected error occurred in the RAG pipeline."],
       retrievedChunksCount: 0,
     };
   }
 }
+
+// Previous flow definition removed for brevity and direct error handling in exported function
+// const answerGs1QuestionsWithVectorSearchFlow = ai.defineFlow( ... );

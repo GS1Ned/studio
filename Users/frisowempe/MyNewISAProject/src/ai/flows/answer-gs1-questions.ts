@@ -29,10 +29,28 @@ const AnswerGs1QuestionsOutputSchema = z.object({
 export type AnswerGs1QuestionsOutput = z.infer<typeof AnswerGs1QuestionsOutputSchema>;
 
 export async function answerGs1Questions(input: AnswerGs1QuestionsInput): Promise<AnswerGs1QuestionsOutput> {
-  return answerGs1QuestionsFlow(input);
+  try {
+    const {output} = await answerGs1QuestionsPrompt(input);
+    if (!output) {
+      console.error('answerGs1QuestionsPrompt did not return a valid output.');
+      return {
+        answer: 'An error occurred while generating the answer. The AI model failed to produce a structured response. Please try again.',
+        citedSources: [],
+        reasoningSteps: ['AI model failed to produce a structured response.'],
+      };
+    }
+    return output;
+  } catch (error) {
+    console.error("Error in answerGs1Questions flow:", error);
+    return {
+      answer: "An unexpected error occurred while processing your Q&A request. Please check the input or try again later.",
+      citedSources: [],
+      reasoningSteps: ["An unexpected error occurred in the AI flow."]
+    };
+  }
 }
 
-const prompt = ai.definePrompt({
+const answerGs1QuestionsPrompt = ai.definePrompt({
   name: 'answerGs1QuestionsPrompt',
   input: {schema: AnswerGs1QuestionsInputSchema},
   output: {schema: AnswerGs1QuestionsOutputSchema},
@@ -65,22 +83,8 @@ Based solely on the provided content snippets:
 Answer:`, 
 });
 
-const answerGs1QuestionsFlow = ai.defineFlow(
-  {
-    name: 'answerGs1QuestionsFlow',
-    inputSchema: AnswerGs1QuestionsInputSchema,
-    outputSchema: AnswerGs1QuestionsOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      console.error('answerGs1QuestionsPrompt did not return a valid output.');
-      return {
-        answer: 'An error occurred while generating the answer. The AI model failed to produce a structured response. Please try again.',
-        citedSources: [],
-        reasoningSteps: ['AI model failed to produce a structured response.'],
-      };
-    }
-    return output;
-  }
-);
+// Previous flow definition removed as the exported function now contains the logic and error handling.
+// const answerGs1QuestionsFlow = ai.defineFlow( ... );
+// This is a common pattern if the exported function IS the flow execution entry point.
+// Alternatively, one could keep answerGs1QuestionsFlow and have answerGs1Questions call it,
+// but for simplicity and direct error handling, this combined approach is used.
