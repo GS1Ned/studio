@@ -66,20 +66,38 @@ const researchTool = ai.defineTool(
     // Placeholder implementation for web search.
     // In a real implementation, this would call an external search API (e.g., Google Custom Search API).
     // An API key for the search service would be required and managed securely (e.g., via Google Secret Manager).
-    console.log(`Simulating web search for: ${input.query}`);
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 700)); // Simulate API call delay
+    console.log(`[MOCK] Simulating web search for: ${input.query}`);
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 800 + 500)); // Simulate API call delay
 
-    // Example simulated structured results
-    const possibleResults = [
-      { title: `Comprehensive Overview of ${input.query}`, link: `https://example.com/overview-${input.query.replace(/\s+/g, "-")}`, snippet: `An in-depth article discussing various aspects of ${input.query}, including history and current trends.` },
-      { title: `Key Data Points for ${input.query}`, link: `https://example.com/data-${input.query.replace(/\s+/g, "-")}`, snippet: `Statistical data and key figures related to ${input.query}. Updated quarterly.` },
-      { title: `Understanding ${input.query} Challenges`, link: `https://example.com/challenges-${input.query.replace(/\s+/g, "-")}`, snippet: `This report explores common challenges and solutions when dealing with ${input.query}.` },
-      { title: `No specific official documentation found for '${input.query}'`, link: `https://example.com/search-generic?q=${input.query.replace(/\s+/g, "+")}`, snippet: `While no direct official documentation was found, this link provides broader search results that might be helpful.` },
+    const querySpecificResults = [
+      { title: `Exploring ${input.query}: A Deep Dive`, link: `https://example.com/deep-dive-${input.query.replace(/\s+/g, "-")}`, snippet: `This article offers a comprehensive examination of ${input.query}, covering its historical context, current applications, and future outlook. Key statistics and case studies are included.` },
+      { title: `Common Misconceptions about ${input.query}`, link: `https://example.com/misconceptions-${input.query.replace(/\s+/g, "-")}`, snippet: `Debunking prevalent myths surrounding ${input.query}. We address three common misunderstandings and provide factual clarifications with supporting evidence.` },
+      { title: `Ethical Considerations of ${input.query}`, link: `https://example.com/ethics-${input.query.replace(/\s+/g, "-")}`, snippet: `An analysis of the ethical implications associated with ${input.query}. This paper discusses potential biases, societal impacts, and regulatory challenges.` },
+    ];
+
+    const genericResults = [
+        { title: `Official Documentation for similar topics`, link: `https://example.com/docs/related-to-${input.query.replace(/\s+/g, "-")}`, snippet: `While no direct official documentation was found for '${input.query}', related standards and guidelines can be found here.` },
+        { title: `Community Discussions on ${input.query}`, link: `https://example.com/forum/${input.query.replace(/\s+/g, "-")}`, snippet: `A forum where experts and enthusiasts discuss ${input.query}. Contains user-generated content, questions, and answers.`},
+        { title: `Research Papers mentioning ${input.query}`, link: `https://scholar.example.com/search?q=${input.query.replace(/\s+/g, "+")}`, snippet: `A collection of academic papers and preprints that reference or study ${input.query}. Results may vary in relevance.`}
     ];
     
-    // Return a random subset of results to simulate variability
-    const numResults = Math.floor(Math.random() * 3) + 1; // 1 to 3 results
-    const searchResults = Array.from({ length: numResults }, () => possibleResults[Math.floor(Math.random() * possibleResults.length)]);
+    const allPossibleResults = [...querySpecificResults, ...genericResults];
+    
+    // Ensure at least 1 result, up to 3
+    const numResults = Math.max(1, Math.floor(Math.random() * 3) + 1); 
+    const searchResults: z.infer<typeof SearchResultItemSchema>[] = [];
+    const usedIndexes = new Set<number>();
+
+    for (let i = 0; i < numResults; i++) {
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * allPossibleResults.length);
+      } while (usedIndexes.has(randomIndex) && usedIndexes.size < allPossibleResults.length);
+      if (usedIndexes.size < allPossibleResults.length) {
+        searchResults.push(allPossibleResults[randomIndex]);
+        usedIndexes.add(randomIndex);
+      }
+    }
     
     return { searchResults };
   }
@@ -98,15 +116,15 @@ Here's an initial research question, if provided: {{{researchQuestion}}}
 
 Your goal is to:
 1.  Formulate 2-3 diverse search queries based on the topic and initial research question.
-2.  For each query, use the webSearch tool to find relevant information.
-3.  Synthesize the information gathered from all search results into a coherent 'collectedInformation' summary.
-4.  Based on the synthesized information and any gaps identified, formulate 2-4 insightful 'formulatedQuestions' aimed at guiding further research or data collection.
-5.  Extract and list key 'sources' (title and URL) from the search results that appear most relevant and authoritative. Prioritize unique sources.
+2.  For each query, use the webSearch tool to find relevant information. You should analyze the 'title', 'link', and 'snippet' of each search result provided by the tool.
+3.  Synthesize the information gathered from *all* search results into a coherent 'collectedInformation' summary. Focus on extracting key facts, insights, and potential areas of further investigation.
+4.  Based on the synthesized information and any gaps identified, formulate 2-4 insightful 'formulatedQuestions' aimed at guiding further research or data collection. These questions should be distinct and probe different aspects of the topic.
+5.  Extract and list key 'sources' from the search results that appear most relevant and authoritative. For each source, provide its 'title' and 'url' as found in the search results. Prioritize unique URLs.
 
 Process for using the webSearch tool:
 {{#if researchQuestion}}
 - First search query: Use the initial '{{{researchQuestion}}}' directly or a close variation.
-- Subsequent search queries: Based on '{{{topic}}}' and initial findings, generate 2 more queries to broaden or deepen the research.
+- Subsequent search queries: Based on '{{{topic}}}' and initial findings, generate 1-2 more distinct queries to broaden or deepen the research.
 {{else}}
 - Generate 2-3 distinct search queries based on '{{{topic}}}' to explore different facets of it.
 {{/if}}
@@ -114,6 +132,7 @@ Process for using the webSearch tool:
 When synthesizing 'collectedInformation':
 - Combine insights from all search result snippets.
 - Aim for a comprehensive yet concise summary of what was found.
+- Highlight any conflicting information or areas requiring further clarification.
 
 When formulating 'formulatedQuestions':
 - These should be actionable questions that can guide the next steps of research.
@@ -121,7 +140,7 @@ When formulating 'formulatedQuestions':
 
 When listing 'sources':
 - For each source, provide its 'title' and 'url' as found in the search results.
-- Avoid duplicate URLs.
+- Avoid duplicate URLs. If multiple search results point to the same core information, try to cite the most comprehensive or authoritative one.
 
 Output the results in the specified JSON format.
 `,
@@ -138,5 +157,3 @@ const conductIndependentResearchFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    
