@@ -2,13 +2,13 @@
 "use client";
 
 import { z } from "zod";
-import Image from "next/image"; // Added import
+import Image from "next/image";
 import { ClientAiForm } from "@/components/features/client-ai-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { handleDetectStandardErrors } from "@/lib/actions/ai-actions";
 import type { DetectStandardErrorsOutput, ExplainableOutput } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"; // Added CardContent
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Lightbulb } from "lucide-react";
@@ -46,7 +46,7 @@ export default function ErrorDetectionPage() {
     <div className="space-y-6">
       <div>
         <h3 className="font-semibold text-lg mb-2">Summary of Findings</h3>
-        <p className="text-sm">{data.summary}</p>
+        <p className="text-sm whitespace-pre-wrap">{data.summary}</p>
       </div>
       {data.detectedIssues && data.detectedIssues.length > 0 ? (
         <div>
@@ -87,13 +87,7 @@ export default function ErrorDetectionPage() {
 
   const extractExplainability = (data: DetectStandardErrorsOutput): ExplainableOutput => {
     return {
-      reasoningSteps: [
-        "Parsed and segmented document content.", 
-        "Applied rule-based checks for common error patterns.",
-        "Utilized language model to identify semantic inconsistencies and ambiguities.",
-        "Cross-referenced definitions for overlaps.",
-        "Synthesized findings into a structured report."
-      ],
+      reasoningSteps: data.reasoningSteps || ["AI did not provide specific reasoning steps for this analysis."],
       confidenceScore: Math.random() * 0.20 + 0.75, 
       modelEvaluationMetrics: { 
         "Issue Recall": Math.random() * 0.15 + 0.70, 

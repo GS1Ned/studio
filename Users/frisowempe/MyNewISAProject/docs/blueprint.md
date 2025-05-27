@@ -401,12 +401,12 @@ This section will chronologically log significant development activities, decisi
             *   Synthesize `collectedInformation` from titles, links, and snippets.
             *   Extract `title` and `url` for the `sources` output field.
             *   Formulate diverse search queries.
-*   **Rationale:** This enhancement moves the `conductIndependentResearch` flow closer to production readiness by simulating a more realistic interaction with a search tool. It improves the quality and structure of data the LLM works with and prepares the system for easier integration with an actual search API. This aligns with Phase 1.A.2 of the Strategic Roadmap ("Implement Real webSearch Tool" and "Basic Agentic Behavior with Genkit").
+*   **Rationale:** This enhancement moves the `conductIndependentResearch` flow closer to production readiness by simulating a more realistic interaction with a search tool. It improves the quality and structure of data the LLM works with and prepares the system for easier integration with an actual search API. This aligns with Phase 1.A.2 of the Strategic Roadmap ("Implement Real webSearch Tool" and "Basic Agentic Behavior with Genkit"). The current structure and prompt instructions for the `conductIndependentResearch` flow, with its multi-query guidance and synthesis steps, satisfy the Phase 1 requirement for "Basic Agentic Behavior with Genkit."
 *   **Files Modified:** `src/ai/flows/conduct-independent-research.ts`.
 
 **2. Enhance `answerGs1Questions` for Structured RAG Input & Citation**
 *   **Date:** October 26, 2023
-*   **Objective:** Modify the `answerGs1Questions` flow to accept structured document chunks and enable the AI to cite sources in its answers, moving towards a more mature RAG pipeline. This includes asking the AI to generate its reasoning steps.
+*   **Objective:** Modify the `answerGs1Questions` flow to accept structured document chunks and enable the AI to cite sources in its answers, moving towards a more mature RAG pipeline. This includes asking the AI to generate its reasoning steps and allowing users to provide optional metadata.
 *   **Changes:**
     *   **`src/ai/schemas.ts`**:
         *   `AnswerGs1QuestionsInputSchema` updated to expect `documentChunks: z.array(DocumentChunkSchema)` instead of `documentContent: z.string()`. `DocumentChunkSchema` includes `content`, `sourceName`, `pageNumber` (optional), and `sectionTitle` (optional).
@@ -443,7 +443,19 @@ This section will chronologically log significant development activities, decisi
 *   **Rationale:** This flow serves as a structural placeholder and conceptual model for how ISA will handle the critical step of generating embeddings from document content. It prepares for future integration with actual embedding models (like Google's `text-embedding-preview-0409`) and subsequent storage in a vector database. This aligns with Phase 1.A.2 ("Mature Core RAG Pipeline") by addressing a key component of the "Ultimate Quality ETL" process.
 *   **Files Created/Modified:** `src/ai/flows/generate-document-embeddings.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
 
-**4. Enhance UI with Placeholder Images**
+**4. Enhance "Error Detection" Flow with AI-Generated Reasoning Steps**
+*   **Date:** October 26, 2023
+*   **Objective:** Improve the explainability of the Error Detection feature by having the AI generate its own reasoning steps, similar to the Q&A flow.
+*   **Changes:**
+    *   Modified `src/ai/flows/detect-standard-errors.ts`:
+        *   Added `reasoningSteps: z.array(z.string()).optional().describe('The steps the AI took to identify the issues and arrive at the summary and suggestions.')` to `DetectStandardErrorsOutputSchema`.
+        *   Updated the prompt to instruct the LLM to generate these `reasoningSteps`.
+    *   Modified `src/app/(isa)/analysis/error-detection/page.tsx`:
+        *   Updated `extractExplainability` function to use `data.reasoningSteps` from the AI output.
+*   **Rationale:** This brings more genuine explainability to another core feature, aligning with the Phase 1.A.2 goal of "Initial Explainability Features" and moving beyond mocked data.
+*   **Files Modified:** `src/ai/flows/detect-standard-errors.ts`, `src/app/(isa)/analysis/error-detection/page.tsx`.
+
+**5. Enhance UI with Placeholder Images**
 *   **Date:** October 26, 2023
 *   **Objective:** Add placeholder images to key feature pages for improved visual appeal and to adhere to project guidelines regarding `next/image` and `data-ai-hint` attributes.
 *   **Changes:**
