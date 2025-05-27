@@ -1,3 +1,4 @@
+
 "use server";
 
 import {
@@ -5,7 +6,8 @@ import {
   ConductIndependentResearchInputSchema,
   NaturalLanguageToFormalDescriptionInputSchema,
   DetectStandardErrorsInputSchema,
-  AnswerGs1QuestionsWithVectorSearchInputSchema, // Added import
+  AnswerGs1QuestionsWithVectorSearchInputSchema, 
+  DocumentChunkSchema
 } from "@/ai/schemas"; 
 
 import {
@@ -24,9 +26,9 @@ import {
   detectStandardErrors,
   type DetectStandardErrorsInput,
   type DetectStandardErrorsOutput,
-  answerGs1QuestionsWithVectorSearch, // Added import
-  type AnswerGs1QuestionsWithVectorSearchInput, // Added import
-  type AnswerGs1QuestionsWithVectorSearchOutput, // Added import
+  answerGs1QuestionsWithVectorSearch, 
+  type AnswerGs1QuestionsWithVectorSearchInput, 
+  type AnswerGs1QuestionsWithVectorSearchOutput, 
 } from "@/ai/flows"; 
 import { z } from "zod";
 
@@ -81,11 +83,11 @@ export async function handleAnswerGs1Questions(
     const result = await answerGs1Questions(flowInput);
     return { success: true, data: result };
   } catch (e: any) {
+    console.error("Error in handleAnswerGs1Questions:", e);
     if (e instanceof z.ZodError) {
       return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
     }
-    console.error("Error in handleAnswerGs1Questions:", e);
-    return { success: false, error: e.message || "An unexpected error occurred in Q&A processing." };
+    return { success: false, error: e.message || "An unexpected error occurred while processing your Q&A request. Please try again." };
   }
 }
 
@@ -97,10 +99,11 @@ export async function handleAnalyzeStandards(
     const result = await analyzeStandards(validatedInput);
     return { success: true, data: result };
   } catch (e: any) {
+    console.error("Error in handleAnalyzeStandards:", e);
     if (e instanceof z.ZodError) {
       return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
     }
-    return { success: false, error: e.message || "An unexpected error occurred" };
+    return { success: false, error: e.message || "An unexpected error occurred while analyzing the standards document. Please try again." };
   }
 }
 
@@ -112,10 +115,11 @@ export async function handleConductIndependentResearch(
     const result = await conductIndependentResearch(validatedInput);
     return { success: true, data: result };
   } catch (e: any) {
+    console.error("Error in handleConductIndependentResearch:", e);
     if (e instanceof z.ZodError) {
       return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
     }
-    return { success: false, error: e.message || "An unexpected error occurred" };
+    return { success: false, error: e.message || "An unexpected error occurred during independent research. Please try again." };
   }
 }
 
@@ -127,10 +131,11 @@ export async function handleNaturalLanguageToFormalDescription(
     const result = await naturalLanguageToFormalDescription(validatedInput);
     return { success: true, data: result };
   } catch (e: any) {
+    console.error("Error in handleNaturalLanguageToFormalDescription:", e);
     if (e instanceof z.ZodError) {
       return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
     }
-    return { success: false, error: e.message || "An unexpected error occurred" };
+    return { success: false, error: e.message || "An unexpected error occurred while transforming the description. Please try again." };
   }
 }
 
@@ -142,10 +147,11 @@ export async function handleDetectStandardErrors(
     const result = await detectStandardErrors(validatedInput);
     return { success: true, data: result };
   } catch (e: any) {
+    console.error("Error in handleDetectStandardErrors:", e);
     if (e instanceof z.ZodError) {
       return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
     }
-    return { success: false, error: e.message || "An unexpected error occurred" };
+    return { success: false, error: e.message || "An unexpected error occurred while detecting errors. Please try again." };
   }
 }
 
@@ -157,10 +163,10 @@ export async function handleAnswerGs1QuestionsWithVectorSearch(
     const result = await answerGs1QuestionsWithVectorSearch(validatedInput);
     return { success: true, data: result };
   } catch (e: any) {
+    console.error("Error in handleAnswerGs1QuestionsWithVectorSearch:", e);
     if (e instanceof z.ZodError) {
       return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
     }
-    console.error("Error in handleAnswerGs1QuestionsWithVectorSearch:", e);
-    return { success: false, error: e.message || "An unexpected error occurred in advanced Q&A processing." };
+    return { success: false, error: e.message || "An unexpected error occurred during the advanced Q&A request. Please try again." };
   }
 }

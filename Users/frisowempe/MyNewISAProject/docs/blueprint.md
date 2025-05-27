@@ -1,3 +1,4 @@
+
 # ISA - Intelligent Standards Assistant: Blueprint & Development Log
 
 This document serves as the central blueprint and evolving development log for the Intelligent Standards Assistant (ISA) project. It will track architectural decisions, feature implementations, and adherence to the strategic roadmap.
@@ -384,16 +385,18 @@ This section will chronologically log significant development activities, decisi
         *   Ensure structured logging from Cloud Functions and Server Actions to Google Cloud Logging for easier querying and analysis.
         *   Log key events, input parameters (sanitized if sensitive), and outcomes of AI flows.
 
-**6. Refactor: Consolidate DocumentChunkSchema**
+**6. Refine Error Handling for AI Flows**
 *   **Date:** October 26, 2023
-*   **Objective:** Centralize the `DocumentChunkSchema` definition for improved maintainability.
+*   **Objective:** Standardize error handling and user feedback for AI flow interactions.
 *   **Changes:**
-    *   The primary definition of `DocumentChunkSchema` and its associated type `DocumentChunk` was moved to `src/ai/schemas.ts`.
-    *   `src/ai/flows/generate-document-embeddings.ts` was updated to import `DocumentChunkSchema` from `src/ai/schemas.ts` instead of defining it locally.
-    *   Ensured all other files that reference `DocumentChunkSchema` (e.g., `src/ai/tools/vector-store-tools.ts`) point to the canonical definition in `src/ai/schemas.ts`.
-*   **Rationale:** Promotes a single source of truth for this fundamental schema, improving code clarity and reducing redundancy. This aligns with general software engineering best practices for maintainability.
-*   **Files Modified:** `src/ai/schemas.ts`, `src/ai/flows/generate-document-embeddings.ts`, `src/ai/tools/vector-store-tools.ts`.
-
+    *   **`src/lib/actions/ai-actions.ts`**: Updated catch blocks in all server actions to:
+        *   Consistently use `console.error` for logging unexpected errors.
+        *   Return more user-friendly and specific fallback error messages (e.g., "An unexpected error occurred while processing your Q&A request. Please try again.").
+    *   **`src/components/features/ai-output-card.tsx`**:
+        *   Imported `AlertTriangle` icon from `lucide-react`.
+        *   When displaying an error, the `CardTitle` now includes the `AlertTriangle` icon for better visual prominence of the error state.
+*   **Rationale:** Improves the robustness and user experience of error handling. Consistent server-side logging aids debugging, while clearer client-side messages and visual cues help users understand when something has gone wrong. Aligns with overall foundational strengthening.
+*   **Files Modified:** `src/lib/actions/ai-actions.ts`, `src/components/features/ai-output-card.tsx`.
 
 #### A.2. Key Feature Enhancements (e.g., RAG, Basic Agentic Flows)
 
@@ -475,6 +478,17 @@ This section will chronologically log significant development activities, decisi
     *   Included descriptive `alt` text and relevant `data-ai-hint` attributes (e.g., "knowledge document", "analysis structure").
 *   **Rationale:** Improves the visual presentation of core feature pages, aligns with established coding guidelines, and sets a pattern for future image integration. This is a minor UI enhancement contributing to the overall polish of the application.
 *   **Files Modified:** `src/app/(isa)/qa/page.tsx`, `src/app/(isa)/analysis/standards/page.tsx`, `src/app/(isa)/analysis/error-detection/page.tsx`, `src/app/(isa)/research/page.tsx`, `src/app/(isa)/transformation/nl-to-formal/page.tsx`.
+
+**6. Refactor: Consolidate DocumentChunkSchema**
+*   **Date:** October 26, 2023
+*   **Objective:** Centralize the `DocumentChunkSchema` definition for improved maintainability.
+*   **Changes:**
+    *   The primary definition of `DocumentChunkSchema` and its associated type `DocumentChunk` was moved to `src/ai/schemas.ts`.
+    *   `src/ai/flows/generate-document-embeddings.ts` was updated to import `DocumentChunkSchema` from `src/ai/schemas.ts` instead of defining it locally.
+    *   Ensured all other files that reference `DocumentChunkSchema` (e.g., `src/ai/tools/vector-store-tools.ts`) point to the canonical definition in `src/ai/schemas.ts`.
+*   **Rationale:** Promotes a single source of truth for this fundamental schema, improving code clarity and reducing redundancy. This aligns with general software engineering best practices for maintainability.
+*   **Files Modified:** `src/ai/schemas.ts`, `src/ai/flows/generate-document-embeddings.ts`, `src/ai/tools/vector-store-tools.ts`.
+
 
 ### Phase 2: Infrastructure Maturation & Advanced Feature Integration
 
