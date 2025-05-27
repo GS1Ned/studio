@@ -86,8 +86,8 @@ Operational robustness and security of the ISA deployment were enhanced through 
     *   **Files Created/Modified:** `firestore.rules`, `firebase.json`, `firestore.indexes.json`.
 
 *   **Implemented Robust Secrets Management:**
-    *   **Change:** Created `.gitignore` to exclude sensitive files (`.env*`, `isa_data_sources/`, etc.). Added `GOOGLE_API_KEY=""` to `.env` as a placeholder.
-    *   **Rationale:** `.env` for local development secrets (loaded by `dotenv` in `src/ai/dev.ts`). Production secrets to be managed via Google Secret Manager. `.gitignore` prevents accidental exposure. Recommended local storage for raw GS1 documents in `isa_data_sources/`, excluded from git.
+    *   **Change:** Created `.gitignore` to exclude sensitive files (`.env*`, `isa_data_sources/`, etc.). Added `GOOGLE_API_KEY=""` to `.env` as a placeholder. Recommended local storage for raw GS1 documents in `/Users/frisowempe/MyNewISAProject/isa_data_sources/gs1_standard_docs_raw/`, which is now included in `.gitignore`.
+    *   **Rationale:** `.env` for local development secrets (loaded by `dotenv` in `src/ai/dev.ts`). Production secrets to be managed via Google Secret Manager. `.gitignore` prevents accidental exposure.
     *   **Files Created/Modified:** `.gitignore`, `.env`.
 
 *   **Established CI/CD Pipelines (Initial Outline for App Hosting):**
@@ -409,25 +409,25 @@ This section provides a concise summary of key development tasks and decisions. 
 *   **2023-10-26 (Summary of Phase 1 Execution - Refer to Section II.A for full details):**
     *   Optimized App Hosting backend configuration (`apphosting.yaml`).
     *   Hardened Firestore security rules and configured emulators (`firestore.rules`, `firebase.json`).
-    *   Implemented robust secrets management practices (`.gitignore`, `.env` placeholder).
+    *   Implemented robust secrets management practices (`.gitignore`, `.env` placeholder, `isa_data_sources/` recommendation).
     *   Outlined CI/CD pipeline for App Hosting and configured `package.json` test script.
     *   Documented basic monitoring and alerting recommendations.
-    *   Refined error handling comprehensively in AI flows and server actions for robustness and schema compliance.
+    *   Refined error handling comprehensively in AI flows and server actions for robustness and schema compliance, resolving non-null assertion issues.
     *   Reviewed `package.json` for technical debt (no immediate changes beyond prior `@types/handlebars` removal).
     *   Matured core RAG pipeline for Document Q&A: implemented structured input, source citation, and AI-generated reasoning; updated UI for metadata input and citation display.
     *   Implemented "Error Detection & Correction" feature (AI flow, UI, AI-generated reasoning).
-    *   Enhanced `webSearch` tool and "Independent Research" flow (structured mock output, refined prompt).
+    *   Enhanced `webSearch` tool and "Independent Research" flow (structured mock output, refined prompt for iterative search).
     *   Prototyped conceptual `generate-document-embeddings` flow.
-    *   Architected and implemented conceptual "Q&A with Vector Search" (tool `queryVectorStoreTool`, flow `answerGs1QuestionsWithVectorSearch`, UI `/advanced/qa-vector-search`), including refinements for handling empty search results.
-    *   Architected and implemented conceptual "KG Query Demo" (tool `queryKnowledgeGraphTool`, flow `demonstrateKgQuery`, UI `/advanced/kg-query-demo`), including refinements for error handling.
-    *   Conceptually designed a KG-Augmented RAG Flow.
+    *   Architected and implemented conceptual "Q&A with Vector Search" (tool `queryVectorStoreTool` enhanced to accept mock embeddings, flow `answerGs1QuestionsWithVectorSearch` refactored for explicit RAG pipeline, UI `/advanced/qa-vector-search` created), including refinements for handling empty search results.
+    *   Architected and implemented conceptual "KG Query Demo" (tool `queryKnowledgeGraphTool`, flow `demonstrateKgQuery`, UI `/advanced/kg-query-demo` created), including refinements for error handling.
+    *   Conceptually designed a KG-Augmented RAG Flow within this document.
     *   Centralized `DocumentChunkSchema` and other Zod schemas in `src/ai/schemas.ts`.
     *   Enhanced UI consistency with placeholder images and navigation updates.
-    *   Resolved key feedback from Gemini Code Assist regarding AI flow robustness and deployment configuration.
-    *   Performed comprehensive updates of this `docs/blueprint.md` to serve as the strategic source-of-truth.
+    *   Resolved key feedback from Gemini Code Assist regarding AI flow robustness and Firebase deployment configuration clarity (App Hosting primary).
+    *   Performed comprehensive updates of this `docs/blueprint.md` to serve as the strategic source-of-truth, aligning with the "Internal Firebase Briefing" structure and reflecting all completed Phase 1 work.
 
 ---
-This updated document now serves as the comprehensive strategic guide and living blueprint for the ISA project, reflecting all progress made in Phase 1 and setting a clear direction for subsequent phases. It aligns with the structure and content of the "Internal Firebase Briefing" while incorporating the development log and current technical state.
+This updated document now serves as the comprehensive strategic guide and living blueprint for the ISA project, reflecting all progress made in Phase 1 and setting a clear direction for subsequent phases. It aligns with the structure and content of the "Internal Firebase Briefing" provided as input.
 It has been updated to reflect the completion of Phase 1 activities and the formal commencement of Phase 2.
 The development log is now a concise summary, with detailed achievements integrated into the main roadmap sections.
 The error handling in AI flows has been made more robust.
