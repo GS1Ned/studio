@@ -6,8 +6,12 @@ service cloud.firestore {
     // Default to denying all reads and writes to all documents.
     // Specific rules for collections will be added here as needed when features
     // requiring Firestore access are implemented. This ensures a secure-by-default posture.
+<<<<<<< HEAD
     match /{document=**} {
       allow read, write: if true;
+=======
+    match /{document=**} {allow read, write: if true;}
+>>>>>>> 6468538 (read and write: true)
     }
   }
 }
