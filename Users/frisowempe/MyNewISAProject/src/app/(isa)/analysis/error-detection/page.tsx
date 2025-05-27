@@ -90,9 +90,9 @@ export default function ErrorDetectionPage() {
       reasoningSteps: data.reasoningSteps || ["AI did not provide specific reasoning steps for this analysis."],
       confidenceScore: Math.random() * 0.20 + 0.75, 
       modelEvaluationMetrics: { 
-        "Issue Recall": Math.random() * 0.15 + 0.70, 
-        "Correction Precision": Math.random() * 0.20 + 0.65, 
-        "False Positive Rate": (Math.random() * 0.1 + 0.05).toFixed(3) 
+        "Issue Recall (Simulated)": (Math.random() * 0.15 + 0.70).toFixed(2), 
+        "Correction Precision (Simulated)": (Math.random() * 0.20 + 0.65).toFixed(2), 
+        "False Positive Rate (Simulated)": (Math.random() * 0.1 + 0.05).toFixed(3) 
       },
     };
   };
