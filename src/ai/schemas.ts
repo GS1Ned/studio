@@ -29,3 +29,11 @@ export const NaturalLanguageToFormalDescriptionInputSchema = z.object({
     .string()
     .describe('A natural language description of a standard.'),
 });
+
+// Schema for src/ai/flows/detect-standard-errors.ts
+export const DetectStandardErrorsInputSchema = z.object({
+  documentContent: z
+    .string()
+    .min(100, "Document content must be at least 100 characters for meaningful error detection.")
+    .describe('The content of the standards document to analyze for errors and inconsistencies.'),
+});
