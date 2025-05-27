@@ -8,6 +8,7 @@ This document serves as the central blueprint and evolving development log for t
 2.  [Architectural Design](#2-architectural-design)
 3.  [Development Log & Decisions](#3-development-log--decisions)
     *   [Phase 1: Foundational Strengthening & Core Capability Enhancement](#phase-1-foundational-strengthening--core-capability-enhancement)
+    *   [Phase 2: Infrastructure Maturation & Advanced Feature Integration](#phase-2-infrastructure-maturation--advanced-feature-integration)
 
 ## 1. Project Overview & Goals
 *(As per "Strategic Roadmap and Architectural Direction for ISA: Internal Firebase Briefing")*
@@ -452,5 +453,25 @@ This section will chronologically log significant development activities, decisi
     *   Included descriptive `alt` text and relevant `data-ai-hint` attributes (e.g., "knowledge document", "analysis structure").
 *   **Rationale:** Improves the visual presentation of core feature pages, aligns with established coding guidelines, and sets a pattern for future image integration. This is a minor UI enhancement contributing to the overall polish of the application.
 *   **Files Modified:** `src/app/(isa)/qa/page.tsx`, `src/app/(isa)/analysis/standards/page.tsx`, `src/app/(isa)/analysis/error-detection/page.tsx`, `src/app/(isa)/research/page.tsx`, `src/app/(isa)/transformation/nl-to-formal/page.tsx`.
+
+### Phase 2: Infrastructure Maturation & Advanced Feature Integration
+
+#### B.1. Evolution of Firebase Infrastructure (Scalability, Data Management)
+
+**1. Conceptual AI Tool Design for Vector Store Interaction**
+*   **Date:** October 26, 2023
+*   **Objective:** Architecturally outline how Genkit tools would facilitate interaction with a vector store, a key component for advanced RAG.
+*   **Changes:**
+    *   Created `src/ai/tools/vector-store-tools.ts`:
+        *   Defines `QueryVectorStoreInputSchema` (input: query string, topK results).
+        *   Defines `QueryVectorStoreOutputSchema` (output: array of `DocumentChunkSchema`).
+        *   Defines a conceptual `queryVectorStoreTool` using `ai.defineTool`.
+        *   The tool's mock implementation simulates generating an embedding for the query and retrieving relevant document chunks.
+        *   Comments explicitly state this is a MOCK and would integrate with services like Vertex AI Vector Search or AlloyDB AI.
+    *   Created `src/ai/tools/index.ts` to export tools from this new directory.
+*   **Rationale:** This conceptual step prepares for Phase 2's focus on scaling vector data storage. By defining the tool interface, we can start to envision how flows like `answerGs1Questions` might evolve to call such a tool to retrieve context dynamically, rather than relying solely on user-provided input. This makes the RAG pipeline more sophisticated and scalable. The actual implementation of vector store integration, data ingestion, and embedding generation for the store are larger, subsequent tasks.
+*   **Files Created/Modified:** `src/ai/tools/vector-store-tools.ts`, `src/ai/tools/index.ts`.
+
 ---
 *This document will be updated continuously as development progresses.*
+
