@@ -1,12 +1,11 @@
 "use server";
 
 import {
-  // AnswerGs1QuestionsInputSchema is defined in schemas.ts and used by the flow.
-  // We use a local QaPageFormSchema here for the specific form input from the client.
   AnalyzeStandardsInputSchema,
   ConductIndependentResearchInputSchema,
   NaturalLanguageToFormalDescriptionInputSchema,
   DetectStandardErrorsInputSchema,
+  AnswerGs1QuestionsWithVectorSearchInputSchema, // Added import
 } from "@/ai/schemas"; 
 
 import {
@@ -25,6 +24,9 @@ import {
   detectStandardErrors,
   type DetectStandardErrorsInput,
   type DetectStandardErrorsOutput,
+  answerGs1QuestionsWithVectorSearch, // Added import
+  type AnswerGs1QuestionsWithVectorSearchInput, // Added import
+  type AnswerGs1QuestionsWithVectorSearchOutput, // Added import
 } from "@/ai/flows"; 
 import { z } from "zod";
 
@@ -144,5 +146,21 @@ export async function handleDetectStandardErrors(
       return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
     }
     return { success: false, error: e.message || "An unexpected error occurred" };
+  }
+}
+
+export async function handleAnswerGs1QuestionsWithVectorSearch(
+  input: AnswerGs1QuestionsWithVectorSearchInput
+): Promise<ActionResult<AnswerGs1QuestionsWithVectorSearchOutput>> {
+  try {
+    const validatedInput = AnswerGs1QuestionsWithVectorSearchInputSchema.parse(input);
+    const result = await answerGs1QuestionsWithVectorSearch(validatedInput);
+    return { success: true, data: result };
+  } catch (e: any) {
+    if (e instanceof z.ZodError) {
+      return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
+    }
+    console.error("Error in handleAnswerGs1QuestionsWithVectorSearch:", e);
+    return { success: false, error: e.message || "An unexpected error occurred in advanced Q&A processing." };
   }
 }

@@ -1,4 +1,3 @@
-
 # ISA - Intelligent Standards Assistant: Blueprint & Development Log
 
 This document serves as the central blueprint and evolving development log for the Intelligent Standards Assistant (ISA) project. It will track architectural decisions, feature implementations, and adherence to the strategic roadmap.
@@ -508,6 +507,21 @@ This section will chronologically log significant development activities, decisi
     *   Updated `src/ai/flows/index.ts`, `src/ai/dev.ts`, and `src/lib/types.ts` to include the new flow and its types.
 *   **Rationale:** This conceptual flow serves as a clear code example of how future RAG pipelines in ISA will integrate with a vector store for dynamic, relevant context retrieval. It directly illustrates the intended use of tools like `queryVectorStoreTool` and informs the design for Phase 2 infrastructure and flow development. This flow is not yet integrated into the UI.
 *   **Files Created/Modified:** `src/ai/flows/answer-gs1-questions-with-vector-search.ts`, `src/ai/schemas.ts`, `src/ai/flows/index.ts`, `src/ai/dev.ts`, `src/lib/types.ts`.
+
+**3. UI for Conceptual Q&A with Vector Search Flow**
+*   **Date:** October 26, 2023
+*   **Objective:** Create a user interface to interact with the conceptual `answerGs1QuestionsWithVectorSearch` flow, making the advanced RAG pattern user-testable even with a mocked vector store.
+*   **Changes:**
+    *   Created `src/app/(isa)/advanced/qa-vector-search/page.tsx`:
+        *   Implemented a form using `ClientAiForm` to take user's question and optional `topK` parameter.
+        *   The page calls a new server action `handleAnswerGs1QuestionsWithVectorSearch`.
+        *   Displays the AI's answer, cited sources (from the simulated vector search), and reasoning steps.
+        *   Includes a clear notice that the vector search functionality is currently mocked.
+    *   Updated `src/lib/actions/ai-actions.ts` to include `handleAnswerGs1QuestionsWithVectorSearch` which calls the `answerGs1QuestionsWithVectorSearch` Genkit flow.
+    *   Updated `src/components/layout/sidebar-nav-items.tsx` to add "Q&A (Vector Search)" under "Advanced Tools".
+*   **Rationale:** This provides a tangible way to test and demonstrate the logic of a RAG pipeline that uses dynamic context retrieval from a vector store. It makes the architectural groundwork more concrete and allows for early feedback on the user experience for such a feature, even before the actual vector store infrastructure is in place. This aligns with iterative development and preparing for Phase 2.
+*   **Files Created/Modified:** `src/app/(isa)/advanced/qa-vector-search/page.tsx`, `src/lib/actions/ai-actions.ts`, `src/components/layout/sidebar-nav-items.tsx`.
+
 
 ---
 *This document will be updated continuously as development progresses.*
