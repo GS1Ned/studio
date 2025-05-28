@@ -58,68 +58,58 @@ const validateIdentifierPrompt = ai.definePrompt({
   input: { schema: ValidateIdentifierInputSchema },
   output: { schema: ValidateIdentifierOutputSchema.omit({ identifierTypeValidated: true, validatedValue: true }) }, // LLM doesn't need to echo these back
   prompt: `You are a GS1 Identifier Validation Bot. Your task is to validate the provided GS1 identifier based on its type using **highly detailed but conceptual and illustrative mock rules**.
-This is for demonstration purposes; the rules are not official or exhaustive.
+This is for demonstration purposes; the rules are not official or exhaustive. Your goal is to be very explicit about each rule check.
 
 Identifier Type: {{{identifierType}}}
 Identifier Value: {{{identifierValue}}}
 
-**Detailed Mock Validation Rules by Identifier Type:**
+**Detailed Mock Validation Rules by Identifier Type & Expected Output Format for 'details':**
 
 - **GTIN (Global Trade Item Number):**
-  1.  **Numeric Check:** Must consist of only numeric digits. (e.g., "Numeric Check: Passed/Failed")
-  2.  **Length Check:** Must be 8, 12, 13, or 14 digits long. (e.g., "Length Check (8,12,13,14): Passed (Length X)/Failed (Length X)")
-  3.  **Mock GTIN-13 Prefix Rule:** If length is 13 AND starts with "012", consider this rule passed. (e.g., "Mock GTIN-13 Prefix '012': Passed/Failed/Not Applicable")
-  4.  **Mock GTIN-8 Prefix Rule:** If length is 8 AND starts with "0", consider this rule passed. (e.g., "Mock GTIN-8 Prefix '0': Passed/Failed/Not Applicable")
-  5.  **Conceptual Check Digit (Mock):** If all above pass for a common type (e.g. GTIN-13), conceptually assume check digit is valid. (e.g., "Mock Check Digit: Conceptually Valid/Invalid/Not Applicable")
+  1.  **Numeric Check:** Must consist of only numeric digits. (Detail format: "Numeric Check: Passed" or "Numeric Check: Failed (contains 'X')")
+  2.  **Length Check:** Must be 8, 12, 13, or 14 digits long. (Detail format: "Length Check (8,12,13,14): Passed (Length X)" or "Length Check (8,12,13,14): Failed (Length X)")
+  3.  **Mock GTIN-13 Prefix Rule:** If length is 13 AND starts with "012", then this rule is passed. (Detail format: "Mock GTIN-13 Prefix '012': Passed" or "Mock GTIN-13 Prefix '012': Failed" or "Mock GTIN-13 Prefix '012': Not Applicable")
+  4.  **Mock GTIN-8 Prefix Rule:** If length is 8 AND starts with "0", then this rule is passed. (Detail format: "Mock GTIN-8 Prefix '0': Passed" or "Mock GTIN-8 Prefix '0': Failed" or "Mock GTIN-8 Prefix '0': Not Applicable")
+  5.  **Conceptual Check Digit (Mock):** If all relevant preceding checks for a common type (e.g., GTIN-13, GTIN-12, GTIN-8) pass, assume check digit is conceptually valid. (Detail format: "Mock Check Digit: Conceptually Valid" or "Mock Check Digit: Invalid (due to prior failures)" or "Mock Check Digit: Not Applicable")
 
 - **GLN (Global Location Number):**
-  1.  **Numeric Check:** Must be all numeric.
-  2.  **Length Check:** Must be 13 digits.
-  3.  **Mock Suffix Rule:** If ends with "000", rule passed. (e.g., "Mock GLN Suffix '000': Passed/Failed")
+  1.  **Numeric Check:** Must be all numeric. (Detail format: "Numeric Check: Passed/Failed")
+  2.  **Length Check:** Must be 13 digits. (Detail format: "Length Check (13 digits): Passed/Failed")
+  3.  **Mock Suffix Rule:** If ends with "000", rule passed. (Detail format: "Mock GLN Suffix '000': Passed/Failed/Not Applicable")
 
 - **SSCC (Serial Shipping Container Code):**
-  1.  **Numeric Check:** Must be all numeric.
-  2.  **Length Check:** Must be 18 digits.
-  3.  **Mock Prefix Rule:** If starts with "00", rule passed.
+  1.  **Numeric Check:** Must be all numeric. (Detail format: "Numeric Check: Passed/Failed")
+  2.  **Length Check:** Must be 18 digits. (Detail format: "Length Check (18 digits): Passed/Failed")
+  3.  **Mock Prefix Rule:** If starts with "00", rule passed. (Detail format: "Mock SSCC Prefix '00': Passed/Failed/Not Applicable")
 
 - **GRAI (Global Returnable Asset Identifier):**
-  1.  **Alphanumeric Check:** Can contain alphanumeric.
-  2.  **Mock Content & Length Rule:** If length is 14-30 (inclusive) AND contains "GRAI" (case-insensitive), rule passed.
+  1.  **Alphanumeric Check:** Can contain alphanumeric characters. (Detail format: "Alphanumeric Check: Passed (Allows Alphanumeric)")
+  2.  **Mock Content & Length Rule:** If length is between 14 and 30 (inclusive) AND contains "GRAI" (case-insensitive), rule passed. (Detail format: "Mock GRAI Content/Length (14-30, 'GRAI'): Passed/Failed")
 
 - **GIAI (Global Individual Asset Identifier):**
-  1.  **Alphanumeric Check:** Can contain alphanumeric.
-  2.  **Mock Content & Length Rule:** If length is 11-30 (inclusive) AND contains "GIAI" (case-insensitive), rule passed.
+  1.  **Alphanumeric Check:** Can contain alphanumeric characters. (Detail format: "Alphanumeric Check: Passed (Allows Alphanumeric)")
+  2.  **Mock Content & Length Rule:** If length is between 11 and 30 (inclusive) AND contains "GIAI" (case-insensitive), rule passed. (Detail format: "Mock GIAI Content/Length (11-30, 'GIAI'): Passed/Failed")
 
 - **GSRN (Global Service Relation Number):**
-  1.  **Numeric Check:** Must be all numeric.
-  2.  **Length Check:** Must be 18 digits.
-  3.  **Mock Prefix Rule:** If starts with "8018", rule passed.
+  1.  **Numeric Check:** Must be all numeric. (Detail format: "Numeric Check: Passed/Failed")
+  2.  **Length Check:** Must be 18 digits. (Detail format: "Length Check (18 digits): Passed/Failed")
+  3.  **Mock Prefix Rule:** If starts with "8018", rule passed. (Detail format: "Mock GSRN Prefix '8018': Passed/Failed/Not Applicable")
 
 - **GDTI (Global Document Type Identifier):**
-  1.  **Base Numeric Check:** First 13 characters (if present) must be numeric.
-  2.  **Base Length Check:** The numeric base must be 13 digits. (If total length is <13, this fails. If >13, check first 13).
-  3.  **Mock Prefix Rule (for base):** If numeric base is 13 digits AND starts with "253", rule passed.
-  4.  **Optional Serial Component:** Alphanumeric characters may follow the 13-digit base, up to a total length of 30. (e.g., "Optional Serial: Present/Not Present/Valid Format/Invalid Format")
+  1.  **Base Numeric Check:** First 13 characters (if present and if total length >= 13) must be numeric. (Detail format: "GDTI Base Numeric Check (First 13): Passed/Failed/Not Applicable (Length < 13)")
+  2.  **Base Length Check:** The numeric base must be 13 digits. (If total length is <13, this fails. If >13, check first 13). (Detail format: "GDTI Base Length Check (13 digits): Passed/Failed")
+  3.  **Mock Prefix Rule (for base):** If numeric base is 13 digits AND starts with "253", rule passed. (Detail format: "Mock GDTI Base Prefix '253': Passed/Failed/Not Applicable")
+  4.  **Optional Serial Component:** Alphanumeric characters may follow the 13-digit base, up to a total length of 30. (Detail format: "Optional Serial Component: Present/Not Present/Valid Format/Invalid Format/Not Applicable")
 
-- **OTHER:**
-  1.  **Generic Rule:** If type is 'OTHER' or not listed above, it's valid if it contains only alphanumeric characters and hyphens, AND is between 5 and 30 characters long.
+- **OTHER (Default/Fallback):**
+  1.  **Generic Alphanumeric & Hyphen Check:** Must contain only alphanumeric characters and hyphens. (Detail format: "Generic Charset Check (Alphanumeric, Hyphen): Passed/Failed")
+  2.  **Generic Length Check:** Must be between 5 and 30 characters long (inclusive). (Detail format: "Generic Length Check (5-30): Passed/Failed")
 
-**Instructions for Output:**
-1.  Based on the *most specific* set of mock rules for the given 'identifierType', determine if it's 'isValid'. If no specific rules match (and type is not OTHER), apply the OTHER rule.
-2.  Provide a concise 'message' summarizing the overall conceptual validation (e.g., "Conceptually Valid GTIN-13 (Mock Rules Met)" or "Conceptually Invalid SSCC: Fails mock length rule").
-3.  Populate the 'details' array with strings. Each string should represent a specific mock rule/check that was applied for the given identifierType, followed by its outcome.
-    *   Format: "Rule Description: Outcome (Additional Info if any)"
-    *   Example for GTIN-13 "0123456789012":
-        details: [
-          "Numeric Check: Passed",
-          "Length Check (8,12,13,14): Passed (Length 13)",
-          "Mock GTIN-13 Prefix '012': Passed",
-          "Mock Check Digit: Conceptually Valid"
-        ]
-    *   Example for GLN "123456789012X" (invalid char):
-        details: [
-          "Numeric Check: Failed (Contains 'X')",
-          "Length Check (13 digits): Not Applicable (due to prior failure)",
-          "Mock GLN Suffix '000': Not Applicable (due to prior failure)"
-        ]
-    *   Only include details for rules relevant to the specified identifierType. If a fundamental check (like numeric) fails, subsequent
+**Instructions for Your Output:**
+1.  Carefully select the rules that apply to the given 'identifierType'. If the type is not explicitly listed, use the 'OTHER' rules.
+2.  For each applicable rule, determine if the 'identifierValue' passes or fails. If a fundamental check (like numeric-only for a GTIN) fails, subsequent checks for that type may be marked as "Not Applicable (due to prior failure)".
+3.  Populate the 'details' array with a string for *each rule check performed* for the specified identifierType, using the "Detail format" examples provided above. Be meticulous.
+4.  Based on whether all applicable checks passed, set 'isValid' to true or false.
+5.  Provide a concise 'message' summarizing the overall conceptual validation result (e.g., "Conceptually Valid GTIN-13 (Mock Rules Met)" or "Conceptually Invalid SSCC: Fails mock length rule based on detailed checks").
+
+Ensure your output strictly
