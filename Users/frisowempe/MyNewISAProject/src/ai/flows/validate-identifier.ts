@@ -1,3 +1,4 @@
+
 // src/ai/flows/validate-identifier.ts
 'use server';
 /**
@@ -15,7 +16,7 @@ import { ValidateIdentifierInputSchema } from '@/ai/schemas';
 export const ValidateIdentifierOutputSchema = z.object({
   isValid: z.boolean().describe('Whether the identifier is considered valid based on the rules.'),
   message: z.string().describe('A message summarizing the validation result (e.g., "Valid GTIN-13" or "Invalid: Check digit incorrect").'),
-  details: z.array(z.string()).optional().describe('An array of specific validation checks passed or failed, or other relevant details.'),
+  details: z.array(z.string()).optional().describe('An array of specific validation checks passed or failed, or other relevant details from the conceptual validation process.'),
   identifierTypeValidated: ValidateIdentifierInputSchema.shape.identifierType.describe('The type of identifier that was validated.'),
   validatedValue: z.string().describe('The identifier value that was validated.')
 });
@@ -29,7 +30,7 @@ export async function validateIdentifier(input: z.infer<typeof ValidateIdentifie
       return {
         isValid: false,
         message: 'Validation could not be completed as the AI model failed to produce a structured response.',
-        details: ['AI model error.'],
+        details: ['AI model error: No structured output received.'],
         identifierTypeValidated: input.identifierType,
         validatedValue: input.identifierValue,
       };
@@ -40,12 +41,12 @@ export async function validateIdentifier(input: z.infer<typeof ValidateIdentifie
       identifierTypeValidated: input.identifierType,
       validatedValue: input.identifierValue,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in validateIdentifier flow:", error);
     return {
       isValid: false,
-      message: 'An unexpected error occurred during identifier validation.',
-      details: ['System error during validation.'],
+      message: `An unexpected error occurred during identifier validation: ${error.message || 'Unknown error'}.`,
+      details: ['System error during validation process.'],
       identifierTypeValidated: input.identifierType,
       validatedValue: input.identifierValue,
     };
@@ -56,46 +57,69 @@ const validateIdentifierPrompt = ai.definePrompt({
   name: 'validateIdentifierPrompt',
   input: { schema: ValidateIdentifierInputSchema },
   output: { schema: ValidateIdentifierOutputSchema.omit({ identifierTypeValidated: true, validatedValue: true }) }, // LLM doesn't need to echo these back
-  prompt: `You are a GS1 Identifier Validation Bot.
-Your task is to validate the provided GS1 identifier based on its type using simplified conceptual rules.
+  prompt: `You are a GS1 Identifier Validation Bot. Your task is to validate the provided GS1 identifier based on its type using **highly detailed but conceptual and illustrative mock rules**.
+This is for demonstration purposes; the rules are not official or exhaustive.
 
 Identifier Type: {{{identifierType}}}
 Identifier Value: {{{identifierValue}}}
 
-Validation Rules (Simplified for this demonstration):
-- GTIN (Global Trade Item Number):
-  - Common lengths: 8, 12, 13, 14 digits.
-  - Must be all numeric.
-  - (Mock Check) If GTIN-13, check if it starts with "012". Valid if so, invalid otherwise.
-- GLN (Global Location Number):
-  - Length: 13 digits.
-  - Must be all numeric.
-  - (Mock Check) Valid if it ends with "00".
-- SSCC (Serial Shipping Container Code):
-  - Length: 18 digits.
-  - Must be all numeric.
-  - (Mock Check) Valid if it starts with "00".
-- GRAI (Global Returnable Asset Identifier):
-  - Format: Up to 30 alphanumeric characters including a serial number component.
-  - (Mock Check) Valid if length is between 14 and 30 and contains "GRAI".
-- GIAI (Global Individual Asset Identifier):
-  - Format: Up to 30 alphanumeric characters.
-  - (Mock Check) Valid if length is > 10 and contains "GIAI".
-- GSRN (Global Service Relation Number):
-  - Length: 18 digits.
-  - (Mock Check) Valid if starts with "8018".
-- GDTI (Global Document Type Identifier):
-  - Format: 13-digit numeric + optional serial number up to 17 alphanumeric.
-  - (Mock Check) Valid if numeric part is 13 digits and starts with "253".
-- OTHER:
-  - Perform a basic check: if it contains any non-alphanumeric characters (excluding hyphens), consider it invalid. Otherwise, valid.
+**Detailed Mock Validation Rules by Identifier Type:**
 
-Based on these rules for the given 'identifierType' and 'identifierValue':
-1. Determine if it's 'isValid'.
-2. Provide a 'message' summarizing the validation (e.g., "Valid GTIN-13 (Mock Check Passed)" or "Invalid SSCC: Does not meet length requirement").
-3. Provide 'details' as an array of strings, listing specific checks performed or reasons for invalidity (e.g., ["Length check passed", "Prefix '012' matched for GTIN-13 (Mock)"] or ["Length is not 18 digits for SSCC."]).
+- **GTIN (Global Trade Item Number):**
+  1.  **Numeric Check:** Must consist of only numeric digits. (e.g., "Numeric Check: Passed/Failed")
+  2.  **Length Check:** Must be 8, 12, 13, or 14 digits long. (e.g., "Length Check (8,12,13,14): Passed (Length X)/Failed (Length X)")
+  3.  **Mock GTIN-13 Prefix Rule:** If length is 13 AND starts with "012", consider this rule passed. (e.g., "Mock GTIN-13 Prefix '012': Passed/Failed/Not Applicable")
+  4.  **Mock GTIN-8 Prefix Rule:** If length is 8 AND starts with "0", consider this rule passed. (e.g., "Mock GTIN-8 Prefix '0': Passed/Failed/Not Applicable")
+  5.  **Conceptual Check Digit (Mock):** If all above pass for a common type (e.g. GTIN-13), conceptually assume check digit is valid. (e.g., "Mock Check Digit: Conceptually Valid/Invalid/Not Applicable")
 
-Output your response in the specified JSON format. Focus on applying only the mock rules described for the given type.
-If an identifier type is not explicitly listed with mock rules, and is not 'OTHER', state that specific validation rules for it are not implemented in this mock version but perform a generic check.
-`,
-});
+- **GLN (Global Location Number):**
+  1.  **Numeric Check:** Must be all numeric.
+  2.  **Length Check:** Must be 13 digits.
+  3.  **Mock Suffix Rule:** If ends with "000", rule passed. (e.g., "Mock GLN Suffix '000': Passed/Failed")
+
+- **SSCC (Serial Shipping Container Code):**
+  1.  **Numeric Check:** Must be all numeric.
+  2.  **Length Check:** Must be 18 digits.
+  3.  **Mock Prefix Rule:** If starts with "00", rule passed.
+
+- **GRAI (Global Returnable Asset Identifier):**
+  1.  **Alphanumeric Check:** Can contain alphanumeric.
+  2.  **Mock Content & Length Rule:** If length is 14-30 (inclusive) AND contains "GRAI" (case-insensitive), rule passed.
+
+- **GIAI (Global Individual Asset Identifier):**
+  1.  **Alphanumeric Check:** Can contain alphanumeric.
+  2.  **Mock Content & Length Rule:** If length is 11-30 (inclusive) AND contains "GIAI" (case-insensitive), rule passed.
+
+- **GSRN (Global Service Relation Number):**
+  1.  **Numeric Check:** Must be all numeric.
+  2.  **Length Check:** Must be 18 digits.
+  3.  **Mock Prefix Rule:** If starts with "8018", rule passed.
+
+- **GDTI (Global Document Type Identifier):**
+  1.  **Base Numeric Check:** First 13 characters (if present) must be numeric.
+  2.  **Base Length Check:** The numeric base must be 13 digits. (If total length is <13, this fails. If >13, check first 13).
+  3.  **Mock Prefix Rule (for base):** If numeric base is 13 digits AND starts with "253", rule passed.
+  4.  **Optional Serial Component:** Alphanumeric characters may follow the 13-digit base, up to a total length of 30. (e.g., "Optional Serial: Present/Not Present/Valid Format/Invalid Format")
+
+- **OTHER:**
+  1.  **Generic Rule:** If type is 'OTHER' or not listed above, it's valid if it contains only alphanumeric characters and hyphens, AND is between 5 and 30 characters long.
+
+**Instructions for Output:**
+1.  Based on the *most specific* set of mock rules for the given 'identifierType', determine if it's 'isValid'. If no specific rules match (and type is not OTHER), apply the OTHER rule.
+2.  Provide a concise 'message' summarizing the overall conceptual validation (e.g., "Conceptually Valid GTIN-13 (Mock Rules Met)" or "Conceptually Invalid SSCC: Fails mock length rule").
+3.  Populate the 'details' array with strings. Each string should represent a specific mock rule/check that was applied for the given identifierType, followed by its outcome.
+    *   Format: "Rule Description: Outcome (Additional Info if any)"
+    *   Example for GTIN-13 "0123456789012":
+        details: [
+          "Numeric Check: Passed",
+          "Length Check (8,12,13,14): Passed (Length 13)",
+          "Mock GTIN-13 Prefix '012': Passed",
+          "Mock Check Digit: Conceptually Valid"
+        ]
+    *   Example for GLN "123456789012X" (invalid char):
+        details: [
+          "Numeric Check: Failed (Contains 'X')",
+          "Length Check (13 digits): Not Applicable (due to prior failure)",
+          "Mock GLN Suffix '000': Not Applicable (due to prior failure)"
+        ]
+    *   Only include details for rules relevant to the specified identifierType. If a fundamental check (like numeric) fails, subsequent

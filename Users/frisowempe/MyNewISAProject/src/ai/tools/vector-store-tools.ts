@@ -33,55 +33,62 @@ const DocumentChunkWithEmbeddingSchema = DocumentChunkSchema.extend({
 type DocumentChunkWithEmbedding = z.infer<typeof DocumentChunkWithEmbeddingSchema>;
 
 
-// Expanded Mock internal vector store
+// Expanded Mock internal vector store with GS1-specific content
 const mockVectorDatabase: DocumentChunkWithEmbedding[] = [
   {
-    content: "GS1 General Specifications define how GTINs are allocated. Each brand owner is responsible for unique assignment.",
-    sourceName: "GS1 GenSpecs v24.0",
+    content: "The GS1 General Specifications define the rules for allocating Global Trade Item Numbers (GTINs). Each brand owner is responsible for ensuring the uniqueness of their assigned GTINs to prevent collisions in the global supply chain.",
+    sourceName: "GS1 General Specifications v24.0",
     pageNumber: 45,
     sectionTitle: "2.1 GTIN Allocation Rules",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "The GS1 Digital Link standard allows brands to web-enable their product data using GS1 identifiers. It connects physical products to online information.",
+    content: "GS1 Digital Link standard allows brands to web-enable their products by encoding GS1 identifiers (like GTIN) into web URIs. This connects physical products to rich online information and services.",
     sourceName: "GS1 Digital Link v1.3",
     pageNumber: 12,
     sectionTitle: "Introduction to Digital Link",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "For serial shipping container codes (SSCC), ensure global uniqueness and correct check digit calculation. SSCCs are key for logistics.",
-    sourceName: "GS1 GenSpecs v24.0",
+    content: "Serial Shipping Container Codes (SSCC) are used to identify logistic units. They must be globally unique and include a correctly calculated check digit. SSCCs are fundamental for tracking and tracing goods throughout the supply chain.",
+    sourceName: "GS1 General Specifications v24.0",
     pageNumber: 150,
-    sectionTitle: "4.3 SSCC Construction",
+    sectionTitle: "4.3 SSCC Construction and Application",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "Healthcare supply chains often use GS1 DataMatrix symbols to encode GTINs, batch/lot numbers, and expiry dates for traceability.",
+    content: "In the healthcare sector, GS1 DataMatrix symbols are commonly used to encode GTINs, batch/lot numbers, and expiry dates on medical devices and pharmaceuticals for enhanced traceability and patient safety.",
     sourceName: "GS1 Healthcare Guideline v12",
     pageNumber: 33,
-    sectionTitle: "Barcode Implementation for Medical Devices",
+    sectionTitle: "Barcode Implementation for Medical Products",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "Interoperability is a key principle of the GS1 system, ensuring data can be shared across different partners and systems using common standards.",
+    content: "The Global Location Number (GLN) is used to identify physical locations or legal entities. GLNs play a crucial role in supply chain efficiency by providing a standard way to reference parties and locations in business transactions.",
+    sourceName: "GS1 GLN Allocation Rules",
+    pageNumber: 7,
+    sectionTitle: "1.2 Purpose of the GLN",
+    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
+  },
+  {
+    content: "Interoperability is a key principle of the entire GS1 system. Standards are designed to ensure that data can be shared and understood consistently across different trading partners, systems, and countries.",
     sourceName: "GS1 System Architecture Overview",
     pageNumber: 5,
     sectionTitle: "Core Principles of GS1",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "Understanding GTIN allocation rules is crucial for avoiding duplicate identifiers in the global supply chain. Refer to GenSpecs for details.",
+    content: "Understanding precise GTIN allocation rules is critical for brand owners to avoid duplication and ensure their products are uniquely identified worldwide. The GS1 General Specifications document is the definitive source for these rules.",
     sourceName: "GS1 GTIN Management Standard",
     pageNumber: 19,
     sectionTitle: "Preventing GTIN Duplication",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "GS1 Digital Link URI syntax must follow specific structures to ensure resolvers can correctly interpret them and redirect users.",
-    sourceName: "GS1 Digital Link v1.3",
+    content: "The syntax for GS1 Digital Link URIs must adhere to specific structural rules to ensure that web resolvers can correctly interpret them and redirect users to the appropriate online resources or experiences.",
+    sourceName: "GS1 Digital Link URI Syntax Standard v1.3",
     pageNumber: 28,
-    sectionTitle: "URI Syntax Specification",
+    sectionTitle: "3.1 URI Syntax Specification",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   }
 ];
@@ -95,11 +102,11 @@ export const queryVectorStoreTool = ai.defineTool(
     outputSchema: QueryVectorStoreOutputSchema,
   },
   async (input) => {
-    console.log(`[MOCK] queryVectorStoreTool called with queryText: "${input.queryText}", topK: ${input.topK}`);
-    console.log(`[MOCK] Received queryEmbedding (first 3 dims): [${input.queryEmbedding.slice(0,3).join(', ')}, ...]`);
+    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool called with queryText: "${input.queryText}", topK: ${input.topK}`);
+    console.log(`[MOCK VECTOR TOOL] Received queryEmbedding (first 3 dims): [${input.queryEmbedding.slice(0,3).join(', ')}, ...]`);
     
     if (input.queryText.toLowerCase().includes("empty test")) {
-         console.log("[MOCK] Simulating empty results for 'empty test' query.");
+         console.log("[MOCK VECTOR TOOL] Simulating empty results for 'empty test' query.");
          return { results: [] };
     }
 
@@ -110,7 +117,7 @@ export const queryVectorStoreTool = ai.defineTool(
     // 3. Apply any metadata filters if implemented.
 
     // Enhanced Mock: Rudimentary keyword matching for slightly more dynamic results.
-    let "relevant"Chunks: DocumentChunkWithEmbedding[] = [];
+    let relevantChunks: DocumentChunkWithEmbedding[] = [];
     const queryKeywords = input.queryText.toLowerCase().split(/\s+/).filter(kw => kw.length > 2); // Simple keyword extraction
 
     mockVectorDatabase.forEach(chunk => {
@@ -121,8 +128,8 @@ export const queryVectorStoreTool = ai.defineTool(
     });
 
     // If no "relevant" chunks found by keywords, fall back to returning some general chunks to avoid empty results unless specifically tested.
-    if (relevantChunks.length === 0) {
-        relevantChunks = [...mockVectorDatabase]; // Fallback to all if no keywords match
+    if (relevantChunks.length === 0 && mockVectorDatabase.length > 0 && !input.queryText.toLowerCase().includes("show nothing if no keywords")) { // a way to test true empty if no keywords hit
+        relevantChunks = [...mockVectorDatabase]; // Fallback to all if no keywords match and not a specific empty test
     }
     
     // Shuffle "relevant" chunks to simulate varied search results and then take topK
@@ -134,9 +141,9 @@ export const queryVectorStoreTool = ai.defineTool(
     });
     
     // Simulate some delay
-    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 200));
+    await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 150));
 
-    console.log(`[MOCK] queryVectorStoreTool returning ${retrievedChunks.length} chunks.`);
+    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool returning ${retrievedChunks.length} chunks.`);
     return { results: retrievedChunks };
   }
 );

@@ -10,7 +10,10 @@ This document serves as the central blueprint, strategic roadmap, and evolving d
         *   Created `src/app/(isa)/validation/identifier/page.tsx` with a `ClientAiForm` for user input (`identifierValue`, `identifierType` via a `Select` component) and output rendering.
         *   Added a new "Validation" section and "Identifier Validator" item (using `ShieldCheck` icon) to `src/components/layout/sidebar-nav-items.tsx`.
         *   Created `src/app/(isa)/validation/layout.tsx` for the section's metadata.
-        *   Refined the `validate-identifier.ts` flow's output schema and prompt for clarity. The UI was also updated to better display results and note the conceptual nature of the rules.
+    *   **Refined the `validate-identifier.ts` flow's prompt and output schema for clarity and robustness**:
+        *   The prompt for `validateIdentifierPrompt` in `src/ai/flows/validate-identifier.ts` was significantly enhanced with more detailed and structured mock rules for each GS1 identifier type.
+        *   Instructions were added to guide the LLM in generating a granular list of checks performed and their outcomes in the `details` field of the output. This aims to make the conceptual validation process more transparent and illustrative for the user.
+        *   The UI in `src/app/(isa)/validation/identifier/page.tsx` was confirmed to be capable of displaying these detailed validation steps.
 *   **2024-05-18 (Self-initiated based on previous "Next Action"):**
     *   **Implemented Backend for "Interactive Identifier Validator"**:
         *   Defined `ValidateIdentifierInputSchema` (with `GS1IdentifierTypeSchema` enum) and `ValidateIdentifierOutputSchema` in `src/ai/schemas.ts`.
@@ -19,9 +22,9 @@ This document serves as the central blueprint, strategic roadmap, and evolving d
         *   Updated relevant index, dev, and types files.
 *   **2024-05-17 (Self-initiated based on previous "Next Action"):**
     *   **Deepened `queryVectorStoreTool` Mock Implementation**:
-        *   Expanded `mockVectorDatabase` in `src/ai/tools/vector-store-tools.ts` with more diverse mock document chunks and embeddings.
-        *   Modified the mock retrieval logic to perform a rudimentary keyword-based "relevance" check against `queryText` to make the returned chunks more dynamic, while still being a simulation.
-        *   Ensured the "empty test" scenario functions correctly.
+        *   Expanded `mockVectorDatabase` in `src/ai/tools/vector-store-tools.ts` with more diverse and GS1-specific mock document chunks (GTIN, GLN, SSCC, Digital Link related).
+        *   The mock retrieval logic remains a rudimentary keyword-based "relevance" check against `queryText` but now operates on a richer, more illustrative dataset.
+        *   Ensured the "empty test" scenario continues to function correctly.
 *   **2024-05-16 (Self-initiated based on user guidance for caution and internal refinement):**
     *   **Resolved Git Merge Conflict in `docs/blueprint.md`**: Manually integrated changes to reflect the merge of the `ISAIntelligent-Standards-Assistant-(ISA)-X1` branch into `main`, ensuring the document accurately logs this event and contains the latest comprehensive strategic plan.
     *   **Performed Coherency Check and Minor Blueprint Refinement**: Reviewed project files for coherency. Added a clarifying note in `docs/blueprint.md` (Section I.B) regarding Firebase emulator usage in the context of App Hosting (local Next.js dev server vs. hosting emulator port).
@@ -170,7 +173,7 @@ The Intelligent Standards Assistant (ISA) is architected as a Next.js (v15.2.3) 
 *   **Error Detection & Correction (`/analysis/error-detection`):** AI identifies errors, ambiguities, and overlaps in standards documents, suggesting corrections and providing AI-generated reasoning steps. UI implemented with introductory card and placeholder image.
 *   **NL to Formal Transformation (`/transformation/nl-to-formal`):** AI transforms natural language descriptions into more formal standard representations. UI includes introductory card with placeholder image.
 *   **Independent Research (`/research`):** AI conducts research (using an enhanced, structured mock `webSearch` tool with more varied results and refined prompt for iterative search) to gather information, formulate new questions, and identify sources. UI includes introductory card with placeholder image.
-*   **Conceptual Advanced Q&A (`/advanced/qa-vector-search`):** A UI and flow demonstrating an advanced RAG pattern. The flow (`answerGs1QuestionsWithVectorSearch`) **explicitly simulates query embedding generation, then directly calls a conceptual `queryVectorStoreTool` (mock enhanced to accept mock `queryEmbedding` & `queryText`, perform rudimentary keyword-based "relevance" on internal mock data, and simulate empty results robustly), and then uses a separate LLM prompt (`synthesizeAnswerFromChunksPrompt`) for answer synthesis.** UI implemented with placeholder image, input for `topK`, displays `retrievedChunksCount`, and flow includes more detailed logging and robust error handling.
+*   **Conceptual Advanced Q&A (`/advanced/qa-vector-search`):** A UI and flow demonstrating an advanced RAG pattern. The flow (`answerGs1QuestionsWithVectorSearch`) **explicitly simulates query embedding generation, then directly calls a conceptual `queryVectorStoreTool` (mock enhanced to accept mock `queryEmbedding` & `queryText`, perform rudimentary keyword-based "relevance" on GS1-specific internal mock data, and simulate empty results robustly), and then uses a separate LLM prompt (`synthesizeAnswerFromChunksPrompt`) for answer synthesis.** UI implemented with placeholder image, input for `topK`, displays `retrievedChunksCount`, and flow includes more detailed logging and robust error handling.
 *   **Conceptual Knowledge Graph Query Demo (`/advanced/kg-query-demo`):** A UI and flow (`demonstrateKgQuery`) implemented to interact with a conceptual `queryKnowledgeGraphTool` (mock enhanced for robust error/empty result handling and schema-compliant returns). UI implemented with placeholder image to display structured mock KG results.
 *   **Conceptual "Interactive Identifier Validator" (`/validation/identifier`):** Backend AI flow (`validate-identifier.ts` with mock validation rules and refined prompt/output schema) and UI page implemented. UI refined for clarity and robustness, displaying validated type/value. Navigation added.
 *   **Conceptual Embedding Generation (`generate-document-embeddings.ts`):** Flow evolved from a mock tool to use a real embedding model (`ai.embed()` with `googleai/text-embedding-004`). Requires `GOOGLE_API_KEY` for local execution.
@@ -209,7 +212,7 @@ This initial phase focused on stabilizing the ISA deployment, productionizing co
 *   **NL to Formal Transformation (`/transformation/nl-to-formal`):** AI transforms natural language descriptions into more formal standard representations. UI includes introductory card.
 *   **Independent Research (`/research`):** AI conducts research using an enhanced mock `webSearch` tool (returning structured `title`, `link`, `snippet` results with more varied data). Prompt refined for more iterative search and synthesis from structured results. UI includes introductory card.
 *   **Conceptual Embedding Generation (`generate-document-embeddings.ts`):** Flow evolved from a mock tool to use a real embedding model (`ai.embed()` with `googleai/text-embedding-004`).
-*   **Conceptual Advanced Q&A (`/advanced/qa-vector-search`):** A UI and flow demonstrating an advanced RAG pattern. The flow (`answerGs1QuestionsWithVectorSearch`) **explicitly simulates query embedding generation, then directly calls a conceptual `queryVectorStoreTool` (mock enhanced to accept mock `queryEmbedding` & `queryText`, perform rudimentary keyword-based "relevance" on internal mock data, and simulate empty results robustly), and then uses a separate LLM prompt (`synthesizeAnswerFromChunksPrompt`) for answer synthesis.** UI implemented with placeholder image, input for `topK`, displays `retrievedChunksCount`, and flow includes more detailed logging and robust error handling.
+*   **Conceptual Advanced Q&A (`/advanced/qa-vector-search`):** A UI and flow demonstrating an advanced RAG pattern. The flow (`answerGs1QuestionsWithVectorSearch`) **explicitly simulates query embedding generation, then directly calls a conceptual `queryVectorStoreTool` (mock enhanced to accept mock `queryEmbedding` & `queryText`, perform rudimentary keyword-based "relevance" on GS1-specific internal mock data, and simulate empty results robustly), and then uses a separate LLM prompt (`synthesizeAnswerFromChunksPrompt`) for answer synthesis.** UI implemented with placeholder image, input for `topK`, displays `retrievedChunksCount`, and flow includes more detailed logging and robust error handling.
 *   **Conceptual Knowledge Graph Query Demo (`/advanced/kg-query-demo`):** UI and flow (`demonstrateKgQuery`) implemented to interact with a conceptual `queryKnowledgeGraphTool` (mock enhanced for robust error/empty result handling and schema-compliant returns). UI implemented with placeholder image to display structured mock KG results.
 *   **Conceptual Design for KG-Augmented RAG Flow:** Documented within this blueprint how KG and Vector Store tools could be combined for advanced RAG.
 *   **Conceptual "Interactive Identifier Validator" Feature (`/validation/identifier`):** AI flow (`validate-identifier.ts`) with mock validation rules (prompt refined for clarity and conceptual KG reference), server action, and UI page implemented. UI refined for clarity and robustness, displaying validated type/value. Navigation added.
@@ -597,3 +600,36 @@ I will now generate a new version of `docs/blueprint.md`. This new version will:
 This process will effectively *transform* the existing `docs/blueprint.md` into the document that embodies the synthesized, superior design you've requested, based on the "Ultimate Super Prompt."
 
 Are you ready for me to proceed with this substantial update to `docs/blueprint.md`?
+The prompt for the "Interactive Identifier Validator" flow in `src/ai/flows/validate-identifier.ts` has been significantly enhanced with more detailed and structured mock rules for various GS1 identifier types. This will help the LLM generate more illustrative and granular validation `details` in its output, making the conceptual validation process more transparent to the user. The `docs/blueprint.md` has been updated to log this refinement.
+
+The UI page for the Identifier Validator (`src/app/(isa)/validation/identifier/page.tsx`) was already designed to display an array of `details`, so no UI code changes were strictly necessary for this step, but the user experience will be richer due to the more detailed backend output.
+
+**Next Action:**
+
+We have now:
+*   Successfully completed and documented **Phase 1**.
+*   Comprehensively updated `docs/blueprint.md` to reflect the ambitious **"Ultimate Vision"** and a synthesized hybrid roadmap.
+*   Initiated **Phase 2A** by:
+    *   Refining conceptual RAG and KG flows (`answerGs1QuestionsWithVectorSearch`, `demonstrateKgQuery`).
+    *   Implementing UIs for these conceptual flows.
+    *   Making the `generateDocumentEmbeddings` flow ready for real embedding model usage.
+    *   Enhancing the "Interactive Identifier Validator" with more detailed (mock) rules.
+
+The next logical step within **Phase 2A: "Live RAG & Basic KG Implementation"** is to continue preparing our application components for real data and backend services.
+
+**Proposal: Refine the `queryVectorStoreTool` Mock and Log Retrieval Count in `answerGs1QuestionsWithVectorSearch` Flow UI**
+
+The `queryVectorStoreTool` mock can be slightly improved for better simulation, and the UI for `answerGs1QuestionsWithVectorSearch` can be enhanced to show how many chunks were "retrieved."
+
+1.  **Refine `src/ai/tools/vector-store-tools.ts` (`queryVectorStoreTool`)**:
+    *   The mock `mockVectorDatabase` can be populated with a few more GS1-specific examples to make the "retrieved" chunks more illustrative during testing.
+    *   Ensure the "empty test" condition still works reliably.
+2.  **Enhance `src/ai/flows/answer-gs1-questions-with-vector-search.ts`**:
+    *   Ensure the `AnswerGs1QuestionsWithVectorSearchOutputSchema` explicitly includes `retrievedChunksCount: z.number().optional()`.
+    *   The flow should accurately populate this count based on the results from `queryVectorStoreTool`.
+3.  **Update UI in `src/app/(isa)/advanced/qa-vector-search/page.tsx`**:
+    *   Modify the `renderOutput` function to display the `retrievedChunksCount` from the flow's output. This gives the user feedback on the simulated retrieval step.
+    *   Optionally, add this count to the `modelEvaluationMetrics` in `extractExplainability`.
+4.  **Update `docs/blueprint.md`**: Log these minor enhancements to the conceptual RAG pipeline.
+
+This continues to improve the fidelity of our conceptual RAG system and its testability.
