@@ -1,4 +1,4 @@
-import { Tool } from '@google/generative-ai';
+import { defineTool, Tool } from 'genkit';
 import { z } from 'zod';
 
 // Mock in-memory vector database
@@ -40,48 +40,45 @@ interface DocumentChunkWithEmbedding extends DocumentChunk {
   embedding: number[]; // Assuming embeddings are just arrays of numbers for this mock
 }
 
-const queryVectorStoreTool = new Tool({
-  name: 'queryVectorStore',
-  description:
-    'Queries a vector store with a natural language question to find relevant document chunks.',
-  resource: {
-    method: 'queryVectorStore',
-    methodInfo: {
-      // Define the expected input schema for the tool
-      inputSchema: z.object({
-        query: z.string().describe('The natural language question for the vector store.'),
-      }),
-    },
-  },
-  func: async ({ query }: { query: string }) => {
-    // Simulate a delay for demonstration purposes
-    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    console.log(`Mock Vector Store Tool Called with query: "${query}"`);
+export const vectorStoreTools: Tool[] = [defineTool({
+        name: 'queryVectorStore',
+        description: 'Queries a vector store with a natural language question to find relevant document chunks.',
+        resource: {
+            method: 'queryVectorStore',
+            methodInfo: {
+                // Define the expected input schema for the tool
+                inputSchema: z.object({
+                    query: z.string().describe('The natural language question for the vector store.'),
+                }),
+            },
+        },
+        func: async ({ query }: { query: string; }) => {
+            // Simulate a delay for demonstration purposes
+            await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Rudimentary mock retrieval: find chunks that contain keywords from the query
-    const queryKeywords = query.toLowerCase().split(/\s+/).filter(keyword => keyword.length > 2);
+            console.log(`Mock Vector Store Tool Called with query: "${query}"`);
 
-    let relevantChunks: DocumentChunkWithEmbedding[] = [];
+            // Rudimentary mock retrieval: find chunks that contain keywords from the query
+            const queryKeywords = query.toLowerCase().split(/\s+/).filter(keyword => keyword.length > 2);
 
-    if (queryKeywords.length > 0) {
-        relevantChunks = mockVectorDatabase.filter(chunk =>
-            queryKeywords.some(keyword => chunk.content.toLowerCase().includes(keyword))
-        );
-    }
+            let relevantChunks: DocumentChunkWithEmbedding[] = [];
+
+            if (queryKeywords.length > 0) {
+                relevantChunks = mockVectorDatabase.filter(chunk => queryKeywords.some(keyword => chunk.content.toLowerCase().includes(keyword))
+                );
+            }
 
 
-    if (relevantChunks.length > 0) {
-      const results = relevantChunks.map(
-        (chunk) => `- Content: ${chunk.content}\n  Source: ${chunk.source}`
-      );
-      console.log('Mock Tool Output: Relevant chunks found.');
-      return { result: results.join('\n') };
-    } else {
-      console.log('Mock Tool Output: No relevant chunks found.');
-      return { result: 'No relevant information found in the vector store.' };
-    }
-  },
-});
-
-export const vectorStoreTools = [queryVectorStoreTool];
+            if (relevantChunks.length > 0) {
+                const results = relevantChunks.map(
+                    (chunk) => `- Content: ${chunk.content}\n  Source: ${chunk.source}`
+                );
+                console.log('Mock Tool Output: Relevant chunks found.');
+                return { result: results.join('\n') };
+            } else {
+                console.log('Mock Tool Output: No relevant chunks found.');
+                return { result: 'No relevant information found in the vector store.' };
+            }
+        },
+    })];
