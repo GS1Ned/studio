@@ -101,49 +101,44 @@ export const queryVectorStoreTool = ai.defineTool(
     inputSchema: QueryVectorStoreInputSchema,
     outputSchema: QueryVectorStoreOutputSchema,
   },
-  async (input) => {
-    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool called with queryText: "${input.queryText}", topK: ${input.topK}`);
-    console.log(`[MOCK VECTOR TOOL] Received queryEmbedding (first 3 dims): [${input.queryEmbedding.slice(0,3).join(', ')}, ...]`);
+  async ({ queryText, queryEmbedding, topK = 5 }) => { // Added default for topK here as well
+    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool called with queryText: "${queryText}", topK: ${topK}`);
+    console.log(`[MOCK VECTOR TOOL] Received queryEmbedding (first 3 dims): [${queryEmbedding.slice(0,3).join(', ')}, ...]`);
     
-    if (input.queryText.toLowerCase().includes("empty test")) {
+    // Simulate some delay
+    await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 150));
+
+    if (queryText.toLowerCase().includes("empty test")) {
          console.log("[MOCK VECTOR TOOL] Simulating empty results for 'empty test' query.");
          return { results: [] };
     }
 
-    // Simulate retrieving document chunks.
-    // In a real implementation, this would:
-    // 1. Use input.queryEmbedding to query a vector database.
-    // 2. Perform a similarity search and retrieve topK results.
-    // 3. Apply any metadata filters if implemented.
-
     // Enhanced Mock: Rudimentary keyword matching for slightly more dynamic results.
-    let relevantChunks: DocumentChunkWithEmbedding[] = [];
-    const queryKeywords = input.queryText.toLowerCase().split(/\s+/).filter(kw => kw.length > 2); // Simple keyword extraction
+    let relevantChunksWithEmbeddings: DocumentChunkWithEmbedding[] = [];
+    const queryKeywords = queryText.toLowerCase().split(/\s+/).filter(kw => kw.length > 2); 
 
     mockVectorDatabase.forEach(chunk => {
       const chunkText = `${chunk.content} ${chunk.sourceName} ${chunk.sectionTitle || ''}`.toLowerCase();
       if (queryKeywords.some(kw => chunkText.includes(kw))) {
-        relevantChunks.push(chunk);
+        relevantChunksWithEmbeddings.push(chunk);
       }
     });
-
+    
     // If no "relevant" chunks found by keywords, fall back to returning some general chunks to avoid empty results unless specifically tested.
-    if (relevantChunks.length === 0 && mockVectorDatabase.length > 0 && !input.queryText.toLowerCase().includes("show nothing if no keywords")) { // a way to test true empty if no keywords hit
-        relevantChunks = [...mockVectorDatabase]; // Fallback to all if no keywords match and not a specific empty test
+    if (relevantChunksWithEmbeddings.length === 0 && mockVectorDatabase.length > 0 && !queryText.toLowerCase().includes("show nothing if no keywords")) {
+        relevantChunksWithEmbeddings = [...mockVectorDatabase]; 
     }
     
     // Shuffle "relevant" chunks to simulate varied search results and then take topK
-    relevantChunks.sort(() => 0.5 - Math.random());
-    const retrievedChunks = relevantChunks.slice(0, input.topK).map(chunkWithEmbedding => {
+    relevantChunksWithEmbeddings.sort(() => 0.5 - Math.random());
+    
+    const retrievedChunksStripped = relevantChunksWithEmbeddings.slice(0, topK).map(chunkWithEmbedding => {
       // Strip the embedding for the output, as DocumentChunkSchema doesn't include it.
       const { embedding, ...chunk } = chunkWithEmbedding;
       return chunk;
     });
     
-    // Simulate some delay
-    await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 150));
-
-    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool returning ${retrievedChunks.length} chunks.`);
-    return { results: retrievedChunks };
+    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool returning ${retrievedChunksStripped.length} chunks.`);
+    return { results: retrievedChunksStripped };
   }
 );
