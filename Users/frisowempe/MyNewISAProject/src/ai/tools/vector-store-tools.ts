@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Conceptual tools for interacting with a vector store.
@@ -97,13 +98,13 @@ const mockVectorDatabase: DocumentChunkWithEmbedding[] = [
 export const queryVectorStoreTool = ai.defineTool(
   {
     name: 'queryVectorStoreTool',
-    description: 'Queries a vector store to retrieve document chunks relevant to a given query embedding. (Currently a MOCK IMPLEMENTATION)',
+    description: 'Queries a vector store to retrieve document chunks relevant to a given query embedding and text. (Currently a MOCK IMPLEMENTATION)',
     inputSchema: QueryVectorStoreInputSchema,
     outputSchema: QueryVectorStoreOutputSchema,
   },
-  async ({ queryText, queryEmbedding, topK = 5 }) => { // Added default for topK here as well
+  async ({ queryText, queryEmbedding, topK = 5 }) => {
     console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool called with queryText: "${queryText}", topK: ${topK}`);
-    console.log(`[MOCK VECTOR TOOL] Received queryEmbedding (first 3 dims): [${queryEmbedding.slice(0,3).join(', ')}, ...]`);
+    console.log(`[MOCK VECTOR TOOL] Received queryEmbedding (first 3 dims of ${queryEmbedding.length}): [${queryEmbedding.slice(0,3).join(', ')}, ...]`);
     
     // Simulate some delay
     await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 150));
@@ -113,7 +114,7 @@ export const queryVectorStoreTool = ai.defineTool(
          return { results: [] };
     }
 
-    // Enhanced Mock: Rudimentary keyword matching for slightly more dynamic results.
+    // Rudimentary keyword matching for slightly more dynamic results.
     let relevantChunksWithEmbeddings: DocumentChunkWithEmbedding[] = [];
     const queryKeywords = queryText.toLowerCase().split(/\s+/).filter(kw => kw.length > 2); 
 
@@ -129,16 +130,19 @@ export const queryVectorStoreTool = ai.defineTool(
         relevantChunksWithEmbeddings = [...mockVectorDatabase]; 
     }
     
-    // Shuffle "relevant" chunks to simulate varied search results and then take topK
+    // Shuffle "relevant" chunks to simulate varied search results
     relevantChunksWithEmbeddings.sort(() => 0.5 - Math.random());
     
-    const retrievedChunksStripped = relevantChunksWithEmbeddings.slice(0, topK).map(chunkWithEmbedding => {
-      // Strip the embedding for the output, as DocumentChunkSchema doesn't include it.
+    // Apply topK
+    const limitedChunks = relevantChunksWithEmbeddings.slice(0, topK);
+    
+    // Strip the embedding for the output, as DocumentChunkSchema doesn't include it.
+    const retrievedChunksFinal: z.infer<typeof DocumentChunkSchema>[] = limitedChunks.map(chunkWithEmbedding => {
       const { embedding, ...chunk } = chunkWithEmbedding;
       return chunk;
     });
     
-    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool returning ${retrievedChunksStripped.length} chunks.`);
-    return { results: retrievedChunksStripped };
+    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool returning ${retrievedChunksFinal.length} chunks.`);
+    return { results: retrievedChunksFinal };
   }
 );
