@@ -1,4 +1,3 @@
-
 "use client";
 
 import { z } from "zod";
@@ -62,13 +61,13 @@ export default function QAVectorSearchPage() {
     <div className="space-y-4">
       <p className="whitespace-pre-wrap">{data.answer}</p>
       {typeof data.retrievedChunksCount === 'number' && (
-        <div className="text-xs text-muted-foreground flex items-center">
+        <div className="text-xs text-muted-foreground flex items-center pt-2">
           <DatabaseZap className="w-3.5 h-3.5 mr-1.5 shrink-0" />
           Simulated vector search retrieved {data.retrievedChunksCount} chunk(s) to synthesize this answer.
         </div>
       )}
       {data.citedSources && data.citedSources.length > 0 && (
-        <div>
+        <div className="pt-2">
           <h4 className="font-semibold text-sm mb-2 flex items-center">
             <BookText className="w-4 h-4 mr-2 text-muted-foreground" />
             Cited Sources (from Vector Search):
