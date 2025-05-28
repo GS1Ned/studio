@@ -1,3 +1,4 @@
+
 "use client";
 
 import { z } from "zod";
@@ -9,7 +10,7 @@ import { handleAnswerGs1QuestionsWithVectorSearch } from "@/lib/actions/ai-actio
 import type { AnswerGs1QuestionsWithVectorSearchOutput, ExplainableOutput } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookText, Info } from "lucide-react";
+import { BookText, Info, DatabaseZap } from "lucide-react";
 
 const qaVectorSearchFormSchema = z.object({
   question: z.string().min(5, "Question must be at least 5 characters."),
@@ -60,6 +61,12 @@ export default function QAVectorSearchPage() {
   const renderOutput = (data: AnswerGs1QuestionsWithVectorSearchOutput) => (
     <div className="space-y-4">
       <p className="whitespace-pre-wrap">{data.answer}</p>
+      {typeof data.retrievedChunksCount === 'number' && (
+        <div className="text-xs text-muted-foreground flex items-center">
+          <DatabaseZap className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+          Simulated vector search retrieved {data.retrievedChunksCount} chunk(s) to synthesize this answer.
+        </div>
+      )}
       {data.citedSources && data.citedSources.length > 0 && (
         <div>
           <h4 className="font-semibold text-sm mb-2 flex items-center">
@@ -81,13 +88,18 @@ export default function QAVectorSearchPage() {
   );
   
   const extractExplainability = (data: AnswerGs1QuestionsWithVectorSearchOutput): ExplainableOutput => {
+    const metrics: Record<string, string | number | React.ReactNode> = { 
+      "Vector Search Recall (Simulated)": (Math.random() * 0.15 + 0.80).toFixed(2),
+      "Answer Relevance (Simulated)": (Math.random() * 0.15 + 0.75).toFixed(2),
+    };
+    if (typeof data.retrievedChunksCount === 'number') {
+      metrics["Retrieved Chunks (Simulated)"] = data.retrievedChunksCount;
+    }
+
     return {
       reasoningSteps: data.reasoningSteps || ["No reasoning steps provided by the AI."],
       confidenceScore: Math.random() * 0.2 + 0.7, // Simulated
-      modelEvaluationMetrics: { 
-        "Vector Search Recall (Simulated)": (Math.random() * 0.15 + 0.80).toFixed(2),
-        "Answer Relevance (Simulated)": (Math.random() * 0.15 + 0.75).toFixed(2)
-      },
+      modelEvaluationMetrics: metrics,
     };
   };
 

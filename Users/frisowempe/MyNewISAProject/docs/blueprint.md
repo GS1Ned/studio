@@ -54,9 +54,9 @@ The Intelligent Standards Assistant (ISA) is architected as a Next.js (v15.2.3) 
 *   **Error Detection & Correction (`/analysis/error-detection`):** AI identifies errors, ambiguities, and overlaps in standards documents, suggesting corrections and providing AI-generated reasoning steps. UI is consistent with other feature pages.
 *   **NL to Formal Transformation (`/transformation/nl-to-formal`):** AI transforms natural language descriptions into more formal standard representations.
 *   **Independent Research (`/research`):** AI conducts research (using an enhanced, structured mock `webSearch` tool) to gather information, formulate new questions, and identify sources.
-*   **Conceptual Advanced Q&A (`/advanced/qa-vector-search`):** A UI and flow demonstrating an advanced RAG pattern. The flow explicitly simulates query embedding generation, calls a conceptual `queryVectorStoreTool` (with enhanced mock data retrieval and empty result handling), and then uses a separate LLM prompt for answer synthesis.
+*   **Conceptual Advanced Q&A (`/advanced/qa-vector-search`):** A UI and flow demonstrating an advanced RAG pattern. The flow explicitly simulates query embedding generation, calls a conceptual `queryVectorStoreTool` (with enhanced mock data retrieval and empty result handling), and then uses a separate LLM prompt for answer synthesis. UI enhanced to display retrieved chunk count.
 *   **Conceptual Knowledge Graph Query Demo (`/advanced/kg-query-demo`):** A UI and flow (`demonstrateKgQuery`) to interact with a conceptual `queryKnowledgeGraphTool` (with refined error/empty result handling), showcasing mock KG query results.
-*   **Conceptual Identifier Validator (`/validation/identifier`):** Backend AI flow and UI implemented to validate GS1 identifiers based on conceptual rules embedded in the prompt.
+*   **Conceptual Identifier Validator (`/validation/identifier`):** Backend AI flow and UI implemented to validate GS1 identifiers based on conceptual rules embedded in the prompt. UI enhanced for clarity.
 
 **Architectural and Operational Enhancements (Completed in Phase 1):**
 *   **Scalability:** `apphosting.yaml` updated (`maxInstances: 10`, `minInstances: 0`, `concurrency: 80`, `memoryMiB: 512`, `timeoutSeconds: 60`) for improved scalability and cost-effectiveness of the App Hosting backend.
@@ -84,38 +84,38 @@ This initial phase focused on stabilizing the ISA deployment, productionizing co
 
 **1. Immediate Firebase Actions & Adjustments (Completed):**
 *   **Optimized App Hosting Configuration:** Modified `apphosting.yaml` (`maxInstances: 10`, `minInstances: 0`, `concurrency: 80`, `memoryMiB: 512`, `timeoutSeconds: 60`) for better scalability and cost-effectiveness.
-*   **Hardened Firestore Security Rules:** Created `firestore.rules` (default deny-all) and `firebase.json` (for Firestore rules and emulator settings). Clarified App Hosting as the primary deployment target, removing conflicting `hosting` and `functions` blocks from `firebase.json`.
+*   **Hardened Firestore Security Rules:** Created `firestore.rules` (default deny-all) and `firebase.json` (for Firestore rules and emulator settings). Clarified App Hosting as the primary deployment target, removing conflicting `hosting` and `functions` blocks from `firebase.json`. The emulator configuration in `firebase.json` primarily facilitates local testing of Firebase services like Firestore or Auth; the Next.js app itself runs via `npm run dev`.
 *   **Implemented Robust Secrets Management:** Created `.gitignore` (excluding `.env*`, `isa_data_sources/`). `.env` has `GOOGLE_API_KEY` placeholder. Strategy for production secrets (Google Secret Manager) documented. `isa_data_sources/gs1_standard_docs_raw/` recommended for local document storage.
-*   **Established CI/CD Pipelines (Initial Outline for App Hosting):** Outlined GitHub Actions CI/CD for App Hosting. Added `test` script to `package.json`.
-*   **Configured Basic Monitoring & Alerting (Documentation):** Documented recommendations for Firebase/GCP monitoring.
-*   **Refined Error Handling for AI Flows:** Updated catch blocks in server actions and AI flows for better logging and user-friendly, schema-compliant error returns. Resolved all `output!` non-null assertion risks. `AiOutputCard` displays errors prominently.
-*   **Reviewed `package.json` for Technical Debt:** No immediate issues beyond prior `@types/handlebars` removal (which is now fully obsolete). `patch-package` presence noted.
+*   **Established CI/CD Pipelines (Initial Outline for App Hosting):** Outlined GitHub Actions CI/CD for App Hosting (using `firebase apphosting:backends:create/update`). Added `test` script to `package.json`.
+*   **Configured Basic Monitoring & Alerting (Documentation):** Documented recommendations for Firebase/GCP monitoring and alerting for App Hosting health and Genkit flow performance.
+*   **Refined Error Handling for AI Flows:** Updated catch blocks in server actions and all AI flows for better logging and user-friendly, schema-compliant error returns. Resolved all `output!` non-null assertion risks. `AiOutputCard` displays errors prominently with an icon.
+*   **Reviewed `package.json` for Technical Debt:** No immediate issues found beyond prior `@types/handlebars` removal. `patch-package` presence noted.
 
 **2. Key Feature Enhancements & Foundational AI Work (Completed):**
 *   **Matured Core RAG Pipeline (Document Q&A):**
     *   `answerGs1Questions` flow now accepts structured `documentChunks` (via `AnswerGs1QuestionsInputSchema` with `sourceName`, `pageNumber`, `sectionTitle`).
-    *   LLM prompted to generate `citedSources` and `reasoningSteps`.
+    *   LLM prompted to generate `citedSources` and AI-generated `reasoningSteps`.
     *   Q&A UI (`/qa`) allows optional metadata input and displays citations/reasoning.
 *   **Implemented Error Detection Feature (`/analysis/error-detection`):**
-    *   `detectStandardErrors` flow analyzes content for errors, inconsistencies, ambiguities, providing suggestions and AI-generated `reasoningSteps`. UI implemented.
+    *   `detectStandardErrors` flow analyzes content for errors, inconsistencies, ambiguities, providing suggestions and AI-generated `reasoningSteps`. UI implemented with an introductory card.
 *   **Enhanced Independent Research Flow (`/research`):**
-    *   `webSearch` tool in `conductIndependentResearch` flow now has a structured output schema (`title`, `link`, `snippet`) and more varied mock data. Prompt enhanced for iterative search and synthesis.
+    *   `webSearch` tool in `conductIndependentResearch` flow now has a structured output schema (`title`, `link`, `snippet`) and more varied mock data. Prompt enhanced for iterative search and synthesis from structured results.
 *   **Prototyped Embedding Generation Flow (`generate-document-embeddings.ts`):**
     *   Conceptual flow using a mock `mockEmbeddingGeneratorTool` to simulate embedding generation for document chunks.
 *   **Conceptual Vector Store Interaction & Advanced Q&A Flow (`/advanced/qa-vector-search`):**
-    *   Conceptual `queryVectorStoreTool` in `src/ai/tools/vector-store-tools.ts` enhanced to accept mock `queryEmbedding` and use an internal mock vector DB with rudimentary keyword relevance.
-    *   `answerGs1QuestionsWithVectorSearch` flow refactored for an explicit RAG pipeline (simulate query embed -> call tool -> synthesize answer). Handles empty search results. UI implemented.
+    *   Conceptual `queryVectorStoreTool` in `src/ai/tools/vector-store-tools.ts` enhanced to accept mock `queryEmbedding`, perform rudimentary keyword-based relevance on internal mock data, and simulate empty results.
+    *   `answerGs1QuestionsWithVectorSearch` flow refactored for an explicit RAG pipeline (simulate query embed -> call tool -> synthesize answer). Handles empty search results. UI implemented and enhanced to display retrieved chunk count.
 *   **Conceptual Knowledge Graph Interaction & Demo (`/advanced/kg-query-demo`):**
-    *   Conceptual `queryKnowledgeGraphTool` in `src/ai/tools/knowledge-graph-tools.ts` created with mock KG data.
-    *   `demonstrateKgQuery` flow and UI implemented to test this conceptual tool, with refined error/empty result handling.
-*   **Conceptual Design for KG-Augmented RAG Flow:** Documented within this blueprint how KG and Vector Store tools could be combined.
+    *   Conceptual `queryKnowledgeGraphTool` in `src/ai/tools/knowledge-graph-tools.ts` created with mock KG data and refined error/empty result handling.
+    *   `demonstrateKgQuery` flow and UI (`/advanced/kg-query-demo`) implemented to test this conceptual tool.
+*   **Conceptual Design for KG-Augmented RAG Flow:** Documented within this blueprint how KG and Vector Store tools could be combined for advanced RAG.
 *   **Code Structure & Refinements:** Centralized Zod schemas (`DocumentChunkSchema`, etc.) in `src/ai/schemas.ts`.
-*   **UI Enhancements & Consistency:** Placeholder images and `data-ai-hint` attributes added to feature pages. Navigation updated. Metric tooltips added to `AiOutputCard`.
+*   **UI Enhancements & Consistency:** Placeholder images and `data-ai-hint` attributes added to introductory cards on feature pages. Navigation updated. Metric tooltips added to `AiOutputCard`.
 *   **Initiated "Interactive Identifier Validator" Feature (`/validation/identifier`):**
-    *   AI flow (`validate-identifier.ts`) with mock validation rules, server action, and UI page implemented.
+    *   AI flow (`validate-identifier.ts`) with mock validation rules, server action, and UI page implemented. UI and flow refined for clarity and robustness.
 
 **3. Priorities & Metrics for Firebase (Guiding Phase 1 - Achieved):**
-Phase 1 successfully focused on stable deployment, conceptual RAG setup, Genkit tool/flow development, and preparing for Vertex AI integration. Metrics related to deployment stability, initial RAG performance, and Genkit flow execution were implicitly addressed by achieving a functional application.
+Phase 1 successfully focused on stable deployment, conceptual RAG setup, Genkit tool/flow development, and preparing for Vertex AI integration. Metrics related to deployment stability, initial RAG performance, and Genkit flow execution were implicitly addressed by achieving a functional application with robust error handling and configuration.
 
 ### B. Phase 2: Infrastructure Maturation & Advanced Feature Integration (Active)
 This phase, now active, focuses on building out the backend infrastructure required for the ultimate vision and integrating more sophisticated AI capabilities.
@@ -171,7 +171,7 @@ This phase, now active, focuses on building out the backend infrastructure requi
         3.  Create Genkit tools to interact with this reasoner.
         4.  Pilot NeSy integration: Have LLM-driven flows (e.g., for compliance checking or standard interpretation) consult the symbolic reasoner and KG to verify outputs or derive logically sound conclusions for specific, well-defined scenarios.
 *   **Advanced KG-RAG & Context Fusion:**
-    *   Implement more sophisticated KG-RAG techniques: multi-hop KG queries for richer context, using KG relationships to re-rank or filter vector search results, context fusion algorithms.
+    *   Implement more sophisticated KG-RAG techniques: multi-hop KG queries for richer context, using KG relationships to re-rank or filter vector search results, context fusion algorithms (e.g., Reciprocal Rank Fusion - RRF).
 *   **Initial Multi-modal RAG/Ingestion:**
     *   Leverage Gemini's multi-modal capabilities or advanced Document AI features to extract and structure information from tables and key diagrams within standards documents.
     *   Make this structured multi-modal information queryable/retrievable by RAG and linked in the KG.
@@ -226,7 +226,7 @@ This phase focuses on realizing the full "Albert Einstein" vision for ISA.
 ### Summary Roadmap Table (Ultimate Vision)
 | Phase                                                              | Timeline            | Key Firebase/GCP Actions/Adjustments                                                                                                                                                             | Key ISA Features/Workflows Evolving                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Key Priorities for Firebase                                                                                                                              | Key Metrics for Firebase                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | :----------------------------------------------------------------- | :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Phase 1: Foundational Strengthening & Core Capability Enhancement** | **(Completed)**     | Optimized App Hosting config. Hardened Firestore rules. Secrets mgt. CI/CD outline. Basic monitoring outline. Error handling refactor. Deployment clarification (App Hosting primary).                | **Completed:** Core RAG pipeline foundation (structured input, AI citations/reasoning for Q&A, Error Detection). Enhanced mock `webSearch`. Implemented Error Detection. Conceptual embedding & vector search flows/tools (refined mocks). Conceptual KG tool & demo flow/UI. UI polish (images, nav, tooltips). Code refactoring (schemas, error handling). Initiated "Identifier Validator" (backend & UI).                                                                                                                                                                                                                              | Enable stable deployment. Facilitate RAG setup. Support Genkit tool/flow dev. Ensure Vertex AI integration conceptualized.                               | Deployment stability. RAG performance (conceptual). Genkit flow success rate. Dev velocity. Baseline cost.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Phase 1: Foundational Strengthening & Core Capability Enhancement** | **(Completed)**     | Optimized App Hosting config. Hardened Firestore rules. Secrets mgt. CI/CD outline (for App Hosting). Basic monitoring outline. Error handling refactor (AI flows, server actions). Deployment clarification (App Hosting primary). `firebase.json` simplified for App Hosting. | **Completed:** Core RAG pipeline foundation (structured input, AI citations/reasoning for Q&A, Error Detection). Enhanced mock `webSearch` (structured output). Implemented Error Detection feature. Conceptual embedding flow. Conceptual vector search flow/tool (mock embeddings, explicit RAG pipeline) & UI. Conceptual KG tool & demo flow/UI. UI polish (images, nav, tooltips). Code refactoring (schemas, comprehensive error handling). Initiated "Identifier Validator" (backend AI & UI). | Enable stable deployment. Facilitate RAG setup. Support Genkit tool/flow dev. Ensure Vertex AI integration conceptualized. Guidance on robust error handling and deployment. | Deployment stability. RAG performance (conceptual, citations, reasoning). Genkit flow success rate & error handling. Dev velocity. Baseline cost. User feedback on initial features.                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | **Phase 2A: Live RAG & Basic KG Implementation**                   | **Next 3-6 Months** | Setup Cloud Storage, Eventarc, Document AI (for ETLVRE v1). Provision Vertex AI Vector Search. Provision AlloyDB AI/Spanner Graph (for KG v1). Integrate these with Genkit tools. Setup Vertex AI Pipeline for RAG index. | **Implement:** Live RAG with Vertex AI Vector Search. ETLVRE v1 for core docs. Basic KG v1 populated. Real Genkit tools for Vector Search & KG v1. Initial KG-RAG pilot flow. "Interactive Identifier Validator" with basic symbolic rules & KG v1 integration. UI for `/advanced/qa-vector-search` & `/advanced/kg-query-demo` use live (but basic) backends.                                                                                                                                                                                                                                                                | Ensure scalable/cost-effective live data backends (Vector Search, AlloyDB/Spanner, Document AI). Facilitate Genkit integration with these services. Support initial MLOps (Vertex AI Pipelines for RAG index). | Vector DB/KG v1 query latency & ingestion. Accuracy of Identifier Validator. User feedback on live RAG. MLOps v1 pipeline success rate.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | **Phase 2B: Early NeSy & Deeper KG-RAG**                           | **6-18 Months**     | Expand ETLVRE (v2) & KG (v2). Support integration of symbolic rule engine (custom Python on App Hosting/Cloud Run). Enhance MLOps for KG updates.                                                   | **Implement:** Expanded ETLVRE & KG. Early NeSy components (symbolic reasoner + LLM for specific tasks). Advanced KG-RAG techniques. Initial multi-modal ingestion (tables/diagrams). "Automated Standard Impact Analyzer" (Pilot). Enhanced XAI (KG paths, rule traces).                                                                                                                                                                                                                                                        | Support complex Genkit orchestration (LLM + KG + Symbolic Engine). Facilitate MLOps for KG. Guidance on NeSy component integration.                     | Accuracy of Impact Analyzer pilot. Performance of advanced KG-RAG. User engagement with enhanced XAI. KG v2 data quality.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | **Phase 3: Scalable Vision, Ultimate AI & Future-Proofing**        | **1.5–3+ Years**    | Support API Gateway. Global distribution configs. Infrastructure for RLAIF, Causal AI model training/serving. Temporal KG storage. Advanced MLOps for CT & full lifecycle.                         | **Implement:** Mature NeSy Engine. Causal Inference models. GS1-RLAIF for key tasks. Verifiable Standard Generation (simple cases). Temporal KG & Concept Forecasting. Proactive & Personalized UX. Full Multi-modal understanding & generation. Advanced Interactive & Causal XAI.                                                                                                                                                                                                                                                        | Support cutting-edge AI research to production. Provide resilient, global, cost-efficient infra. Champion modular/API-first design. Facilitate Responsible AI. | Innovation velocity. Platform TCO. Adaptability (new AI tech integration ease). Trust & Responsibility metrics. Ecosystem impact.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -290,34 +290,159 @@ The synthesized hybrid architecture prioritizes:
 *   **Modularity for Advanced AI:** Allows for the future integration of specialized components like symbolic reasoners or causal inference models, potentially as separate Cloud Run services orchestrated by Genkit.
 
 ### D. Key AI Methodologies & Concepts (Ultimate Vision)
-*(This new section would briefly define NeSy, Causal Inference, RLAIF, Temporal Graph Learning, Advanced KG-RAG, and Multi-modal RAG in the context of ISA, for readers of the blueprint.)*
-*   **Neuro-Symbolic AI (NeSy):** Combines neural networks (like LLMs) with symbolic reasoning (formal logic, rules) to achieve more robust, verifiable, and explainable AI. For ISA, this means LLMs for understanding/generation guided and validated by a formal representation of GS1 rules in a KG.
-*   **Causal AI / Inference:** Moves beyond correlation to understand cause-and-effect relationships. For ISA, this could analyze the impact of a standard change or explain *why* a rule exists.
-*   **Reinforcement Learning from AI Feedback (RLAIF) - GS1-RLAIF:** A technique to fine-tune AI models using feedback generated by another AI (the critic). "GS1-RLAIF" implies the critic is specialized to evaluate ISA's outputs against GS1 quality, compliance, and accuracy standards.
-*   **Temporal Graph Learning:** Analyzing and modeling how knowledge graphs change over time. Essential for ISA to understand standards evolution, versioning, and historical context.
-*   **Advanced KG-RAG:** Enhancing Retrieval Augmented Generation by deeply integrating Knowledge Graph queries to augment context, refine queries, re-rank results, and enable multi-hop reasoning over structured data before LLM synthesis.
-*   **Multi-modal RAG:** Extending RAG to understand and retrieve information from non-textual data like tables, diagrams, and images within standards documents.
+This section briefly defines the advanced AI methodologies central to achieving ISA's ultimate vision, providing context for the roadmap and architectural decisions.
+
+*   **Neuro-Symbolic AI (NeSy):** This paradigm combines the strengths of neural networks (like LLMs, excellent at pattern recognition, understanding natural language, and probabilistic reasoning) with symbolic AI (formal logic, rule-based systems, knowledge graphs, capable of precise, verifiable, and explainable reasoning). For ISA, NeSy aims to:
+    *   Represent GS1 rules and constraints formally within or alongside the Knowledge Graph.
+    *   Use symbolic reasoners to validate LLM outputs against these formal rules, ensuring compliance and consistency.
+    *   Guide LLM generation with symbolic constraints to produce more accurate and verifiable content (e.g., standard clauses).
+    *   Enable deeper, more trustworthy explanations by tracing reasoning through both neural and symbolic components.
+
+*   **Causal AI / Causal Inference:** This field moves beyond identifying correlations in data to understanding true cause-and-effect relationships. For ISA, Causal AI will enable:
+    *   **Impact Analysis:** To determine the likely downstream effects of a proposed change to a standard (e.g., "If rule X is modified, what other rules, systems, or processes are causally affected?").
+    *   **Root Cause Analysis:** To understand *why* certain issues or inconsistencies arise in standards or their application.
+    *   **Counterfactual Reasoning:** To explore "what if" scenarios related to standards development or implementation.
+
+*   **Reinforcement Learning from AI Feedback (RLAIF) - GS1-RLAIF:** A technique for fine-tuning AI models (primarily LLMs) using feedback generated by another AI model (the "critic" or "reward model"). "GS1-RLAIF" specifies that this critic model is specialized to evaluate ISA's outputs against GS1's own quality, compliance, accuracy, and stylistic standards, potentially informed by the NeSy KG and symbolic rules. This allows for:
+    *   **Continuous Improvement:** ISA can learn and adapt its responses to better align with GS1-specific requirements without constant manual re-prompting or retraining on human-labeled data.
+    *   **Scalable Quality Assurance:** Automates parts of the quality control process for AI-generated content.
+
+*   **Temporal Graph Learning:** This involves techniques for analyzing and modeling how knowledge graphs change and evolve over time. For ISA, which deals with standards that are regularly updated and versioned, this is crucial for:
+    *   **Understanding Standards Evolution:** Tracking how specific rules, definitions, and relationships within GS1 standards have changed across different versions.
+    *   **Historical Context:** Answering queries that depend on the state of a standard at a particular point in time.
+    *   **Supporting Concept Forecasting:** Identifying trends in how concepts within the standards domain evolve, which can feed into predictive capabilities.
+
+*   **Advanced KG-RAG (Knowledge Graph - Retrieval Augmented Generation):** This enhances standard RAG by deeply integrating the Knowledge Graph into the retrieval and generation process. Techniques include:
+    *   **Query Augmentation:** Using the KG to expand or disambiguate user queries before searching the vector store.
+    *   **Hybrid Retrieval:** Combining vector similarity search with structured KG queries to find both relevant text passages and precise factual entities.
+    *   **Context Fusion & Re-ranking:** Using KG relationships or entity properties to re-rank or filter results from the vector store, or to fuse information from both sources into a richer context for the LLM.
+    *   **Multi-hop Reasoning:** Enabling the LLM to traverse multiple relationships in the KG to gather comprehensive context before synthesizing an answer.
+
+*   **Multi-modal RAG & Understanding:** This extends RAG and general AI understanding beyond text to include other data modalities present in standards documents, such as:
+    *   **Tables:** Extracting structured data from tables.
+    *   **Diagrams & Flowcharts:** Interpreting the meaning and relationships depicted in visual elements.
+    *   **Equations & Formulas:** Understanding and potentially executing or validating them.
+    ISA will leverage multi-modal capabilities of models like Gemini to ingest and reason over this diverse information, making its understanding of standards documents more holistic.
 
 ## IV. Key Priorities and Success Metrics for Firebase Engagement (Revised)
-*(This section would be updated to reflect the priorities and metrics for the new phased roadmap towards the Ultimate Vision, emphasizing support for advanced data services, complex Genkit orchestration, MLOps for the full AI lifecycle, and enabling cutting-edge AI research translation.)*
+This section outlines the evolving priorities and success metrics for Firebase's engagement with the ISA project, aligned with the "Ultimate Vision" and its phased realization.
+
+**A. Short-Term Priorities (Phase 1 Completion & Phase 2A Initiation - Next 0-6 Months from "Ultimate Vision" adoption):**
+*   **Priorities:**
+    1.  **Solidify Phase 1 Achievements:** Ensure all foundational strengthening tasks (App Hosting config, Firestore security, secrets, error handling, CI/CD outline) are robust and documented as complete.
+    2.  **Initiate ETLVRE Pipeline v1:** Support the setup of Cloud Storage, Eventarc triggers, and initial Document AI integration for parsing core GS1 documents. Assist with Genkit flow development for embedding generation using Vertex AI Embeddings API.
+    3.  **Facilitate Live Vector Store Integration (Vertex AI Vector Search):** Provide best-practice guidance for provisioning Vertex AI Vector Search and integrating it with Genkit via a real (non-mocked) tool.
+    4.  **Support Basic KG v1 Implementation (AlloyDB AI/Spanner Graph):** Guide schema definition for core GS1 entities and assist with Genkit tool development for querying this basic KG.
+    5.  **Enable Initial KG-RAG Pilot:** Support the development of a Genkit flow demonstrating basic KG augmentation of the RAG pipeline.
+*   **Success Indicators:**
+    *   Core GS1 documents successfully parsed by Document AI and embeddings stored in a live Vertex AI Vector Search instance.
+    *   Basic KG (v1) populated with core GS1 entities and queryable via a Genkit tool.
+    *   `answerGs1QuestionsWithVectorSearch` flow successfully using the live vector store.
+    *   Pilot KG-RAG flow demonstrates improved contextual responses for specific test queries.
+    *   CI/CD pipeline for App Hosting deployment is functional.
+
+**B. Medium-Term Priorities (Phase 2B Execution - 6-18 Months from "Ultimate Vision" adoption):**
+*   **Priorities:**
+    1.  **Scale ETLVRE & KG (v2):** Support ingestion of a broader range of documents. Assist with advanced parsing, semantic chunking, and expanding the KG schema with more complex rules and relationships.
+    2.  **Enable Early NeSy Component Development:** Provide guidance on integrating custom Python-based symbolic rule engines (potentially on Cloud Run or App Hosting backend) with Genkit flows and the KG.
+    3.  **Support Advanced KG-RAG & Context Fusion:** Assist with Genkit patterns for multi-hop KG queries, RRF, and other context fusion techniques.
+    4.  **Facilitate Initial Multi-modal RAG/Ingestion:** Ensure Genkit and Vertex AI Gemini integration supports processing and retrieving information from tables/diagrams.
+    5.  **Support MLOps v2 Implementation (Vertex AI Pipelines):** Guide the automation of KG update pipelines and the setup of basic monitoring for RAG/KG quality.
+*   **Success Indicators:**
+    *   Expanded KG (v2) and RAG index covering a significant portion of key GS1 standards.
+    *   Successful pilot of a NeSy component verifying LLM outputs for a defined set of rules.
+    *   Demonstrable improvement in RAG relevance and answer accuracy through advanced KG-RAG.
+    *   "Automated Standard Impact Analyzer (Pilot)" delivers insightful results for test cases.
+    *   Automated MLOps pipelines for KG updates are operational.
+
+**C. Long-Term Priorities (Phase 3 Realization - 1.5–3+ Years):**
+*   **Priorities:**
+    1.  **Enable Mature NeSy, Causal AI, and GS1-RLAIF:** Provide infrastructure and integration support for these cutting-edge AI capabilities, leveraging advanced Vertex AI services for custom training, model serving, and complex orchestrations.
+    2.  **Support Globally Scalable & Resilient Architecture:** Ensure Firebase App Hosting, API Gateway, and backend GCP services can scale globally and cost-effectively.
+    3.  **Champion Responsible AI & Knowledge Governance:** Facilitate the integration of Google's Responsible AI toolkit and provide patterns for robust knowledge governance in a dynamic KG/RAG system.
+    4.  **Foster Innovation in Standards AI:** Partner with the ISA team to explore and implement novel AI applications in the standards domain.
+*   **Success Indicators:**
+    *   ISA demonstrates verifiable reasoning for complex compliance scenarios using its NeSy engine.
+    *   GS1-RLAIF leads to measurable improvements in the quality of ISA's outputs.
+    *   "Concept forecasting" provides actionable insights into standards evolution.
+    *   ISA is recognized as a trustworthy, indispensable AI partner within the GS1 ecosystem.
+    *   Platform maintains high availability, performance, and security SLOs at scale.
+
+**D. Overarching Metrics for Success (Continuous):**
+*   User Adoption & Satisfaction (GS1 internal staff, potentially external members).
+*   Operational Efficiency Gains for GS1 (quantifiable improvements).
+*   Accuracy, Reliability & Verifiability of ISA's Outputs.
+*   System Performance & Scalability (SLOs met).
+*   Cost-Effectiveness (TCO relative to value).
+*   Innovation Velocity & Thought Leadership in AI for Standards.
 
 ## V. Essential Documentation for Full ISA Development (Expanded)
-*(This section's existing structure is good. It would be updated to explicitly call out the need for deep documentation on the novel AI components (NeSy design, Causal AI models, RLAIF systems, Temporal KG schema) as they are developed in later phases.)*
+To support the "Ultimate Vision" for ISA, the existing call for comprehensive documentation remains critical and needs to be expanded to cover the advanced AI methodologies and more complex MLOps/governance processes. The goal is an "Elite Developer Onboarding Experience" and "Automated Software Development Perfection."
+
+**A. System Architecture & Design Documents (Evolving with Phases):**
+*   Overall System Architecture (C4 model, regularly updated).
+*   Detailed Component Design Specs (Frontend, Backend Genkit Flows, ETLVRE Pipeline, Vector Store, KG Store, NeSy Engine, Causal Models, RLAIF components).
+*   AI Module Designs: Deep dives into RAG (advanced), KG (temporal, semantic reconciliation), NeSy (formal rule language, reasoner integration), Causal Inference models, RLAIF critic/reward models.
+*   Data Models: Conceptual, Logical, Physical models for all data stores, including detailed KG ontology and vector metadata.
+*   AI Model Inventory & Prompt Library (versioned, including prompts for RLAIF critics).
+
+**B. Development & Setup Documentation:**
+*   Developer Environment Setup Guide (Nix, Python venv, Firebase Emulators, Genkit CLI).
+*   Build and Deployment (CI/CD) Instructions (GitHub Actions for App Hosting, Vertex AI Pipelines).
+*   Coding Standards (Python PEP8, TypeScript, Genkit best practices).
+*   Testing Strategy: Unit, integration, E2E tests. Specialized tests for RAG (faithfulness, relevance), KG (consistency, query accuracy), NeSy (rule coverage, reasoning correctness), and RLAIF (critic accuracy, reward model stability).
+*   Secrets Management & Advanced Security Guidelines (including data governance for KG/RAG, prompt injection mitigation).
+
+**C. API & SDK Documentation:**
+*   Internal API Specifications (OpenAPI for any microservices, Genkit tool interfaces).
+*   External API Integration Guides (deep dives into Document AI, Vertex AI services, etc.).
+
+**D. Configuration Management Documentation:**
+*   Comprehensive explanation of all config files (`firebase.json`, `apphosting.yaml`, Genkit configs, Vertex AI Pipeline configs, `.env.example`).
+*   Environment-Specific Configuration Management strategy.
+
+**E. Operational & Maintenance Documentation (MLOps & SRE Focus):**
+*   Monitoring and Logging Procedures (Google Cloud Monitoring, LangSmith, custom AI performance metrics).
+*   Troubleshooting Guides (for complex AI pipeline failures, KG inconsistencies, NeSy reasoning errors).
+*   **Knowledge Base Update & Governance Processes (Critical for MLOps):** Detailed procedures for the ETLVRE pipeline, versioning of source docs/embeddings/KG entities, automated validation and reconciliation strategies for the KG, and RLAIF feedback loop management.
+*   Incident Response Plan for AI-specific failures.
+
+**F. GS1 Domain Knowledge & ISA Application Logic Documentation:**
+*   Core GS1 Standards Reference (continuously updated repository of key documents).
+*   **ISA's Formalized Interpretation of GS1 Rules (for NeSy):** How GS1 rules are translated into the formal language used by the symbolic reasoner and KG.
+*   User Stories mapped to specific AI capabilities (e.g., "As a standards developer, I want ISA to generate a verifiable draft of a new rule based on these requirements, so I can accelerate the standards process.").
+
+**G. Onboarding Materials for New AI/ML Engineers & Domain Experts:**
+*   Tailored guides for understanding ISA's specific AI architecture (RAG, KG, NeSy, RLAIF) and its application to the GS1 domain.
 
 ## VI. Conclusion and Strategic Recommendations for Firebase (Revised)
-*(This section would be updated to emphasize Firebase/GCP's role in enabling the "Ultimate Vision" for ISA, focusing on the partnership needed to integrate and scale advanced AI services and MLOps practices.)*
+The "Ultimate Vision" for ISA is exceptionally ambitious, aiming to create a truly transformative AI for the GS1 standards ecosystem. Achieving this requires not only cutting-edge AI development but also a robust, scalable, and highly integrated cloud platform. Firebase and Google Cloud Platform, with Genkit and Vertex AI at their core, provide the necessary building blocks.
+
+**Strategic Recommendations for Firebase (Reiterated & Enhanced for Ultimate Vision):**
+1.  **Deep Partnership on Advanced AI Integration:** Firebase should act as a close technical partner in helping ISA integrate and optimize advanced Vertex AI services (Vector Search, Document AI, Pipelines, custom model training for RLAIF/Causal AI) with Genkit. This may involve co-development of best practices or even new Genkit plugins if needed.
+2.  **Enable Sophisticated MLOps for AI-centric Systems:** Provide strong support and clear patterns for building comprehensive MLOps pipelines on Vertex AI that manage the entire lifecycle of ISA's knowledge base (ETLVRE, RAG index, dynamic KG) and its evolving AI models/prompts (especially for RLAIF).
+3.  **Champion Verifiable & Responsible AI:** Actively support ISA's goal of "verifiable reasoning" by providing guidance on NeSy architectures on GCP and facilitating the use of Google's Responsible AI toolkit for bias detection, explainability, and security in complex AI systems.
+4.  **Ensure Scalability & Cost-Effectiveness for Complex AI Workloads:** Proactively work with the ISA team to optimize the performance and cost of high-volume data processing (Document AI, Dataflow), large-scale vector/graph databases (AlloyDB AI, Spanner Graph, Vector Search), and computationally intensive AI tasks (advanced reasoning, RLAIF training) on GCP.
+5.  **Foster a World-Class Developer Experience for Complex AI on Firebase:** Continue to enhance Firebase Studio, Genkit, and their integrations with Vertex AI to simplify the development, debugging, testing, and deployment of sophisticated, multi-component AI applications like the ultimate ISA.
+
+The journey to the "Albert Einstein of GS1 standards development" is a marathon, not a sprint. By updating our strategic blueprint to reflect this ultimate vision, we align our efforts towards this transformative goal.
 
 ## VII. Development Log & Key Decisions (Summary - Phase 1 Completed)
-This section will now primarily serve as a concise marker of Phase 1 completion. Detailed logs for future phases will be maintained as development progresses.
+This section now serves as a concise marker of Phase 1 completion. Detailed achievements and decisions from Phase 1 have been integrated into the main narrative of Section II.A.
 
-*   **Phase 1: Foundational Strengthening & Core Capability Enhancement - COMPLETED (October 26, 2023).**
-    *   Established core project structure on Next.js/Firebase App Hosting with Genkit for AI.
-    *   Implemented initial versions of Document Q&A, Standards Analysis, Error Detection, NL-to-Formal, Independent Research, and Identifier Validator (conceptual).
-    *   Created conceptual tools for Vector Search and KG Query, with basic UI demonstrations.
-    *   Enhanced RAG foundation with AI-generated citations/reasoning and structured input concepts.
-    *   Addressed foundational Firebase configurations (App Hosting, Firestore security, secrets, CI/CD planning).
-    *   Refined AI flow error handling for robustness.
-    *   Completed comprehensive update of this `docs/blueprint.md` to serve as the strategic source-of-truth for the "Ultimate Vision."
+*   **Phase 1: Foundational Strengthening & Core Capability Enhancement - COMPLETED (as of October 26, 2023 - simulated date).**
+    *   Established core project structure (Next.js/Firebase App Hosting, Genkit, Server Actions).
+    *   Implemented initial versions of Document Q&A (with structured input, AI citations/reasoning), Standards Analysis, Error Detection (with AI reasoning), NL-to-Formal, Independent Research (enhanced mock search).
+    *   Created conceptual tools/flows for Vector Search (with UI) and KG Query (with UI), including refined mock logic and error handling.
+    *   Prototyped conceptual embedding generation flow.
+    *   Completed foundational Firebase configurations (App Hosting, Firestore security, secrets, CI/CD planning, simplified `firebase.json`).
+    *   Refined AI flow error handling comprehensively (no `output!` assertions, schema-compliant error returns).
+    *   Addressed key feedback from Gemini Code Assist review.
+    *   Enhanced UI consistency (placeholder images, navigation, tooltips).
+    *   Initiated "Interactive Identifier Validator" (backend AI & UI).
+    *   This `docs/blueprint.md` document has been comprehensively updated to serve as the strategic source-of-truth for the "Ultimate Vision."
 
 ---
-This revised `docs/blueprint.md` content reflects the significantly more ambitious "Ultimate Vision" for ISA. It sets a clear, albeit challenging, path forward.
+This `docs/blueprint.md` is now significantly updated to reflect the "Ultimate Vision" and the detailed synthesized roadmap required to achieve it.
+
+I'm ready for the next step. We are at the beginning of **Phase 2A**. Given our previous "Next Action" was to enhance the "Q&A with Vector Search" UI and Flow Robustness, I will proceed with that, keeping this newly expanded "Ultimate Vision" as our guiding context.
