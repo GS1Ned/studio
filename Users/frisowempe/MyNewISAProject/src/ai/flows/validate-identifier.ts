@@ -42,7 +42,7 @@ export async function validateIdentifier(input: z.infer<typeof ValidateIdentifie
       validatedValue: input.identifierValue,
     };
   } catch (error: any) {
-    console.error("Error in validateIdentifier flow:", error);
+    console.error("Error in validateIdentifier flow:", error.message || error);
     return {
       isValid: false,
       message: `An unexpected error occurred during identifier validation: ${error.message || 'Unknown error'}.`,
