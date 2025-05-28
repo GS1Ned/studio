@@ -33,41 +33,55 @@ const DocumentChunkWithEmbeddingSchema = DocumentChunkSchema.extend({
 type DocumentChunkWithEmbedding = z.infer<typeof DocumentChunkWithEmbeddingSchema>;
 
 
-// Mock internal vector store
+// Expanded Mock internal vector store
 const mockVectorDatabase: DocumentChunkWithEmbedding[] = [
   {
     content: "GS1 General Specifications define how GTINs are allocated. Each brand owner is responsible for unique assignment.",
-    sourceName: "GS1 GenSpecs v22.1",
+    sourceName: "GS1 GenSpecs v24.0",
     pageNumber: 45,
     sectionTitle: "2.1 GTIN Allocation Rules",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "The GS1 Digital Link standard allows brands to web-enable their product data using GS1 identifiers.",
+    content: "The GS1 Digital Link standard allows brands to web-enable their product data using GS1 identifiers. It connects physical products to online information.",
     sourceName: "GS1 Digital Link v1.3",
     pageNumber: 12,
     sectionTitle: "Introduction to Digital Link",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "For serial shipping container codes (SSCC), ensure global uniqueness and correct check digit calculation.",
-    sourceName: "GS1 GenSpecs v22.1",
+    content: "For serial shipping container codes (SSCC), ensure global uniqueness and correct check digit calculation. SSCCs are key for logistics.",
+    sourceName: "GS1 GenSpecs v24.0",
     pageNumber: 150,
     sectionTitle: "4.3 SSCC Construction",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "Healthcare supply chains often use GS1 DataMatrix symbols to encode GTINs, batch/lot numbers, and expiry dates.",
-    sourceName: "GS1 Healthcare Guideline",
+    content: "Healthcare supply chains often use GS1 DataMatrix symbols to encode GTINs, batch/lot numbers, and expiry dates for traceability.",
+    sourceName: "GS1 Healthcare Guideline v12",
     pageNumber: 33,
-    sectionTitle: "Barcode Implementation",
+    sectionTitle: "Barcode Implementation for Medical Devices",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   },
   {
-    content: "Interoperability is a key principle of the GS1 system, ensuring data can be shared across different partners and systems.",
-    sourceName: "GS1 System Architecture",
+    content: "Interoperability is a key principle of the GS1 system, ensuring data can be shared across different partners and systems using common standards.",
+    sourceName: "GS1 System Architecture Overview",
     pageNumber: 5,
-    sectionTitle: "Core Principles",
+    sectionTitle: "Core Principles of GS1",
+    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
+  },
+  {
+    content: "Understanding GTIN allocation rules is crucial for avoiding duplicate identifiers in the global supply chain. Refer to GenSpecs for details.",
+    sourceName: "GS1 GTIN Management Standard",
+    pageNumber: 19,
+    sectionTitle: "Preventing GTIN Duplication",
+    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
+  },
+  {
+    content: "GS1 Digital Link URI syntax must follow specific structures to ensure resolvers can correctly interpret them and redirect users.",
+    sourceName: "GS1 Digital Link v1.3",
+    pageNumber: 28,
+    sectionTitle: "URI Syntax Specification",
     embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
   }
 ];
@@ -91,22 +105,38 @@ export const queryVectorStoreTool = ai.defineTool(
 
     // Simulate retrieving document chunks.
     // In a real implementation, this would:
-    // 1. Use input.queryEmbedding to query a vector database (e.g., Vertex AI Vector Search, AlloyDB AI with pgvector).
+    // 1. Use input.queryEmbedding to query a vector database.
     // 2. Perform a similarity search and retrieve topK results.
     // 3. Apply any metadata filters if implemented.
 
-    // For this mock, we'll just return a subset of our mockVectorDatabase.
-    // A real similarity search would compare input.queryEmbedding with each chunk's embedding.
-    // Here, we just slice based on topK for simplicity.
-    const retrievedChunks = mockVectorDatabase.slice(0, input.topK).map(chunkWithEmbedding => {
+    // Enhanced Mock: Rudimentary keyword matching for slightly more dynamic results.
+    let "relevant"Chunks: DocumentChunkWithEmbedding[] = [];
+    const queryKeywords = input.queryText.toLowerCase().split(/\s+/).filter(kw => kw.length > 2); // Simple keyword extraction
+
+    mockVectorDatabase.forEach(chunk => {
+      const chunkText = `${chunk.content} ${chunk.sourceName} ${chunk.sectionTitle || ''}`.toLowerCase();
+      if (queryKeywords.some(kw => chunkText.includes(kw))) {
+        relevantChunks.push(chunk);
+      }
+    });
+
+    // If no "relevant" chunks found by keywords, fall back to returning some general chunks to avoid empty results unless specifically tested.
+    if (relevantChunks.length === 0) {
+        relevantChunks = [...mockVectorDatabase]; // Fallback to all if no keywords match
+    }
+    
+    // Shuffle "relevant" chunks to simulate varied search results and then take topK
+    relevantChunks.sort(() => 0.5 - Math.random());
+    const retrievedChunks = relevantChunks.slice(0, input.topK).map(chunkWithEmbedding => {
       // Strip the embedding for the output, as DocumentChunkSchema doesn't include it.
       const { embedding, ...chunk } = chunkWithEmbedding;
       return chunk;
     });
     
     // Simulate some delay
-    await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 400));
+    await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 200));
 
+    console.log(`[MOCK] queryVectorStoreTool returning ${retrievedChunks.length} chunks.`);
     return { results: retrievedChunks };
   }
 );
