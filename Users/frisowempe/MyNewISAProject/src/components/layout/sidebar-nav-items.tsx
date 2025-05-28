@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -19,7 +20,9 @@ import {
   ChevronRight,
   Type,
   Sparkles,
-  FileSearch2, // Added icon
+  FileSearch2,
+  Network, // Added icon
+  ShieldCheck, // Added icon
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -50,7 +53,7 @@ export const navItems: NavItem[] = [
     icon: SearchCheck,
     subItems: [
       { href: "/analysis/standards", label: "Standards Analysis", icon: FileText, isPlaceholder: false },
-      { href: "/analysis/error-detection", label: "Error Detection", icon: AlertTriangle, isPlaceholder: false }, // No longer a placeholder
+      { href: "/analysis/error-detection", label: "Error Detection", icon: AlertTriangle, isPlaceholder: false },
     ],
   },
   {
@@ -70,13 +73,22 @@ export const navItems: NavItem[] = [
       { href: "/generation/auto-doc", label: "Auto Documentation", icon: BookOpen, isPlaceholder: true },
     ],
   },
+  {
+    href: "/validation", // New top-level category
+    label: "Validation",
+    icon: ShieldCheck,
+    subItems: [
+      { href: "/validation/identifier", label: "Identifier Validator", icon: ShieldCheck, isPlaceholder: false },
+    ],
+  },
   { href: "/research", label: "Independent Research", icon: FlaskConical },
   {
     href: "/advanced",
     label: "Advanced Tools",
     icon: Settings2,
     subItems: [
-      { href: "/advanced/qa-vector-search", label: "Q&A (Vector Search)", icon: FileSearch2, isPlaceholder: false }, // New page
+      { href: "/advanced/qa-vector-search", label: "Q&A (Vector Search)", icon: FileSearch2, isPlaceholder: false },
+      { href: "/advanced/kg-query-demo", label: "KG Query Demo", icon: Network, isPlaceholder: false },
       { href: "/advanced/semantic-alignment", label: "Semantic Alignment", icon: Sparkles, isPlaceholder: true },
       { href: "/advanced/linking", label: "Standard Linking", icon: Link2, isPlaceholder: true },
       { href: "/advanced/explainability-demo", label: "Explainability Demo", icon: Lightbulb, isPlaceholder: false },
