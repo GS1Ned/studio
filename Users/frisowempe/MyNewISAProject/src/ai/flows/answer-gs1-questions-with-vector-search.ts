@@ -1,3 +1,4 @@
+
 // src/ai/flows/answer-gs1-questions-with-vector-search.ts
 'use server';
 
@@ -7,7 +8,8 @@
  * 1. Generating an embedding for the user's question (simulated).
  * 2. Querying a vector store tool with this embedding to get relevant document chunks (simulated).
  * 3. Synthesizing an answer from these chunks using an LLM.
- * This flow demonstrates an advanced RAG (Retrieval Augmented Generation) pattern.
+ * This flow demonstrates an advanced RAG (Retrieval Augmented Generation) pattern
+ * with explicit pipeline steps.
  *
  * - answerGs1QuestionsWithVectorSearch - A function that answers questions using vector search.
  * - AnswerGs1QuestionsWithVectorSearchInput - The input type for the function.
@@ -29,7 +31,7 @@ const CitedSourceSchema = z.object({
   sectionTitle: z.string().optional().describe('The title of the section in the cited source document.'),
 });
 
-const AnswerGs1QuestionsWithVectorSearchOutputSchema = z.object({
+export const AnswerGs1QuestionsWithVectorSearchOutputSchema = z.object({
   answer: z.string().describe('The answer to the question, synthesized from retrieved document chunks.'),
   citedSources: z.array(CitedSourceSchema).optional().describe('A list of sources (document chunks) cited by the AI.'),
   reasoningSteps: z.array(z.string()).optional().describe('The steps the AI took to arrive at the answer.'),
@@ -99,7 +101,7 @@ export async function answerGs1QuestionsWithVectorSearch(
   input: AnswerGs1QuestionsWithVectorSearchInput
 ): Promise<AnswerGs1QuestionsWithVectorSearchOutput> {
   let retrievedChunksCount = 0;
-  console.log(`[FLOW_VECTOR_SEARCH] Received input: question="${input.question}", topK=${input.topK}`);
+  console.log(`[FLOW_VECTOR_SEARCH_EXPLICIT] Received input: question="${input.question}", topK=${input.topK}`);
   try {
     // Step 1: Simulate generating an embedding for the user's question.
     const questionEmbedding = await generateMockQueryEmbedding(input.question);
@@ -110,11 +112,11 @@ export async function answerGs1QuestionsWithVectorSearch(
       queryEmbedding: questionEmbedding,
       topK: input.topK,
     };
-    console.log(`[FLOW_VECTOR_SEARCH] Calling queryVectorStoreTool with input:`, JSON.stringify(toolInput, null, 2));
+    console.log(`[FLOW_VECTOR_SEARCH_EXPLICIT] Calling queryVectorStoreTool with input:`, JSON.stringify(toolInput, null, 2));
     const toolOutput = await queryVectorStoreTool(toolInput);
     
     if (!toolOutput || !toolOutput.results) {
-        console.error("[FLOW_VECTOR_SEARCH] queryVectorStoreTool did not return valid results.");
+        console.error("[FLOW_VECTOR_SEARCH_EXPLICIT] queryVectorStoreTool did not return valid results.");
         return {
             answer: "Failed to retrieve information from the conceptual vector store. The tool did not provide valid results.",
             citedSources: [],
@@ -124,20 +126,22 @@ export async function answerGs1QuestionsWithVectorSearch(
     }
     const retrievedDocumentChunks = toolOutput.results;
     retrievedChunksCount = retrievedDocumentChunks.length;
-    console.log(`[FLOW_VECTOR_SEARCH] queryVectorStoreTool returned ${retrievedChunksCount} chunk(s).`);
+    console.log(`[FLOW_VECTOR_SEARCH_EXPLICIT] queryVectorStoreTool returned ${retrievedChunksCount} chunk(s).`);
+    if (retrievedChunksCount > 0) {
+        console.log('[FLOW_VECTOR_SEARCH_EXPLICIT] First retrieved chunk content (preview):', retrievedDocumentChunks[0].content.substring(0, 100) + '...');
+    }
     
     // Step 3: Synthesize an answer from the retrieved chunks using an LLM.
     const synthesisInput = {
       question: input.question,
       documentChunks: retrievedDocumentChunks,
     };
-    console.log(`[FLOW_VECTOR_SEARCH] Calling synthesizeAnswerFromChunksPrompt with ${retrievedDocumentChunks.length} chunks.`);
+    console.log(`[FLOW_VECTOR_SEARCH_EXPLICIT] Calling synthesizeAnswerFromChunksPrompt with ${retrievedDocumentChunks.length} chunks.`);
 
     const { output: synthesisOutput } = await synthesizeAnswerFromChunksPrompt(synthesisInput);
-    // const synthesisOutput = await synthesisOutputP; // This was an error, `output` is not a promise here
 
     if (!synthesisOutput) {
-      console.error('[FLOW_VECTOR_SEARCH] synthesizeAnswerFromChunksPrompt did not return a valid output.');
+      console.error('[FLOW_VECTOR_SEARCH_EXPLICIT] synthesizeAnswerFromChunksPrompt did not return a valid output.');
       return {
         answer: "I encountered an issue generating an answer from the retrieved information. The AI model failed to produce a structured response during synthesis. Please try again.",
         citedSources: [],
@@ -146,14 +150,14 @@ export async function answerGs1QuestionsWithVectorSearch(
       };
     }
     
-    console.log(`[FLOW_VECTOR_SEARCH] Synthesis successful.`);
+    console.log(`[FLOW_VECTOR_SEARCH_EXPLICIT] Synthesis successful. Answer preview: ${synthesisOutput.answer.substring(0,100)}...`);
     return {
       ...synthesisOutput,
       retrievedChunksCount: retrievedChunksCount,
     };
 
   } catch (error: any) {
-    console.error("[FLOW_VECTOR_SEARCH] Error in answerGs1QuestionsWithVectorSearch flow:", error);
+    console.error("[FLOW_VECTOR_SEARCH_EXPLICIT] Error in answerGs1QuestionsWithVectorSearch flow:", error);
     return {
       answer: `An unexpected error occurred while processing your request with vector search: ${error.message || error}. Please check the input or try again later.`,
       citedSources: [],
@@ -163,3 +167,26 @@ export async function answerGs1QuestionsWithVectorSearch(
   }
 }
 
+// Previous ai.defineFlow structure removed to implement the explicit pipeline pattern.
+// const answerGs1QuestionsWithVectorSearchFlow = ai.defineFlow( ... );
+// This was the old structure that would use vectorSearchAgentPrompt with tool calling.
+// The new structure (exported async function directly) implements the explicit steps.
+
+/* Previous vectorSearchAgentPrompt definition - REMOVED
+const vectorSearchAgentPrompt = ai.definePrompt({
+  name: 'vectorSearchAgentPrompt',
+  input: { schema: AnswerGs1QuestionsWithVectorSearchInputSchema },
+  output: { schema: AnswerGs1QuestionsWithVectorSearchOutputSchema },
+  tools: [queryVectorStoreTool],
+  system: `You are an AI assistant that answers questions about GS1 standards.
+First, use the 'queryVectorStoreTool' to retrieve relevant document chunks based on the user's 'question' and 'topK' preference.
+If the tool returns document chunks:
+1. Analyze them to synthesize a clear and concise 'answer' to the user's original 'question'.
+2. Populate the 'citedSources' field with details from the document chunks you primarily used.
+3. Provide a list of 'reasoningSteps' outlining your thought process.
+4. Set 'retrievedChunksCount' to the number of chunks returned by the tool.
+If the tool returns no relevant document chunks:
+1. Set the 'answer' to state that no relevant information was found in the knowledge base.
+2. 'citedSources' should be an empty array.
+3. 'reasoningSteps' should explain that no information was found (e.g., "Queried vector store. No relevant chunks found.").
+4. Set 'retrievedChunksCount' to 
