@@ -190,3 +190,4 @@ If the tool returns no relevant document chunks:
 2. 'citedSources' should be an empty array.
 3. 'reasoningSteps' should explain that no information was found (e.g., "Queried vector store. No relevant chunks found.").
 4. Set 'retrievedChunksCount' to 
+```
