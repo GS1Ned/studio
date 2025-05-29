@@ -18,17 +18,17 @@ export type DemonstrateKgQueryInput = z.infer<typeof DemonstrateKgQueryInputSche
 export type DemonstrateKgQueryOutput = z.infer<typeof QueryKnowledgeGraphOutputSchema>;
 
 export async function demonstrateKgQuery(input: DemonstrateKgQueryInput): Promise<DemonstrateKgQueryOutput> {
-  console.log(`[FLOW_KG_DEMO] Received input: query="${input.queryString}"`);
+  console.log(`[FLOW_KG_DEMO][INPUT] Query: "${input.queryString}"`);
   try {
     const flowOutput = await demonstrateKgQueryFlow(input);
     // The flow itself should return a schema-compliant object or throw an error that would be caught here.
-    // ai.defineFlow is typed to return Promise<OutputSchema>, so flowOutput should conform.
-    console.log(`[FLOW_KG_DEMO] Successfully executed flow.`);
+    console.log(`[FLOW_KG_DEMO][SUCCESS] Successfully executed flow. Summary: ${flowOutput.summary}`);
     return flowOutput;
   } catch (error: any) {
-    console.error('[FLOW_KG_DEMO] Error in demonstrateKgQuery function:', error);
-    return { // Ensure this is schema-compliant
-      summary: `An unexpected error occurred while demonstrating the KG query: ${error.message || 'Unknown error'}. Please check the logs.`,
+    const errorMessage = error.message || 'Unknown error during KG query demonstration.';
+    console.error('[FLOW_KG_DEMO][ERROR] Error in demonstrateKgQuery function:', errorMessage, error.stack);
+    return { 
+      summary: `An unexpected error occurred while demonstrating the KG query: ${errorMessage}`,
       matchedEntities: undefined,
       relatedInformation: undefined,
     };
@@ -43,17 +43,18 @@ const demonstrateKgQueryFlow = ai.defineFlow(
   },
   async (flowInput) => {
     console.log(`[FLOW_KG_DEMO_INTERNAL] Calling queryKnowledgeGraphTool with query: "${flowInput.queryString}"`);
+    
     const toolOutput = await queryKnowledgeGraphTool({ query: flowInput.queryString });
 
     if (!toolOutput) {
-      console.error('[FLOW_KG_DEMO_INTERNAL] queryKnowledgeGraphTool did not return a valid output (was null or undefined).');
-      return { // Must be schema-compliant
+      console.error('[FLOW_KG_DEMO_INTERNAL][ERROR] queryKnowledgeGraphTool did not return a valid output (was null or undefined).');
+      return { 
         summary: 'Error: The Knowledge Graph tool failed to provide any response.',
         matchedEntities: undefined,
         relatedInformation: undefined,
       };
     }
-    console.log(`[FLOW_KG_DEMO_INTERNAL] queryKnowledgeGraphTool returned output. Summary: ${toolOutput.summary}`);
+    console.log(`[FLOW_KG_DEMO_INTERNAL][SUCCESS] queryKnowledgeGraphTool returned output. Summary: ${toolOutput.summary}`);
     return toolOutput;
   }
 );
