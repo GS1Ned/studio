@@ -11,16 +11,16 @@ import type {
   DetectStandardErrorsInput,
   DetectStandardErrorsOutput,
   GenerateDocumentEmbeddingsInput,
-  GenerateDocumentEmbeddingsOutput,
+  GenerateDocumentEmbeddingsOutput, // Output type already includes chunksWithEmbeddings
+  DocumentChunkWithEmbedding, // Exporting the enhanced type
   AnswerGs1QuestionsWithVectorSearchInput,
   AnswerGs1QuestionsWithVectorSearchOutput,
-  DemonstrateKgQueryInput, // Added import
-  DemonstrateKgQueryOutput, // Added import
-  ValidateIdentifierInput, // Added import
-  ValidateIdentifierOutput, // Added import
-} from "@/ai/flows";
-import { GS1IdentifierType } from "./schemas";
-
+  DemonstrateKgQueryInput,
+  DemonstrateKgQueryOutput,
+  ValidateIdentifierInput,
+  ValidateIdentifierOutput,
+  GS1IdentifierType, // Already exported from schemas via this file
+} from "@/ai/flows"; // Ensure all flow types are exported from flows/index.ts
 
 // Re-exporting for convenience, or define specific app-level types if needed
 export type {
@@ -36,13 +36,14 @@ export type {
   DetectStandardErrorsOutput,
   GenerateDocumentEmbeddingsInput,
   GenerateDocumentEmbeddingsOutput,
+  DocumentChunkWithEmbedding, // Ensure this is exported
   AnswerGs1QuestionsWithVectorSearchInput,
   AnswerGs1QuestionsWithVectorSearchOutput,
-  DemonstrateKgQueryInput, // Added export
-  DemonstrateKgQueryOutput, // Added export
-  ValidateIdentifierInput, // Added export
-  ValidateIdentifierOutput, // Added export
-  GS1IdentifierType, // Added export
+  DemonstrateKgQueryInput,
+  DemonstrateKgQueryOutput,
+  ValidateIdentifierInput,
+  ValidateIdentifierOutput,
+  GS1IdentifierType,
 };
 
 export interface ExplainableOutput {
@@ -70,3 +71,4 @@ export type KgDemoResultWithExplainability = DemonstrateKgQueryOutput & Explaina
 export type ValidationResultWithExplainability = ValidateIdentifierOutput & ExplainableOutput;
 
 // No specific UI for embeddings yet, so no "WithExplainability" type needed for now.
+// However, the GenerateDocumentEmbeddingsOutput type itself is useful.
