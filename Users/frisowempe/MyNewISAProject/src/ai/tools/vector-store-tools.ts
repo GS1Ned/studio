@@ -1,22 +1,26 @@
+
 'use server';
 /**
- * @fileOverview Conceptual tools for interacting with a vector store.
- * These are placeholders and would need to be integrated with a real vector database.
+ * @fileOverview Tool for interacting with a vector store.
+ * This version is designed to connect to Vertex AI Vector Search.
  *
- * - queryVectorStoreTool - A conceptual tool to query a vector store for relevant document chunks using an embedding.
+ * - queryVectorStoreTool - Tool to query Vertex AI Vector Search for relevant document chunks.
  */
 
 import { ai } from '@/ai/genkit';
 import { DocumentChunkSchema } from '@/ai/schemas';
 import { z } from 'zod';
+import { PredictionServiceClient, IndexEndpointServiceClient } from '@google-cloud/aiplatform';
+import {google} from '@google-cloud/aiplatform/build/protos/protos'; // For FindNeighborsRequest structure
 
 // Input schema for querying the vector store
 const QueryVectorStoreInputSchema = z.object({
   queryText: z.string().describe('The original natural language query text (for logging/context).'),
   queryEmbedding: z.array(z.number()).describe('The embedding vector of the query.'),
   topK: z.number().optional().default(5).describe('The number of top results to return.'),
-  // In a real scenario, you might add filters for metadata like sourceName, etc.
-  // metadataFilter: z.record(z.string(), z.any()).optional().describe('Metadata filters to apply to the search.'),
+  // Vertex AI Specific (Optional, can be read from ENV vars if not provided)
+  indexEndpointId: z.string().optional().describe('The ID of the Vertex AI Index Endpoint.'),
+  deployedIndexId: z.string().optional().describe('The ID of the Deployed Index on the Endpoint.'),
 });
 export type QueryVectorStoreInput = z.infer<typeof QueryVectorStoreInputSchema>;
 
@@ -26,126 +30,100 @@ const QueryVectorStoreOutputSchema = z.object({
 });
 export type QueryVectorStoreOutput = z.infer<typeof QueryVectorStoreOutputSchema>;
 
-// Define the schema for a document chunk that includes an embedding (for internal mock store)
-const DocumentChunkWithEmbeddingSchema = DocumentChunkSchema.extend({
-  embedding: z.array(z.number()).describe('The embedding vector for the document chunk.'),
-});
-type DocumentChunkWithEmbedding = z.infer<typeof DocumentChunkWithEmbeddingSchema>;
-
-
-// Expanded Mock internal vector store with GS1-specific content
-const mockVectorDatabase: DocumentChunkWithEmbedding[] = [
-  {
-    content: "The GS1 General Specifications define the rules for allocating Global Trade Item Numbers (GTINs). Each brand owner is responsible for ensuring the uniqueness of their assigned GTINs to prevent collisions in the global supply chain.",
-    sourceName: "GS1 General Specifications v24.0",
-    pageNumber: 45,
-    sectionTitle: "2.1 GTIN Allocation Rules",
-    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
-  },
-  {
-    content: "GS1 Digital Link standard allows brands to web-enable their products by encoding GS1 identifiers (like GTIN) into web URIs. This connects physical products to rich online information and services.",
-    sourceName: "GS1 Digital Link v1.3",
-    pageNumber: 12,
-    sectionTitle: "Introduction to Digital Link",
-    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
-  },
-  {
-    content: "Serial Shipping Container Codes (SSCC) are used to identify logistic units. They must be globally unique and include a correctly calculated check digit. SSCCs are fundamental for tracking and tracing goods throughout the supply chain.",
-    sourceName: "GS1 General Specifications v24.0",
-    pageNumber: 150,
-    sectionTitle: "4.3 SSCC Construction and Application",
-    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
-  },
-  {
-    content: "In the healthcare sector, GS1 DataMatrix symbols are commonly used to encode GTINs, batch/lot numbers, and expiry dates on medical devices and pharmaceuticals for enhanced traceability and patient safety.",
-    sourceName: "GS1 Healthcare Guideline v12",
-    pageNumber: 33,
-    sectionTitle: "Barcode Implementation for Medical Products",
-    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
-  },
-  {
-    content: "The Global Location Number (GLN) is used to identify physical locations or legal entities. GLNs play a crucial role in supply chain efficiency by providing a standard way to reference parties and locations in business transactions.",
-    sourceName: "GS1 GLN Allocation Rules",
-    pageNumber: 7,
-    sectionTitle: "1.2 Purpose of the GLN",
-    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
-  },
-  {
-    content: "Interoperability is a key principle of the entire GS1 system. Standards are designed to ensure that data can be shared and understood consistently across different trading partners, systems, and countries.",
-    sourceName: "GS1 System Architecture Overview",
-    pageNumber: 5,
-    sectionTitle: "Core Principles of GS1",
-    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
-  },
-  {
-    content: "Understanding precise GTIN allocation rules is critical for brand owners to avoid duplication and ensure their products are uniquely identified worldwide. The GS1 General Specifications document is the definitive source for these rules.",
-    sourceName: "GS1 GTIN Management Standard",
-    pageNumber: 19,
-    sectionTitle: "Preventing GTIN Duplication",
-    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
-  },
-  {
-    content: "The syntax for GS1 Digital Link URIs must adhere to specific structural rules to ensure that web resolvers can correctly interpret them and redirect users to the appropriate online resources or experiences.",
-    sourceName: "GS1 Digital Link URI Syntax Standard v1.3",
-    pageNumber: 28,
-    sectionTitle: "3.1 URI Syntax Specification",
-    embedding: Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))),
-  }
-];
+// SIMULATED METADATA STORE: In a real system, this data would come from Firestore, Cloud SQL, etc.
+// keyed by the ID returned from Vertex AI Vector Search.
+const mockDocumentMetadataStore: Record<string, z.infer<typeof DocumentChunkSchema>> = {
+  "doc_chunk_1": { content: "GS1 GTINs are globally unique identifiers for trade items. They can be 8, 12, 13, or 14 digits.", sourceName: "GS1 General Specifications v24.0", pageNumber: 45, sectionTitle: "2.1 GTIN Allocation Rules" },
+  "doc_chunk_2": { content: "GS1 Digital Link allows brands to web-enable products using GS1 identifiers.", sourceName: "GS1 Digital Link v1.3", pageNumber: 12, sectionTitle: "Introduction" },
+  "doc_chunk_3": { content: "SSCCs (Serial Shipping Container Codes) are used for logistic units and must be 18 digits.", sourceName: "GS1 General Specifications v24.0", pageNumber: 150, sectionTitle: "4.3 SSCC Construction" },
+  "doc_chunk_4": { content: "DataMatrix symbols are often used in healthcare for encoding GTINs and other data on medical products.", sourceName: "GS1 Healthcare Guideline v12", pageNumber: 33, sectionTitle: "Barcode Implementation" },
+  "doc_chunk_5": { content: "Global Location Numbers (GLNs) identify physical locations or legal entities within the supply chain.", sourceName: "GS1 GLN Allocation Rules", pageNumber: 7, sectionTitle: "Purpose of the GLN" },
+};
 
 
 export const queryVectorStoreTool = ai.defineTool(
   {
     name: 'queryVectorStoreTool',
-    description: 'Queries a vector store to retrieve document chunks relevant to a given query embedding and text. (Currently a MOCK IMPLEMENTATION)',
+    description: 'Queries Vertex AI Vector Search to retrieve document chunks relevant to a given query embedding. (Metadata lookup is SIMULATED)',
     inputSchema: QueryVectorStoreInputSchema,
     outputSchema: QueryVectorStoreOutputSchema,
   },
-  async ({ queryText, queryEmbedding, topK = 5 }) => {
-    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool called with queryText: "${queryText}", topK: ${topK}`);
-    console.log(`[MOCK VECTOR TOOL] Received queryEmbedding (length: ${queryEmbedding.length}, first 3 dims): [${queryEmbedding.slice(0,3).join(', ')}, ...] (Note: mock logic uses queryText for keyword matching)`);
-    
-    // Simulate some delay
-    await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 150));
+  async ({ queryText, queryEmbedding, topK = 5, indexEndpointId: inputIndexEndpointId, deployedIndexId: inputDeployedIndexId }) => {
+    console.log(`[VECTOR_SEARCH_TOOL] Called with queryText: "${queryText}", topK: ${topK}`);
 
-    if (queryText.toLowerCase().includes("empty test")) {
-         console.log("[MOCK VECTOR TOOL] Simulating empty results for 'empty test' query.");
-         return { results: [] };
+    const projectId = process.env.GCP_PROJECT_ID;
+    const region = process.env.GCP_REGION || 'us-central1';
+    const indexEndpointId = inputIndexEndpointId || process.env.VERTEX_AI_INDEX_ENDPOINT_ID;
+    const deployedIndexId = inputDeployedIndexId || process.env.VERTEX_AI_DEPLOYED_INDEX_ID;
+
+    if (!projectId || !indexEndpointId || !deployedIndexId) {
+      const errorMessage = "Missing required Vertex AI configuration (Project ID, Index Endpoint ID, or Deployed Index ID) in environment variables or input.";
+      console.error(`[VECTOR_SEARCH_TOOL] Error: ${errorMessage}`);
+      // In a real scenario, you might throw an error or return a more specific error structure.
+      // For now, returning empty results to align with schema.
+      return { results: [] };
     }
+    
+    // This client is for making the actual FindNeighbors call to a *deployed index endpoint*
+    const predictionServiceClient = new PredictionServiceClient({
+        apiEndpoint: `${region}-aiplatform.googleapis.com`,
+        // Credentials will be picked up from the environment if GOOGLE_APPLICATION_CREDENTIALS is set
+    });
 
-    // Rudimentary keyword matching for slightly more dynamic results.
-    let relevantChunksWithEmbeddings: DocumentChunkWithEmbedding[] = [];
-    const queryKeywords = queryText.toLowerCase().split(/\s+/).filter(kw => kw.length > 2); 
+    const endpoint = `projects/${projectId}/locations/${region}/indexEndpoints/${indexEndpointId}`;
 
-    mockVectorDatabase.forEach(chunk => {
-      const chunkText = `${chunk.content} ${chunk.sourceName} ${chunk.sectionTitle || ''}`.toLowerCase();
-      if (queryKeywords.some(kw => chunkText.includes(kw))) {
-        relevantChunksWithEmbeddings.push(chunk);
+    const queryInstance: google.cloud.aiplatform.v1.FindNeighborsRequest.Query.IQuery = {
+        datapoint: {
+            featureVector: queryEmbedding,
+        },
+        neighborCount: topK,
+        // You can add filtering here if your index supports it
+        // stringFilters: [{ name: 'sourceName', allowTokens: ['GS1 General Specifications v24.0'] }]
+    };
+
+    const request: google.cloud.aiplatform.v1.IFindNeighborsRequest = {
+      indexEndpoint: endpoint,
+      deployedIndexId: deployedIndexId,
+      queries: [queryInstance],
+      // returnFullDatapoint: false, // Set to true if your index stores the full datapoint and you want to retrieve it
+    };
+
+    console.log(`[VECTOR_SEARCH_TOOL] Making FindNeighbors request to Vertex AI: ${JSON.stringify({endpoint, deployedIndexId, topK})}`);
+
+    try {
+      const [response] = await predictionServiceClient.findNeighbors(request);
+      const neighbors = response.nearestNeighbors?.[0]?.neighbors;
+
+      if (!neighbors || neighbors.length === 0) {
+        console.log('[VECTOR_SEARCH_TOOL] Vertex AI returned no neighbors.');
+        return { results: [] };
       }
-    });
-    
-    // If no "relevant" chunks found by keywords, fall back to returning some general chunks to avoid empty results unless specifically tested.
-    if (relevantChunksWithEmbeddings.length === 0 && mockVectorDatabase.length > 0 && !queryText.toLowerCase().includes("show nothing if no keywords")) {
-        // Return a shuffled subset of the whole database if no specific keywords matched, to still provide some results
-        const shuffledDb = [...mockVectorDatabase].sort(() => 0.5 - Math.random());
-        relevantChunksWithEmbeddings = shuffledDb;
+
+      console.log(`[VECTOR_SEARCH_TOOL] Vertex AI returned ${neighbors.length} neighbors.`);
+      
+      const retrievedChunks: z.infer<typeof DocumentChunkSchema>[] = [];
+      for (const neighbor of neighbors) {
+        if (neighbor.datapoint?.datapointId) {
+          // SIMULATED METADATA LOOKUP:
+          // In a real system, use neighbor.datapoint.datapointId to fetch the full DocumentChunk
+          // from Firestore, Cloud SQL, GCS, or wherever it's stored.
+          const chunkData = mockDocumentMetadataStore[neighbor.datapoint.datapointId];
+          if (chunkData) {
+            retrievedChunks.push(chunkData);
+            console.log(`[VECTOR_SEARCH_TOOL] Mock metadata found for ID: ${neighbor.datapoint.datapointId}, Distance: ${neighbor.distance}`);
+          } else {
+            console.warn(`[VECTOR_SEARCH_TOOL] No mock metadata found for neighbor ID: ${neighbor.datapoint.datapointId}`);
+          }
+        }
+      }
+      
+      return { results: retrievedChunks };
+
+    } catch (error: any) {
+      console.error('[VECTOR_SEARCH_TOOL] Error calling Vertex AI Vector Search:', error.message || error);
+      console.error('Error details:', error.details || 'No details available');
+      // Return schema-compliant error
+      return { results: [] };
     }
-    
-    // Shuffle "relevant" chunks to simulate varied search results if not already a full shuffle
-    if (!(relevantChunksWithEmbeddings.length === mockVectorDatabase.length && !queryKeywords.some(kw => mockVectorDatabase.some(chunk => `${chunk.content} ${chunk.sourceName} ${chunk.sectionTitle || ''}`.toLowerCase().includes(kw))))) {
-        relevantChunksWithEmbeddings.sort(() => 0.5 - Math.random());
-    }
-    
-    // Apply topK
-    const limitedChunks = relevantChunksWithEmbeddings.slice(0, topK);
-    
-    // Strip the embedding for the output, as DocumentChunkSchema doesn't include it.
-    const retrievedChunksFinal: z.infer<typeof DocumentChunkSchema>[] = limitedChunks.map(chunkWithEmbedding => {
-      const { embedding, ...chunk } = chunkWithEmbedding;
-      return chunk;
-    });
-    
-    console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool returning ${retrievedChunksFinal.length} chunks.`);
-    return { results: retrievedChunksFinal };
   }
 );
