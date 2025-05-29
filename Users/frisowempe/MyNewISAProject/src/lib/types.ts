@@ -19,8 +19,8 @@ import type {
   DemonstrateKgQueryOutput,
   ValidateIdentifierInput,
   ValidateIdentifierOutput,
-  GS1IdentifierType, // Already exported from schemas via this file
-} from "@/ai/flows"; // Ensure all flow types are exported from flows/index.ts
+  GS1IdentifierType, 
+} from "@/ai/flows"; 
 
 // Re-exporting for convenience, or define specific app-level types if needed
 export type {
@@ -35,8 +35,8 @@ export type {
   DetectStandardErrorsInput,
   DetectStandardErrorsOutput,
   GenerateDocumentEmbeddingsInput,
-  GenerateDocumentEmbeddingsOutput,
-  DocumentChunkWithEmbedding, // Ensure this is exported
+  GenerateDocumentEmbeddingsOutput, // Updated to include success/failure counts
+  DocumentChunkWithEmbedding, 
   AnswerGs1QuestionsWithVectorSearchInput,
   AnswerGs1QuestionsWithVectorSearchOutput,
   DemonstrateKgQueryInput,
@@ -70,5 +70,5 @@ export type KgDemoResultWithExplainability = DemonstrateKgQueryOutput & Explaina
 
 export type ValidationResultWithExplainability = ValidateIdentifierOutput & ExplainableOutput;
 
-// No specific UI for embeddings yet, so no "WithExplainability" type needed for now.
-// However, the GenerateDocumentEmbeddingsOutput type itself is useful.
+// For GenerateDocumentEmbeddings, the output itself is the data, explainability might not apply directly
+// but the output type itself is useful for type checking.

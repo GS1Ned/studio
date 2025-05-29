@@ -14,9 +14,9 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import {z}from 'zod'; // Corrected import to zod from genkit
 import { GenerateDocumentEmbeddingsInputSchema, DocumentChunkSchema } from '@/ai/schemas';
-import crypto from 'crypto'; // For generating UUIDs
+import crypto from 'crypto'; 
 
 export type GenerateDocumentEmbeddingsInput = z.infer<typeof GenerateDocumentEmbeddingsInputSchema>;
 
@@ -29,19 +29,16 @@ export type DocumentChunkWithEmbedding = z.infer<typeof DocumentChunkWithEmbeddi
 
 // Define the output schema for the flow
 const GenerateDocumentEmbeddingsOutputSchema = z.object({
-  chunksWithEmbeddings: z.array(DocumentChunkWithEmbeddingSchema).describe('An array of document chunks, each with its generated embedding and chunkId.'),
+  chunksWithEmbeddings: z.array(DocumentChunkWithEmbeddingSchema).describe('An array of document chunks, each with its generated embedding and chunkId. Chunks that failed to embed will be omitted.'),
+  successfulEmbeddings: z.number().describe('Number of chunks successfully embedded.'),
+  failedEmbeddings: z.number().describe('Number of chunks that failed to embed.'),
 });
 export type GenerateDocumentEmbeddingsOutput = z.infer<typeof GenerateDocumentEmbeddingsOutputSchema>;
 
 export async function generateDocumentEmbeddings(input: GenerateDocumentEmbeddingsInput): Promise<GenerateDocumentEmbeddingsOutput> {
-  try {
-    const result = await generateDocumentEmbeddingsFlow(input);
-    return result;
-  } catch (error) {
-    console.error("Error in generateDocumentEmbeddings flow:", error);
-    // Return a schema-compliant error or re-throw if appropriate for the caller
-    return { chunksWithEmbeddings: [] };
-  }
+  // The flow itself will handle the main try-catch for overall flow execution.
+  // Here, we directly call the flow.
+  return generateDocumentEmbeddingsFlow(input);
 }
 
 const generateDocumentEmbeddingsFlow = ai.defineFlow(
@@ -52,14 +49,16 @@ const generateDocumentEmbeddingsFlow = ai.defineFlow(
   },
   async (input) => {
     const chunksWithEmbeddings: DocumentChunkWithEmbedding[] = [];
+    let successfulEmbeddings = 0;
+    let failedEmbeddings = 0;
 
     for (const chunk of input.documentChunks) {
       try {
         const chunkId = crypto.randomUUID();
-        console.log(`[EMBEDDING_FLOW] Generating embedding for chunk from source: "${chunk.sourceName}", assigned chunkId: ${chunkId}, content starting with: "${chunk.content.substring(0, 50)}..."`);
+        console.log(`[EMBEDDING_FLOW] Attempting to generate embedding for chunk from source: "${chunk.sourceName}", assigned chunkId: ${chunkId}, content starting with: "${chunk.content.substring(0, 50)}..."`);
         
         const embedResponse = await ai.embed({
-          model: 'googleai/text-embedding-004',
+          model: 'googleai/text-embedding-004', // Using a standard embedding model
           content: chunk.content,
         });
         
@@ -73,17 +72,23 @@ const generateDocumentEmbeddingsFlow = ai.defineFlow(
           chunkId,
           embedding: embedResponse.embedding,
         });
+        successfulEmbeddings++;
       } catch (error) {
-        console.error(`[EMBEDDING_FLOW] Failed to generate embedding for chunk from source: "${chunk.sourceName}":`, error);
-        // Skipping chunks that fail to embed.
+        console.error(`[EMBEDDING_FLOW] Failed to generate embedding for chunk from source: "${chunk.sourceName}", content: "${chunk.content.substring(0,50)}...". Error:`, error);
+        failedEmbeddings++;
+        // Continue to the next chunk
       }
     }
 
-    if (chunksWithEmbeddings.length === 0 && input.documentChunks.length > 0) {
-      console.warn("[EMBEDDING_FLOW] All document chunks failed to generate embeddings.");
+    if (failedEmbeddings > 0) {
+      console.warn(`[EMBEDDING_FLOW] ${failedEmbeddings} out of ${input.documentChunks.length} chunks failed to generate embeddings.`);
     }
     
-    console.log(`[EMBEDDING_FLOW] Successfully generated embeddings for ${chunksWithEmbeddings.length} out of ${input.documentChunks.length} chunks.`);
-    return { chunksWithEmbeddings };
+    console.log(`[EMBEDDING_FLOW] Successfully generated embeddings for ${successfulEmbeddings} out of ${input.documentChunks.length} chunks.`);
+    return { 
+      chunksWithEmbeddings,
+      successfulEmbeddings,
+      failedEmbeddings,
+    };
   }
 );
