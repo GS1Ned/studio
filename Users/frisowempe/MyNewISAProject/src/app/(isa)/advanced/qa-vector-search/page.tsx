@@ -127,6 +127,7 @@ export default function QAVectorSearchPage() {
             height={300}
             className="rounded-lg object-cover w-full"
             data-ai-hint="search database"
+            priority
           />
         </CardContent>
       </Card>
@@ -144,4 +145,3 @@ export default function QAVectorSearchPage() {
     </div>
   );
 }
-
