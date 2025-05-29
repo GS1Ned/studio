@@ -126,11 +126,15 @@ export const queryVectorStoreTool = ai.defineTool(
     
     // If no "relevant" chunks found by keywords, fall back to returning some general chunks to avoid empty results unless specifically tested.
     if (relevantChunksWithEmbeddings.length === 0 && mockVectorDatabase.length > 0 && !queryText.toLowerCase().includes("show nothing if no keywords")) {
-        relevantChunksWithEmbeddings = [...mockVectorDatabase]; 
+        // Return a shuffled subset of the whole database if no specific keywords matched, to still provide some results
+        const shuffledDb = [...mockVectorDatabase].sort(() => 0.5 - Math.random());
+        relevantChunksWithEmbeddings = shuffledDb;
     }
     
-    // Shuffle "relevant" chunks to simulate varied search results
-    relevantChunksWithEmbeddings.sort(() => 0.5 - Math.random());
+    // Shuffle "relevant" chunks to simulate varied search results if not already a full shuffle
+    if (!(relevantChunksWithEmbeddings.length === mockVectorDatabase.length && !queryKeywords.some(kw => mockVectorDatabase.some(chunk => `${chunk.content} ${chunk.sourceName} ${chunk.sectionTitle || ''}`.toLowerCase().includes(kw))))) {
+        relevantChunksWithEmbeddings.sort(() => 0.5 - Math.random());
+    }
     
     // Apply topK
     const limitedChunks = relevantChunksWithEmbeddings.slice(0, topK);
