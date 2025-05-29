@@ -16,11 +16,18 @@ The `ISAIntelligent-Standards-Assistant-(ISA)-X1` feature branch, containing fou
         *   Created `src/ai/flows/validate-identifier.ts` with a prompt for mock validation logic based on identifier type.
         *   Added `handleValidateIdentifier` server action in `src/lib/actions/ai-actions.ts`.
         *   Updated relevant index, dev, and types files.
+    *   **Implemented UI for "Interactive Identifier Validator"**:
+        *   Created `src/app/(isa)/validation/identifier/page.tsx` with `ClientAiForm` and input fields for identifier value and type (select dropdown).
+        *   Designed UI to render validation status, message, and details.
+        *   Added a new "Validation" section with "Identifier Validator" to the sidebar navigation.
+        *   Created `src/app/(isa)/validation/layout.tsx`.
 *   **2024-05-17 (Self-initiated based on previous "Next Action"):**
     *   **Deepened `queryVectorStoreTool` Mock Implementation**:
         *   Expanded `mockVectorDatabase` in `src/ai/tools/vector-store-tools.ts` with more diverse and GS1-specific mock document chunks (GTIN, GLN, SSCC, Digital Link related).
         *   The mock retrieval logic remains a rudimentary keyword-based "relevance" check against `queryText` but now operates on a richer, more illustrative dataset.
         *   Ensured the "empty test" scenario continues to function correctly.
+    *   **Minor Refinement to `queryVectorStoreTool` Logging**:
+        *   Added a `console.log` statement in `src/ai/tools/vector-store-tools.ts` to explicitly acknowledge the received `queryEmbedding` in the mock tool, enhancing transparency of its interface adherence even though the mock logic primarily uses `queryText`.
 *   **2024-05-16 (Self-correction and alignment with Gemini Code Assist Feedback):**
     *   **Corrected `queryVectorStoreTool` Interface Mismatch**:
         *   Updated the `inputSchema` and `func` signature of `queryVectorStoreTool` in `src/ai/tools/vector-store-tools.ts` to correctly accept `queryText`, `queryEmbedding`, and `topK`.
@@ -35,20 +42,22 @@ The `ISAIntelligent-Standards-Assistant-(ISA)-X1` feature branch, containing fou
         *   Ensured that if `!output` is true, or if a `catch` block is triggered, the flow returns a schema-compliant error object with user-friendly messages and appropriate default/empty values for data fields.
         *   This directly addresses a high-priority item from the Gemini Code Assist review.
 *   **2024-05-14 (Self-initiated based on previous "Next Action"):**
-    *   **Updated `docs/blueprint.md` to "Strategic Roadmap and Architectural Direction for ISA: Internal Firebase Briefing"**:
+    *   **Updated `docs/blueprint.md` to "Strategic Roadmap and Architectural Direction for ISA: Internal Firebase Briefing" (Ultimate Vision)**:
         *   Performed a comprehensive review and update of `docs/blueprint.md`.
-        *   Restructured the document to align with the detailed "Internal Firebase Briefing" format.
-        *   Integrated the existing development log into the narrative of Phase 1 achievements.
-        *   Updated the "Current Technical State," architectural proposals, and future phase descriptions to reflect all development progress and decisions accurately.
-        *   This makes `docs/blueprint.md` the definitive source-of-truth for the project's strategy and current status.
+        *   Restructured the document to align with the detailed "Internal Firebase Briefing" format and integrated the "Ultimate Vision" concepts (NeSy, Causal AI, RLAIF, advanced MLOps, etc.).
+        *   Integrated the existing development log into the narrative of Phase 1 achievements, marking Phase 1 as "Completed."
+        *   Significantly expanded and detailed Phase 2 (2A: Live RAG & Basic KG; 2B: Early NeSy & Deeper KG-RAG) and Phase 3 (Scalable Vision, Ultimate AI) roadmaps.
+        *   Updated the "Current Technical State," architectural proposals ("Synthesized Hybrid"), and future phase descriptions to reflect all development progress and decisions accurately, and to align with the ambitious goals of the Ultimate Vision.
+        *   Added a new section "Key AI Methodologies & Concepts (Ultimate Vision)."
+        *   This makes `docs/blueprint.md` the definitive source-of-truth for the project's ultimate strategy and current status.
 *   **2024-05-13 (Addressing Gemini Code Assist Feedback):**
     *   **Clarified Firebase Deployment Strategy (App Hosting Primary)**:
         *   Updated `docs/blueprint.md` to explicitly state Firebase App Hosting as the primary deployment mechanism for the entire Next.js application (frontend and backend Server Actions/Genkit flows).
         *   Removed the conflicting `hosting` block from `firebase.json` that suggested traditional Firebase Hosting for the Next.js app.
     *   **Streamlined Cloud Functions Configuration**:
         *   Removed the `functions` deployment block from `firebase.json` as the Next.js backend logic is handled by App Hosting. The emulator config for functions was retained for potential future standalone functions.
-    *   **Addressed `output!` Assertions in AI Flows (Schema-Compliant Returns)**:
-        *   Updated `answerGs1Questions.ts`, `conductIndependentResearch.ts`, `detectStandardErrors.ts` (and in a later pass, `analyze-standards.ts`, `natural-language-to-formal-description.ts`) to replace `output!` non-null assertions with explicit checks and schema-compliant error object returns if `output` is null/undefined from a prompt call. This addresses a key robustness concern raised by Gemini Code Assist.
+    *   **Addressed `output!` Assertions in AI Flows (Schema-Compliant Returns - Initial Pass)**:
+        *   Updated key AI flows (`answerGs1Questions.ts`, `conductIndependentResearch.ts`, `detectStandardErrors.ts`, `analyze-standards.ts`, `natural-language-to-formal-description.ts`) to replace `output!` non-null assertions with explicit checks and schema-compliant error object returns if `output` is null/undefined from a prompt call. This addresses a key robustness concern raised by Gemini Code Assist.
 *   **2024-05-12 (Self-initiated based on previous "Next Action"):**
     *   **Refined `conductIndependentResearch` Flow Prompt**:
         *   Updated the prompt in `src/ai/flows/conduct-independent-research.ts` to more clearly instruct the LLM on an iterative search process (formulating multiple distinct queries, synthesizing information from all structured results, and properly extracting sources).
@@ -99,7 +108,7 @@ The `ISAIntelligent-Standards-Assistant-(ISA)-X1` feature branch, containing fou
     *   **Updated `docs/blueprint.md` based on Gemini Code Assist Feedback & Finalized Phase 1 Documentation**:
         *   Completed the major restructuring and content integration for `docs/blueprint.md` to align with the "Strategic Roadmap and Architectural Direction for ISA: Internal Firebase Briefing" and fully document Phase 1 achievements.
         *   Ensured all feedback from Gemini Code Assist regarding AI flow robustness (`!output` checks) and Firebase deployment configuration (App Hosting as primary) was implemented and reflected in the blueprint.
-*   **Earlier Development (Summarized in Blueprint Phase 1.A):** Initial Firebase configurations, core AI flow implementations (Q&A, Analysis, NL-to-Formal, Research, Error Detection), schema centralization, UI placeholders, and conceptual RAG/KG tool design.
+*   **Earlier Development (Summarized in Blueprint Phase 1.A):** Initial Firebase configurations, core AI flow implementations (Q&A, Analysis, NL-to-Formal, Research, Error Detection), schema centralization, UI placeholders, conceptual RAG/KG tool design, initial error handling refinement.
 
 ## Table of Contents
 1.  [I. ISA Project: Executive Overview & Technical Context](#i-isa-project-executive-overview--technical-context)
@@ -183,7 +192,7 @@ This initial phase focused on stabilizing the ISA deployment, productionizing co
 *   **Standards Analysis (`/analysis/standards`):** AI analyzes document content for inconsistencies and structural issues. UI includes introductory card.
 *   **Error Detection & Correction (`/analysis/error-detection`):** AI identifies errors, ambiguities, and overlaps in standards documents, suggesting corrections and providing AI-generated `reasoningSteps`. UI implemented with introductory card.
 *   **NL to Formal Transformation (`/transformation/nl-to-formal`):** AI transforms natural language descriptions into more formal standard representations. UI includes introductory card.
-*   **Independent Research (`/research`): AI conducts research using an enhanced mock `webSearch` tool (returning structured `title`, `link`, `snippet` results with more varied data). Prompt refined for more iterative search and synthesis from structured results. UI includes introductory card.
+*   **Independent Research (`/research`):** AI conducts research using an enhanced mock `webSearch` tool (returning structured `title`, `link`, `snippet` results with more varied data). Prompt refined for more iterative search and synthesis from structured results. UI includes introductory card.
 *   **Conceptual Embedding Generation (`generate-document-embeddings.ts`):** Flow evolved from a mock tool to use a real embedding model (`ai.embed()` with `googleai/text-embedding-004`). Requires `GOOGLE_API_KEY` for local execution.
 *   **Conceptual Advanced Q&A (`/advanced/qa-vector-search`):** A UI and flow demonstrating an advanced RAG pattern. The flow (`answerGs1QuestionsWithVectorSearch`) **explicitly simulates query embedding generation, then directly calls a conceptual `queryVectorStoreTool` (mock enhanced and corrected to accept mock `queryEmbedding` & `queryText`, perform rudimentary keyword-based "relevance" on GS1-specific internal mock data, and simulate empty results robustly), and then uses a separate LLM prompt (`synthesizeAnswerFromChunksPrompt`) for answer synthesis.** UI implemented with placeholder image, input for `topK`, displays `retrievedChunksCount`, and flow includes more detailed logging and robust error handling.
 *   **Conceptual Knowledge Graph Query Demo (`/advanced/kg-query-demo`):** UI and flow (`demonstrateKgQuery`) implemented to interact with a conceptual `queryKnowledgeGraphTool` (mock enhanced for robust error/empty result handling and schema-compliant returns). UI implemented with placeholder image to display structured mock KG results.
@@ -539,3 +548,4 @@ The "Development Log and Status Updates" in `docs/blueprint.md` has been updated
 The `ISAIntelligent-Standards-Assistant-(ISA)-X1` feature branch merge conflict note has been added to the top.
 This comprehensive error handling pass ensures all AI flows are robust against null/undefined prompt outputs, directly addressing critical feedback.
 
+```

@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Conceptual tools for interacting with a vector store.
@@ -104,7 +103,7 @@ export const queryVectorStoreTool = ai.defineTool(
   },
   async ({ queryText, queryEmbedding, topK = 5 }) => {
     console.log(`[MOCK VECTOR TOOL] queryVectorStoreTool called with queryText: "${queryText}", topK: ${topK}`);
-    console.log(`[MOCK VECTOR TOOL] Received queryEmbedding (first 3 dims of ${queryEmbedding.length}): [${queryEmbedding.slice(0,3).join(', ')}, ...]`);
+    console.log(`[MOCK VECTOR TOOL] Received queryEmbedding (length: ${queryEmbedding.length}, first 3 dims): [${queryEmbedding.slice(0,3).join(', ')}, ...] (Note: mock logic uses queryText for keyword matching)`);
     
     // Simulate some delay
     await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 150));
