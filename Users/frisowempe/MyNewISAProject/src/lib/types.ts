@@ -1,6 +1,6 @@
 
 import type {
-  AnswerGs1QuestionsInput, 
+  AnswerGs1QuestionsInput,
   AnswerGs1QuestionsOutput,
   AnalyzeStandardsInput,
   AnalyzeStandardsOutput,
@@ -11,9 +11,15 @@ import type {
   DetectStandardErrorsInput,
   DetectStandardErrorsOutput,
   GenerateDocumentEmbeddingsInput,
-  GenerateDocumentEmbeddingsOutput,
-  AnswerGs1QuestionsWithVectorSearchInput, // Added import
-  AnswerGs1QuestionsWithVectorSearchOutput // Added import
+  GenerateDocumentEmbeddingsOutput, // Output type already includes chunksWithEmbeddings
+  DocumentChunkWithEmbedding, // Exporting the enhanced type
+  AnswerGs1QuestionsWithVectorSearchInput,
+  AnswerGs1QuestionsWithVectorSearchOutput,
+  DemonstrateKgQueryInput,
+  DemonstrateKgQueryOutput,
+  ValidateIdentifierInput,
+  ValidateIdentifierOutput,
+  GS1IdentifierType, 
 } from "@/ai/flows"; 
 
 // Re-exporting for convenience, or define specific app-level types if needed
@@ -29,15 +35,21 @@ export type {
   DetectStandardErrorsInput,
   DetectStandardErrorsOutput,
   GenerateDocumentEmbeddingsInput,
-  GenerateDocumentEmbeddingsOutput,
-  AnswerGs1QuestionsWithVectorSearchInput, // Added export
-  AnswerGs1QuestionsWithVectorSearchOutput // Added export
+  GenerateDocumentEmbeddingsOutput, // Updated to include success/failure counts
+  DocumentChunkWithEmbedding, 
+  AnswerGs1QuestionsWithVectorSearchInput,
+  AnswerGs1QuestionsWithVectorSearchOutput,
+  DemonstrateKgQueryInput,
+  DemonstrateKgQueryOutput,
+  ValidateIdentifierInput,
+  ValidateIdentifierOutput,
+  GS1IdentifierType,
 };
 
 export interface ExplainableOutput {
   reasoningSteps?: string[];
   confidenceScore?: number | string;
-  modelEvaluationMetrics?: Record<string, string | number>;
+  modelEvaluationMetrics?: Record<string, string | number | React.ReactNode>; // Allow ReactNode for tooltips
   // Add other common explainability fields here
 }
 
@@ -52,5 +64,11 @@ export type ResearchResultWithExplainability = ConductIndependentResearchOutput 
 
 export type ErrorDetectionResultWithExplainability = DetectStandardErrorsOutput & ExplainableOutput;
 
-// No specific UI for embeddings yet, so no "WithExplainability" type needed for now.
-// No specific UI for the conceptual vector search flow yet.
+export type AdvancedQAResultWithExplainability = AnswerGs1QuestionsWithVectorSearchOutput & ExplainableOutput;
+
+export type KgDemoResultWithExplainability = DemonstrateKgQueryOutput & ExplainableOutput;
+
+export type ValidationResultWithExplainability = ValidateIdentifierOutput & ExplainableOutput;
+
+// For GenerateDocumentEmbeddings, the output itself is the data, explainability might not apply directly
+// but the output type itself is useful for type checking.

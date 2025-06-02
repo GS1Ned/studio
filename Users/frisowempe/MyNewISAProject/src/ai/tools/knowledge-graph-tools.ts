@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Conceptual tools for interacting with a Knowledge Graph (KG).
@@ -81,32 +82,32 @@ export const queryKnowledgeGraphTool = ai.defineTool(
     outputSchema: QueryKnowledgeGraphOutputSchema,
   },
   async (input) => {
-    console.log(`[MOCK] queryKnowledgeGraphTool called with query: "${input.query}"`);
+    console.log(`[MOCK KG TOOL][INPUT] Query: "${input.query}"`);
     await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300)); // Simulate API call delay
 
     const queryLower = input.query.toLowerCase();
-    let matchedEntities: z.infer<typeof KGEntitySchema>[] = [];
-    let relatedInformation: z.infer<typeof QueryKnowledgeGraphOutputSchema>['relatedInformation'] = { entities: [], relationships: [] };
+    let matchedEntitiesList: z.infer<typeof KGEntitySchema>[] = [];
+    let relatedEntitiesList: z.infer<typeof KGEntitySchema>[] = [];
+    let relationshipsList: z.infer<typeof KGRelationshipSchema>[] = [];
 
     // Simple mock search logic
     for (const key in mockKnowledgeGraph) {
       const entity = mockKnowledgeGraph[key as keyof typeof mockKnowledgeGraph];
       if (key.toLowerCase().includes(queryLower) || entity.label.toLowerCase().includes(queryLower)) {
-        matchedEntities.push({
+        matchedEntitiesList.push({
           id: entity.id,
           type: entity.type,
           label: entity.label,
           description: entity.description,
           properties: entity.properties,
         });
-        // Add related entities/relationships if defined (simplified)
         if (entity.related) {
           entity.related.forEach(rel => {
             const target = mockKnowledgeGraph[rel.targetId as keyof typeof mockKnowledgeGraph];
-            if (target && relatedInformation && relatedInformation.relationships && relatedInformation.entities) {
-              relatedInformation.relationships.push({
+            if (target) {
+              relationshipsList.push({
                 type: rel.type,
-                direction: rel.direction as "incoming" | "outgoing", // Cast needed
+                direction: rel.direction as "incoming" | "outgoing",
                 targetEntity: {
                   id: target.id,
                   type: target.type,
@@ -115,8 +116,8 @@ export const queryKnowledgeGraphTool = ai.defineTool(
                   properties: target.properties,
                 }
               });
-              if(!relatedInformation.entities.find(e => e.id === target.id)) {
-                relatedInformation.entities.push({
+              if(!relatedEntitiesList.find(e => e.id === target.id) && !matchedEntitiesList.find(e => e.id === target.id)) {
+                relatedEntitiesList.push({
                   id: target.id,
                   type: target.type,
                   label: target.label,
@@ -130,17 +131,32 @@ export const queryKnowledgeGraphTool = ai.defineTool(
       }
     }
     
-    if (matchedEntities.length === 0 && queryLower.includes("empty kg test")) {
-      return {
-        summary: "No information found in the Knowledge Graph for 'empty kg test'."
-      }
+    let finalOutput: z.infer<typeof QueryKnowledgeGraphOutputSchema>;
+
+    if (queryLower.includes("empty kg test")) {
+        finalOutput = {
+            summary: "No information found in the Knowledge Graph for 'empty kg test'. This is an intended empty result for testing.",
+            matchedEntities: undefined, // Explicitly undefined for empty array, as per schema optional
+            relatedInformation: undefined // Explicitly undefined for empty object, as per schema optional
+        };
+    } else if (matchedEntitiesList.length > 0 || relatedEntitiesList.length > 0 || relationshipsList.length > 0) {
+        finalOutput = {
+            matchedEntities: matchedEntitiesList.length > 0 ? matchedEntitiesList : undefined,
+            relatedInformation: (relatedEntitiesList.length > 0 || relationshipsList.length > 0) ? {
+                entities: relatedEntitiesList.length > 0 ? relatedEntitiesList : undefined,
+                relationships: relationshipsList.length > 0 ? relationshipsList : undefined,
+            } : undefined,
+            summary: `Found ${matchedEntitiesList.length} matching entities and ${relatedEntitiesList.length} related entities for query "${input.query}".`,
+        };
+    } else {
+        finalOutput = {
+            summary: `No direct matches or related information found for "${input.query}" in the Knowledge Graph.`,
+            matchedEntities: undefined,
+            relatedInformation: undefined,
+        };
     }
-
-
-    return {
-      matchedEntities: matchedEntities.length > 0 ? matchedEntities : undefined,
-      relatedInformation: (relatedInformation?.entities?.length || 0) > 0 || (relatedInformation?.relationships?.length || 0) > 0 ? relatedInformation : undefined,
-      summary: matchedEntities.length > 0 ? `Found ${matchedEntities.length} matching entities related to "${input.query}".` : `No direct matches found for "${input.query}" in the Knowledge Graph.`,
-    };
+    
+    console.log(`[MOCK KG TOOL][OUTPUT] Summary: ${finalOutput.summary}, Matched: ${finalOutput.matchedEntities?.length || 0}, Related Entities: ${finalOutput.relatedInformation?.entities?.length || 0}, Relationships: ${finalOutput.relatedInformation?.relationships?.length || 0}`);
+    return finalOutput;
   }
 );

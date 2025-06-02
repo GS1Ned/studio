@@ -2,7 +2,7 @@
 "use client";
 
 import { z } from "zod";
-import Image from "next/image";
+import Image from "next/image"; // Ensure Image is imported
 import { ClientAiForm } from "@/components/features/client-ai-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -129,6 +129,3 @@ export default function ErrorDetectionPage() {
         formSubmitButtonText="Detect Errors"
         extractExplainability={extractExplainability}
       />
-    </div>
-  );
-}

@@ -60,3 +60,21 @@ export const AnswerGs1QuestionsWithVectorSearchInputSchema = z.object({
   // Potentially add other filters here in the future, e.g., sourceNameFilter, dateFilter
 });
 export type AnswerGs1QuestionsWithVectorSearchInput = z.infer<typeof AnswerGs1QuestionsWithVectorSearchInputSchema>;
+
+// Schema for src/ai/flows/demonstrate-kg-query.ts
+export const DemonstrateKgQueryInputSchema = z.object({
+  queryString: z.string().min(1, "Query string cannot be empty.").describe("The query string to send to the Knowledge Graph demonstration tool."),
+});
+export type DemonstrateKgQueryInput = z.infer<typeof DemonstrateKgQueryInputSchema>;
+
+// Schemas for src/ai/flows/validate-identifier.ts
+export const GS1IdentifierTypeSchema = z.enum([
+  'GTIN', 'GLN', 'SSCC', 'GRAI', 'GIAI', 'GSRN', 'GDTI', 'OTHER'
+]).describe('The type of GS1 identifier to validate.');
+export type GS1IdentifierType = z.infer<typeof GS1IdentifierTypeSchema>;
+
+export const ValidateIdentifierInputSchema = z.object({
+  identifierValue: z.string().min(1, "Identifier value cannot be empty.").describe('The GS1 identifier value to validate.'),
+  identifierType: GS1IdentifierTypeSchema,
+});
+export type ValidateIdentifierInput = z.infer<typeof ValidateIdentifierInputSchema>;

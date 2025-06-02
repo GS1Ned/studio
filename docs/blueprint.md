@@ -6,6 +6,10 @@ This document serves as the central blueprint, strategic roadmap, and evolving d
 ## Development Log and Status Updates
 
 *   **2023-XX-XX:** The `ISAIntelligent-Standards-Assistant-(ISA)-X1` feature branch, containing foundational work and initial AI flow implementations, was successfully merged into the `main` branch. The `ISAIntelligent-Standards-Assistant-(ISA)-X1` branch can now be safely deleted from the remote repository.
+*   **2024-05-17:** Enhanced the 'Q&A with Vector Search' UI (`/advanced/qa-vector-search`) to display the `retrievedChunksCount`, providing users with visibility into the number of source chunks used by the AI for answer synthesis. Minor flow robustness enhancements were also made to this feature, aligning with the plan to transition to live backend services in Phase 2.
+
+
+
 
 ## Table of Contents
 1.  [I. ISA Project: Executive Overview & Technical Context](#i-isa-project-executive-overview--technical-context)

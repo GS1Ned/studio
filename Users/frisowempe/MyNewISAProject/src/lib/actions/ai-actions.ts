@@ -6,13 +6,15 @@ import {
   ConductIndependentResearchInputSchema,
   NaturalLanguageToFormalDescriptionInputSchema,
   DetectStandardErrorsInputSchema,
-  AnswerGs1QuestionsWithVectorSearchInputSchema, 
+  AnswerGs1QuestionsWithVectorSearchInputSchema,
+  DemonstrateKgQueryInputSchema, // Added import
+  ValidateIdentifierInputSchema, // Added import
   DocumentChunkSchema
-} from "@/ai/schemas"; 
+} from "@/ai/schemas";
 
 import {
   answerGs1Questions,
-  type AnswerGs1QuestionsInput, 
+  type AnswerGs1QuestionsInput,
   type AnswerGs1QuestionsOutput,
   analyzeStandards,
   type AnalyzeStandardsInput,
@@ -26,10 +28,16 @@ import {
   detectStandardErrors,
   type DetectStandardErrorsInput,
   type DetectStandardErrorsOutput,
-  answerGs1QuestionsWithVectorSearch, 
-  type AnswerGs1QuestionsWithVectorSearchInput, 
-  type AnswerGs1QuestionsWithVectorSearchOutput, 
-} from "@/ai/flows"; 
+  answerGs1QuestionsWithVectorSearch,
+  type AnswerGs1QuestionsWithVectorSearchInput,
+  type AnswerGs1QuestionsWithVectorSearchOutput,
+  demonstrateKgQuery, // Added import
+  type DemonstrateKgQueryInput, // Added import
+  type DemonstrateKgQueryOutput, // Added import
+  validateIdentifier, // Added import
+  type ValidateIdentifierInput, // Added import
+  type ValidateIdentifierOutput, // Added import
+} from "@/ai/flows";
 import { z } from "zod";
 
 interface ActionResult<T> {
@@ -78,8 +86,7 @@ export async function handleAnswerGs1Questions(
         },
       ],
     };
-    
-    // The flow itself will validate flowInput against AnswerGs1QuestionsInputSchema (defined in schemas.ts)
+
     const result = await answerGs1Questions(flowInput);
     return { success: true, data: result };
   } catch (e: any) {
@@ -168,5 +175,37 @@ export async function handleAnswerGs1QuestionsWithVectorSearch(
       return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
     }
     return { success: false, error: e.message || "An unexpected error occurred during the advanced Q&A request. Please try again." };
+  }
+}
+
+export async function handleDemonstrateKgQuery(
+  input: DemonstrateKgQueryInput
+): Promise<ActionResult<DemonstrateKgQueryOutput>> {
+  try {
+    const validatedInput = DemonstrateKgQueryInputSchema.parse(input);
+    const result = await demonstrateKgQuery(validatedInput);
+    return { success: true, data: result };
+  } catch (e: any) {
+    console.error("Error in handleDemonstrateKgQuery:", e);
+    if (e instanceof z.ZodError) {
+      return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
+    }
+    return { success: false, error: e.message || "An unexpected error occurred during the KG Query demonstration. Please try again." };
+  }
+}
+
+export async function handleValidateIdentifier(
+  input: ValidateIdentifierInput
+): Promise<ActionResult<ValidateIdentifierOutput>> {
+  try {
+    const validatedInput = ValidateIdentifierInputSchema.parse(input);
+    const result = await validateIdentifier(validatedInput);
+    return { success: true, data: result };
+  } catch (e: any) {
+    console.error("Error in handleValidateIdentifier:", e);
+    if (e instanceof z.ZodError) {
+      return { success: false, error: "Invalid input: " + e.errors.map(err => err.message).join(', ') };
+    }
+    return { success: false, error: e.message || "An unexpected error occurred during identifier validation. Please try again." };
   }
 }

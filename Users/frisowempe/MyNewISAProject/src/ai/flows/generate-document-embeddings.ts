@@ -1,10 +1,13 @@
+
 // src/ai/flows/generate-document-embeddings.ts
 'use server';
 
 /**
  * @fileOverview A flow for generating embeddings for document chunks.
- * This is a conceptual step towards a mature RAG pipeline, simulating
- * the process of calling an embedding model for each document chunk.
+ * This flow now uses a real embedding model via ai.embed() and simulates
+ * assigning a unique chunkId and storing metadata.
+ * NOTE: To run this flow locally (e.g., via Genkit dev tools), a valid
+ * GOOGLE_API_KEY must be present in your .env file.
  *
  * - generateDocumentEmbeddings - A function that handles the embedding generation process.
  * - GenerateDocumentEmbeddingsInput - The input type for the function.
@@ -12,79 +15,82 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'zod';
-import { GenerateDocumentEmbeddingsInputSchema, DocumentChunkSchema } from '@/ai/schemas'; // Import DocumentChunkSchema
+import {z} from 'zod'; // Corrected import to zod
+import { GenerateDocumentEmbeddingsInputSchema, DocumentChunkSchema } from '@/ai/schemas';
+import crypto from 'crypto'; 
 
 export type GenerateDocumentEmbeddingsInput = z.infer<typeof GenerateDocumentEmbeddingsInputSchema>;
 
-// Define the schema for a document chunk that includes an embedding
-const DocumentChunkWithEmbeddingSchema = DocumentChunkSchema.extend({ // Uses imported DocumentChunkSchema
+// Define the schema for a document chunk that includes an embedding and a chunkId
+const DocumentChunkWithEmbeddingSchema = DocumentChunkSchema.extend({
+  chunkId: z.string().uuid().describe('Unique identifier for the document chunk.'),
   embedding: z.array(z.number()).describe('The embedding vector for the document chunk.'),
 });
 export type DocumentChunkWithEmbedding = z.infer<typeof DocumentChunkWithEmbeddingSchema>;
 
 // Define the output schema for the flow
 const GenerateDocumentEmbeddingsOutputSchema = z.object({
-  chunksWithEmbeddings: z.array(DocumentChunkWithEmbeddingSchema).describe('An array of document chunks, each with its generated embedding.'),
+  chunksWithEmbeddings: z.array(DocumentChunkWithEmbeddingSchema).describe('An array of document chunks, each with its generated embedding and chunkId. Chunks that failed to embed will be omitted.'),
+  successfulEmbeddings: z.number().describe('Number of chunks successfully embedded.'),
+  failedEmbeddings: z.number().describe('Number of chunks that failed to embed.'),
 });
 export type GenerateDocumentEmbeddingsOutput = z.infer<typeof GenerateDocumentEmbeddingsOutputSchema>;
 
 export async function generateDocumentEmbeddings(input: GenerateDocumentEmbeddingsInput): Promise<GenerateDocumentEmbeddingsOutput> {
+  // The flow itself will handle the main try-catch for overall flow execution.
+  // Here, we directly call the flow.
   return generateDocumentEmbeddingsFlow(input);
 }
-
-// This is a conceptual representation of calling an embedding model.
-// In a real implementation, this would use ai.embed() or an ai.generate() call
-// to a specific embedding model endpoint (e.g., Vertex AI Embeddings API).
-const mockEmbeddingGenerator = ai.defineTool(
-  {
-    name: 'mockEmbeddingGeneratorTool',
-    description: 'Simulates generating an embedding for a text chunk.',
-    inputSchema: z.object({ textContent: z.string() }),
-    // Outputting a simple array of numbers to represent an embedding.
-    // Real embedding models output vectors of specific dimensions (e.g., 768, 1024).
-    outputSchema: z.object({ embedding: z.array(z.number()) }), 
-  },
-  async (input) => {
-    // Simulate an embedding vector.
-    // In a real scenario, this would make an API call to an embedding service.
-    // e.g., using Google's text-embedding-preview-0409 model.
-    console.log(`Simulating embedding generation for: "${input.textContent.substring(0, 50)}..."`);
-    await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50)); // Simulate brief processing
-    const mockEmbedding = Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4))); // Small, random embedding
-    return { embedding: mockEmbedding };
-  }
-);
-
 
 const generateDocumentEmbeddingsFlow = ai.defineFlow(
   {
     name: 'generateDocumentEmbeddingsFlow',
     inputSchema: GenerateDocumentEmbeddingsInputSchema,
     outputSchema: GenerateDocumentEmbeddingsOutputSchema,
-    // While this flow uses a tool, it doesn't take direct LLM prompting based on flow input in the same way.
-    // The tool itself is the "model" here.
   },
   async (input) => {
     const chunksWithEmbeddings: DocumentChunkWithEmbedding[] = [];
+    let successfulEmbeddings = 0;
+    let failedEmbeddings = 0;
 
     for (const chunk of input.documentChunks) {
-      // In a real implementation, you might use a specific embedding model like:
-      // const { embedding } = await ai.embed({
-      //   model: 'googleai/text-embedding-preview-0409', // Example model
-      //   content: chunk.content,
-      // });
-      // Or use a Genkit prompt configured for an embedding model.
+      try {
+        const chunkId = crypto.randomUUID();
+        console.log(`[EMBEDDING_FLOW] Attempting to generate embedding for chunk from source: "${chunk.sourceName}", assigned chunkId: ${chunkId}, content starting with: "${chunk.content.substring(0, 50)}..."`);
+        
+        const embedResponse = await ai.embed({
+          model: 'googleai/text-embedding-004', // Using a standard embedding model
+          content: chunk.content,
+        });
+        
+        // Simulate storing the chunk metadata (excluding the embedding itself)
+        // In a real ETLVRE pipeline, this metadata (chunk.content, chunk.sourceName, etc., along with chunkId)
+        // would be written to a persistent store like Firestore, keyed by chunkId.
+        console.log(`[EMBEDDING_FLOW][SIMULATED_FIRESTORE_WRITE] Storing chunk metadata for chunkId: ${chunkId}, source: "${chunk.sourceName}", page: ${chunk.pageNumber || 'N/A'}, section: "${chunk.sectionTitle || 'N/A'}"`);
 
-      // For this prototype, we use our mock tool.
-      const { embedding } = await mockEmbeddingGenerator({ textContent: chunk.content });
-      
-      chunksWithEmbeddings.push({
-        ...chunk,
-        embedding: embedding,
-      });
+        chunksWithEmbeddings.push({
+          ...chunk,
+          chunkId,
+          embedding: embedResponse.embedding,
+        });
+        successfulEmbeddings++;
+      } catch (error) {
+        console.error(`[EMBEDDING_FLOW] Failed to generate embedding for chunk from source: "${chunk.sourceName}", content: "${chunk.content.substring(0,50)}...". Error:`, error);
+        failedEmbeddings++;
+        // Continue to the next chunk
+      }
     }
 
-    return { chunksWithEmbeddings };
+    if (failedEmbeddings > 0) {
+      console.warn(`[EMBEDDING_FLOW] ${failedEmbeddings} out of ${input.documentChunks.length} chunks failed to generate embeddings.`);
+    }
+    
+    console.log(`[EMBEDDING_FLOW] Successfully generated embeddings for ${successfulEmbeddings} out of ${input.documentChunks.length} chunks.`);
+    return { 
+      chunksWithEmbeddings,
+      successfulEmbeddings,
+      failedEmbeddings,
+    };
   }
 );
+
