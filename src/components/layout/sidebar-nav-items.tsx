@@ -30,7 +30,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible as ShadcnCollapsible, CollapsibleContent as ShadcnCollapsibleContent, CollapsibleTrigger as ShadcnCollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -103,8 +103,8 @@ export function SidebarNavItems() {
 
     if (item.subItems) {
       return (
-        <Collapsible key={item.label} open={openCollabsibles[item.label]} onOpenChange={() => toggleCollapsible(item.label)} className="w-full">
-          <CollapsibleTrigger asChild>
+        <ShadcnCollapsible key={item.label} open={openCollabsibles[item.label]} onOpenChange={() => toggleCollapsible(item.label)} className="w-full">
+          <ShadcnCollapsibleTrigger asChild>
             <Button
               variant="ghost"
               className={cn(
@@ -115,8 +115,8 @@ export function SidebarNavItems() {
               {buttonContent}
               {openCollabsibles[item.label] ? <ChevronDown className="ml-auto h-4 w-4" /> : <ChevronRight className="ml-auto h-4 w-4" />}
             </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
+          </ShadcnCollapsibleTrigger>
+          <ShadcnCollapsibleContent>
             <SidebarMenuSub>
               {item.subItems.map((subItem) => (
                 <SidebarMenuSubItem key={subItem.href}>
@@ -134,8 +134,8 @@ export function SidebarNavItems() {
                 </SidebarMenuSubItem>
               ))}
             </SidebarMenuSub>
-          </CollapsibleContent>
-        </Collapsible>
+          </ShadcnCollapsibleContent>
+        </ShadcnCollapsible>
       );
     }
 
