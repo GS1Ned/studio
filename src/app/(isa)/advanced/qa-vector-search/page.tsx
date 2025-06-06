@@ -1,7 +1,8 @@
+"use client";
 import React, { useState } from 'react';
-import { genkitClient } from '@/lib/genkitClient';
+// import { genkitClient } from '@/lib/genkitClient';
 import { AnswerGs1QuestionsWithVectorSearchOutputSchema, AnswerGs1QuestionsWithVectorSearchInputSchema } from '@/ai/schemas';
-import { AiOutputCard } from '@/components/AiOutputCard';
+import { AiOutputCard } from '@/components/features/AiOutputCard';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,7 +100,8 @@ const AdvancedQaVectorSearchPage = () => {
         setOutput(null);
         setError(null);
         try {
-            const result = await genkitClient.answerGs1QuestionsWithVectorSearch(values as AnswerGs1QuestionsWithVectorSearchInputSchema);
+            // const result = await genkitClient.answerGs1QuestionsWithVectorSearch(values as AnswerGs1QuestionsWithVectorSearchInputSchema);
+            const result = null; // TODO: Restore genkitClient functionality
             setOutput(result);
         } catch (err) {
             console.error('Error calling Genkit flow:', err);
