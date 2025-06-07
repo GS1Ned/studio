@@ -1,0 +1,19 @@
+# GS1 to IAM Role Mapping
+gs1_processes:
+  - process_name: "Product Track & Trace Event Submission"
+    gs1_role: "EPCISDataSubmitter"
+    iam_role: "roles/custom.epcisEventSubmitter"
+    permissions: ["pubsub.topics.publish"]
+    target_resource_tags: ["gs1-service:epcis-ingest"]
+    
+  - process_name: "Shipping Manifest Management"
+    gs1_role: "LogisticsManager"
+    iam_role: "roles/custom.shippingManifestEditor"
+    permissions: ["datastore.entities.update", "datastore.entities.create"]
+    target_resource_tags: ["gs1-document:shipping_manifest"]
+    
+  - process_name: "Inventory Reconciliation"
+    gs1_role: "WarehouseManager"
+    iam_role: "roles/custom.inventoryReconciler"
+    permissions: ["bigquery.tables.updateData", "bigquery.tables.getData"]
+    target_resource_tags: ["gs1-process:inventory_reconciliation"]

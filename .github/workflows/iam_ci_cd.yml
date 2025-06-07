@@ -1,0 +1,74 @@
+name: IAM CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'iam_infra/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'iam_infra/**' ]
+
+jobs:
+  iam-ci-cd:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
+
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -check -recursive iam_infra/
+
+    - name: Terraform Init
+      id: init
+      run: terraform -chdir=iam_infra init
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform -chdir=iam_infra validate
+
+    - name: Terraform Plan
+      id: plan
+      run: terraform -chdir=iam_infra plan -out=tfplan
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Terraform Plan Status
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const output = `### Terraform Plan for IAM Infrastructure 🛠️
+          \`\`\`\n
+          ${{ steps.plan.outputs.stdout }}
+          \`\`\`
+          `;
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+
+    - name: Manual Approval
+      if: github.event_name == 'push'
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ github.token }}
+        approvers: 'team-leads'
+        minimum-approvals: 1
+
+    - name: Terraform Apply
+      if: github.event_name == 'push'
+      run: terraform -chdir=iam_infra apply tfplan
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
