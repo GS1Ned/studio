@@ -5,6 +5,6 @@ runConfig:
   minInstances: 0
   maxInstances: 10 # Increased from 1 to address scalability bottleneck (Phase 1.A.1)
   concurrency: 80 # Default, can be tuned
-  memoryMiB: 512 # Default, can be tuned
+  memoryMiB: 4096 # Default, can be tuned
   timeoutSeconds: 60 # Default, can be tuned
-# cpu: 1 # Default, can be set if specific CPU needs are identified
+  cpu: 1 # Default, can be set if specific CPU needs are identified
