@@ -272,5 +272,6 @@ The `ClaudeBrowserMode` utilizes Claude Sonnet 3.5 (or latest approved equivalen
 - **Secure Configuration:** Any API keys (e.g., `ANTHROPIC_API_KEY`) or specific endpoint configurations for accessing Claude must be managed via Google Cloud Secret Manager and exposed to the Genkit runtime as environment variables (see Section 6.1.3).
 - **Genkit Flow Integration:** The `ClaudeBrowserMode` (defined in UDM Section 04) is a Genkit flow that will specify the configured Claude model for its `generate` calls, and will provide the 8 browser sub-action tools (defined in UDM Section 02.5) to Claude for tool calling.
 - **Recommendation:**
-    1.  Determine and confirm the exact Genkit plugin and model identifier for accessing Claude Sonnet 3.5 (preferably via Vertex AI if possible).
-    2.  Ensure secure management of any associated API keys or service account credentials via Secret Manager.
+    1.  Determine and confirm the exact Genkit plugin (e.g., `@genkit-ai/vertex-ai`) and model identifier for accessing Claude Sonnet 3.5, preferably via Vertex AI for streamlined GCP integration.
+    2.  Ensure secure management of any associated API keys or service account credentials via Secret Manager, exposing them as environment variables (e.g., `GCP_PROJECT_ID`, `GCP_LOCATION` if not covered by Application Default Credentials for Vertex AI).
+    3.  Refer to `docs/research_appendix/APP-GENKIT-RESEARCH-REPORT-V1.md` for general Genkit setup best practices, which are applicable to configuring model access and plugins.

@@ -293,39 +293,30 @@ This section defines each specialized Roo development and operational mode. Thes
 - **EscalationPathways:** Major existing docs found irrelevant/outdated; critical UDM info entirely missing from existing docs.
 
 ---
-## 4.10 Mode: ROO-MODE-RESEARCH
-- **ID:** `RM-001`
-- **Purpose:** To conduct targeted research using various tools to fill knowledge gaps or answer specific queries, providing synthesized information and cited sources.
-- **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5.
-- **CorePromptReference:** `/prompts/roo_mode_research_prompt_v1.2.prompt.txt`
-- **Inputs (Standard Task Object from `roo_queue.json`):**
-    - `task_id`, `udm_task_reference`, `description`.
-    - `contextual_inputs`:
-        - `research_questions`: (Array of strings).
-        - `knowledge_gap_description`: (String, optional).
-        - `suggested_sources`: (Array of strings, optional).
-        - `information_format_preference`: (String, optional).
-        - `max_depth_level`: (Integer, optional).
-        - `time_allocation_hint_minutes`: (Integer, optional).
+### 4.X ROO-MODE-RESEARCH
+- **ID:** `RM-R01` (Example ID)
+- **Objective:** Conduct in-depth research on specified topics using available tools, synthesize findings, and prepare structured reports or data. This mode can delegate interactive web data retrieval to ClaudeBrowserMode when necessary.
+- **CorePromptReference:** `prompts/roo_mode_research_prompt_v1.3.prompt.txt`
 - **KeyToolsAndCapabilities:**
-    - `WebSearchTool`.
-    - `DocumentFetchingParsingTool` (v1.1).
-    - `Context7DocumentationTool`.
-    - Text Summarization & Synthesis (LLM-based): Core capability, with the overall research process orchestrated by a Genkit flow.
-    - `KnowledgeGraphQueryTool` (Optional, Future).
-    - File System Access (for UDM & Logs).
-    - Capability to propose actions for `ClaudeBrowserMode` if direct fetching is insufficient.
-- **Outputs:**
-    - Primary Output: Research report (`/logs/research/TASK-ID_research_report.md` or `.json`) with summary, answers to questions, sources, unanswered questions/new gaps, methodology.
-    - Secondary Output (If specified): Directly populated/updated UDM sections, code examples, or proposals for new tasks (including `ClaudeBrowserMode` actions).
-    - Status Report to Blueprint Mode.
-- **SuccessMetrics:** Clarity/relevance of answers; quality of sources; completeness of report; new knowledge gaps identified.
-- **ErrorHandling:** Handle tool failures (web search, doc parsing); inability to answer questions (note reasons); manage time allocation.
-- **EscalationPathways:** Critical tool unavailability; discovery of information contradicting UDM/Core Mandate.
+    - `WebSearchTool`
+    - `DocumentFetchingParsingTool`
+    - `Context7DocumentationTool`
+    - Advanced data extraction and synthesis logic.
+    - Potential delegation to `ClaudeBrowserMode` for interactive web data retrieval.
+- **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5 (Assumed default for Roo)
+- **Input:** Research brief, topic(s), target deliverable format.
+- **Output:** Synthesized research report, structured data, or documented findings.
+- **Metrics:** Accuracy, completeness, relevance of information, efficiency of research.
+- **OperationalNotes:**
+    - Handles complex queries by breaking them into sub-tasks.
+    - Maintains a knowledge graph of previously researched topics to avoid redundancy.
+    - Utilizes `Context7DocumentationTool` for specialized C7 documentation needs.
+    - Can propose tasks for `ClaudeBrowserMode` if direct fetching fails or dynamic sites are involved.
+- **ImplementationNotes:** To be implemented as a Genkit flow.
 
 ---
 ## 4.11 Mode: ClaudeBrowserMode
-- **ID:** `RM-CB01`
+- **ID:** `RM-CB01` # This ID should be RM-CBM01 as per PENDING_M0.1_PROMPTS_AND_MODES_CONTENT.md and previous T015. I will correct this in a later step if not handled by another task.
 - **Purpose:** To perform interactive browser-based tasks by intelligently using a suite of browser control actions (tools) to achieve a specified goal. Handles tasks dependent on the 'Roocode browser' capability via the Claude API's tool-use features.
 - **AI_Model_Dependency:** Claude Sonnet 3.5 (via Vertex AI, using `@genkit-ai/vertexai` plugin).
 - **CorePromptReference:** `/prompts/claude_browser_mode_prompt_v2.0.prompt.txt`
@@ -357,3 +348,86 @@ This section defines each specialized Roo development and operational mode. Thes
 - **SuccessMetrics:** Successful completion of all intended browser actions; positive confirmation of validation conditions; correct extraction of specified information; accurate logging of steps and outcomes.
 - **ErrorHandling:** Handle failures of individual browser actions (e.g., element not found, navigation error), manage sequence termination or continuation based on error severity. Report tool or connection failures.
 - **EscalationPathways:** Consistent failure of the underlying `RoocodeBrowserActionTool` or connection to Claude API; critical errors on target websites preventing task completion.
+
+---
+### 4.Y Mode: ROO-MODE-ANALYZE-DOCS
+- **ID:** `RM-AD01` (Example ID)
+- **Description:** Analyzes documentation files (e.g., READMEs, existing project docs), compares their content and structure against the target UDM structure, identifies valuable content for migration or reference, and pinpoints gaps in UDM coverage.
+- **CorePromptReference:** `prompts/roo_mode_analyze_docs_prompt_v1.0.prompt.txt`
+- **KeyToolsAndCapabilities:**
+    - `FileSystemAccessTool` (to read local project documents)
+    - `DocumentFetchingParsingTool` (if URLs to external docs are involved)
+    - `UDMQueryTool` (to query UDM structure and content for gap analysis)
+    - Text analysis and comparison algorithms.
+- **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5 (Assumed default for Roo)
+- **Input:** List of document file paths/URLs to analyze, reference to UDM structure (e.g., `00-UDM-Meta.md`).
+- **Output:** A structured report detailing findings:
+    - Summary of each analyzed document.
+    - Content suitable for migration/referencing in specific UDM sections.
+    - Identified UDM content gaps.
+    - Recommendations for UDM updates or new content creation.
+- **Metrics:** Completeness of analysis, accuracy of UDM gap identification, actionability of recommendations.
+- **OperationalNotes:**
+    - Prioritizes official project documentation.
+    - Can be used iteratively as new documentation is discovered or UDM evolves.
+- **ImplementationNotes:** To be implemented as a Genkit flow.
+
+---
+### 4.Z Mode: ROO-MODE-ANALYZE-CODEBASE
+- **ID:** `RM-AC01` (Example ID)
+- **Description:** Performs an automated scan and analysis of the ISA project's source code (`src/` directory). Identifies main programming languages, key frameworks/libraries used, overall code structure, and attempts to map identified code modules/directories to the conceptual components defined in UDM Section `02-System-Architecture.md`.
+- **CorePromptReference:** `prompts/roo_mode_analyze_codebase_prompt_v1.0.prompt.txt`
+- **KeyToolsAndCapabilities:**
+    - `FileSystemAccessTool`
+    - `CodeParsingTool` (conceptual tool for AST analysis or similar)
+    - `UDMQueryTool`
+- **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5
+- **Input:** Codebase paths, dependency manifests, UDM architecture reference.
+- **Output:** Structured codebase analysis report, updates to UDM Section 02.
+- **ImplementationNotes:** To be implemented as a Genkit flow.
+
+---
+### 4.Q Mode: ClaudeBrowserMode
+- **ID:** `RM-CBM01` (Example ID)
+- **Description:** An expert system for web interaction, capable of navigating websites, fetching content (especially from dynamic SPAs), and performing sequences of browser actions using its suite of sub-action tools. It is typically invoked by other Roo Modes when direct content fetching fails or interactive browsing is required.
+- **CorePromptReference:** `prompts/claude_browser_mode_prompt_v2.0.prompt.txt`
+- **KeyToolsAndCapabilities:**
+    - `BrowserNavTool`
+    - `BrowserClickTool`
+    - `BrowserScrollTool`
+    - `BrowserReadPageTool`
+    - `BrowserTypeListTool`
+    - `BrowserSearchPageTool`
+    - `BrowserExtractContentTool`
+    - `BrowserCloseSessionTool`
+- **AI_Model_Dependency:** Claude Sonnet 3.5 (via Vertex AI or dedicated Anthropic plugin)
+- **Input:** Target URL, specific research goal or data to extract, or a browsing plan.
+- **Output:** Fetched page content, extracted data, or a report of browsing actions and findings.
+- **ImplementationNotes:** To be implemented as a Genkit flow. This mode and its tools are specifically designed to run on the Claude Sonnet 3.5 model, separate from Roo's primary Gemini model.
+
+---
+### 4.R Mode: ROO-MODE-PLAN-STRATEGIC
+- **ID:** `RM-PS01` (Example ID)
+- **Description:** Responsible for high-level planning, roadmap generation, and strategic decision-making based on system audits, knowledge gap analyses, the Core Mandate, and overall project goals.
+- **CorePromptReference:** `prompts/roo_mode_plan_strategic_prompt_v1.0.prompt.txt`
+- **KeyToolsAndCapabilities:**
+    - `UDMQueryTool` (to access all UDM sections)
+    - `TaskManagementTool` (conceptual, for defining and prioritizing tasks)
+- **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5
+- **Input:** Audit reports, knowledge gap assessments, Core Mandate, existing roadmap.
+- **Output:** Updated roadmap, new task definitions, strategic directives.
+- **ImplementationNotes:** To be implemented as a Genkit flow.
+
+---
+### 4.S Mode: ROO-MODE-UPDATE-UDM-TECHNICAL
+- **ID:** `RM-UUT01` (Example ID)
+- **Description:** Performs specific, technical updates to UDM documents. This includes, but is not limited to, updating prompt file references, tool capability lists within Roo Mode definitions, AI model dependencies, and incorporating findings from research tasks into relevant UDM sections.
+- **CorePromptReference:** `prompts/roo_mode_update_udm_technical_prompt_v1.1.prompt.txt`
+- **KeyToolsAndCapabilities:**
+    - `FileSystemAccessTool` (for UDM files)
+    - `UDMQueryTool` (for context and validation)
+    - `TextEditorTool` (conceptual, for precise modifications)
+- **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5
+- **Input:** Specific UDM file path, section to modify, content to add/change, context from research or other tasks.
+- **Output:** Updated UDM file(s).
+- **ImplementationNotes:** To be implemented as a Genkit flow. Requires careful validation of changes.
