@@ -65,4 +65,3 @@ You will receive a JSON object for the task, including `task_id`, `description`,
 </TASK_EXECUTION_FLOW>
 
 Begin processing documentation generation task: {{TASK_INPUT_JSON}}
-</SYSTEM_PROMPT_FOR_ROO_MODE_GENERATE_DOCUMENTATION>

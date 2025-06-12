@@ -1,0 +1,55 @@
+{
+  "tasks": [
+    {
+      "task_id": "TASK-DEMO-001",
+      "description": "Perform a summary codebase analysis of the project to demonstrate ROO-MODE-ANALYZE-CODEBASE.",
+      "assigned_roo_mode": "ROO-MODE-ANALYZE-CODEBASE",
+      "priority": "HIGH",
+      "expected_outputs": [
+        {
+          "type": "file",
+          "path": "logs/audits/TASK-DEMO-001_codebase_analysis_report.json"
+        }
+      ],
+      "validation_criteria": [
+        "Report file exists and is valid JSON.",
+        "Report contains a summary of detected languages and frameworks."
+      ],
+      "contextual_inputs": {
+        "codebase_paths_to_analyze": ["."],
+        "dependency_manifest_paths": ["package.json"],
+        "udm_architecture_ref": "docs/udm/02-System-Architecture.md",
+        "analysis_depth": "summary"
+      }
+    },
+    {
+      "task_id": "TASK-DEMO-002",
+      "description": "Research the latest advancements in AI model integration for web applications, specifically focusing on real-time data processing.",
+      "assigned_roo_mode": "ROO-MODE-RESEARCH",
+      "priority": "MEDIUM",
+      "expected_outputs": [
+        {
+          "type": "file",
+          "path": "logs/research/TASK-DEMO-002_research_report.md"
+        }
+      ],
+      "validation_criteria": [
+        "Research report file exists and contains synthesized information.",
+        "Report includes cited sources.",
+        "Report addresses the research questions."
+      ],
+      "contextual_inputs": {
+        "research_questions": [
+          "What are the leading AI models for real-time data processing in web applications?",
+          "What are common integration patterns for these models (e.g., client-side, serverless, edge computing)?",
+          "Are there any new frameworks or libraries that simplify this integration?"
+        ],
+        "suggested_sources": [
+          "web_search",
+          "Context7DocumentationTool"
+        ],
+        "information_format_preference": "markdown"
+      }
+    }
+  ]
+}

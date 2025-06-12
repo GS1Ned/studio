@@ -153,9 +153,59 @@ This section defines each specialized Roo development and operational mode. Thes
 - **SuccessMetrics:** Clarity, accuracy, completeness of documentation; adherence to style guides; appropriate suggestions for UDM placement.
 - **ErrorHandling:** Handle missing/ambiguous sources by noting limitations and proposing research tasks, rather than inventing information. Report failure if critical sources are unparsable.
 - **EscalationPathways:** Escalate to Blueprint Mode if source information reveals critical UDM flaws or if topic is too vast for a single task.
+- **ID:** `RM-GD01`
+- **Purpose:** To generate human-readable, accurate, and UDM-compliant textual documentation for specified UDM sections or topics by synthesizing source information.
+- **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5.
+- **CorePromptReference:** `/prompts/roo_mode_generate_documentation_prompt_v1.0.prompt.txt`
+- **Inputs (Standard Task Object from `roo_queue.json`):**
+    - `task_id`, `udm_task_reference`, `description`.
+    - `contextual_inputs`:
+        - `target_udm_section_for_context`: (String) Path to UDM section for context.
+        - `topic_to_document`: (String) Core subject matter.
+        - `source_information_refs`: (Array of strings, optional) Paths to UDM sections, logs, reports for synthesis.
+        - `udm_style_guide_ref`: (String, optional) Path to UDM style guide.
+        - `output_format_notes`: (String, optional) Specific Markdown structure instructions.
+        - `audience_level_hint`: (String, optional).
+- **KeyToolsAndCapabilities:**
+    - `UDMQueryTool`: To read source UDM sections, style guides, glossary.
+    - Text Synthesis & Structuring (LLM-based): Core capability.
+    - Markdown Formatting Tool (Conceptual, LLM-based).
+    - Internal State Access (Conceptual): For documenting its own logic/prompts.
+- **Outputs (Generated documentation content and report):**
+    - Primary Output: `generated_markdown_content` (String), `target_udm_filepath_suggestion` (String), `target_section_identifier_suggestion` (String, optional), `update_type_suggestion` (Enum for `ROO-MODE-UPDATE-UDM-TECHNICAL`).
+    - Secondary Output: Generation report detailing sources and issues.
+    - Status Report to Blueprint Mode.
+- **SuccessMetrics:** Clarity, accuracy, completeness of documentation; adherence to style guides; appropriate suggestions for UDM placement.
+- **ErrorHandling:** Handle missing/ambiguous sources by noting limitations and proposing research tasks, rather than inventing information. Report failure if critical sources are unparsable.
+- **EscalationPathways:** Escalate to Blueprint Mode if source information reveals critical UDM flaws or if topic is too vast for a single task.
 
 ---
 ## 4.5 Mode: ROO-MODE-VALIDATE-COMPLETION
+- **ID:** `RM-VC01`
+- **Purpose:** Objective quality gate to verify that a Milestone or Phase has been successfully completed according to all UDM-specified criteria by auditing outputs and statuses of constituent tasks.
+- **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5.
+- **CorePromptReference:** `/prompts/roo_mode_validate_completion_prompt_v1.0.prompt.txt`
+- **Inputs (Standard Task Object from `roo_queue.json`):**
+    - `task_id`, `udm_task_reference`, `description`.
+    - `contextual_inputs`:
+        - `target_milestone_id_to_validate`: (String).
+        - `target_phase_id_to_validate`: (String, optional).
+        - `udm_roadmap_ref`: (String) Path to UDM Section 05.
+        - `all_task_logs_for_milestone_ref`: (String, optional) Path to directory of task logs.
+        - `blueprint_state_ref`: (String) Path to `blueprint_state.json`.
+- **KeyToolsAndCapabilities:**
+    - `UDMQueryTool`: To fetch task definitions, statuses, ExpectedOutputs, ValidationCriteria, and Milestone/Phase ExitCriteria from UDM Section 05.
+    - `FileSystemAccessTool`: To verify existence/accessibility of deliverables and read task logs.
+    - Log Parsing Tool (Conceptual): To scan task logs for success/failure indicators.
+    - Comparison & Aggregation Logic (LLM-based).
+    - Reporting Tool.
+- **Outputs (Validation report and UDM/state update recommendations):**
+    - Primary Output: "Milestone/Phase Completion Validation Report" detailing overall status ("SUCCESS_ALL_CRITERIA_MET" or "FAILURE_CRITERIA_NOT_MET"), task validation summaries, milestone/phase exit criteria summaries, and a final recommendation.
+    - Secondary Output (Recommendations for Blueprint Mode): If SUCCESS, recommend UDM/state updates to mark milestone/phase validated. If FAILURE, recommend corrective actions.
+    - Status Report to Blueprint Mode (indicating validation process completed; report contains pass/fail).
+- **SuccessMetrics:** Comprehensive checking of all tasks/criteria; clarity and accuracy of report; correct determination of overall validation status.
+- **ErrorHandling:** Handle inaccessible UDM/logs by marking relevant checks as "UNVERIFIABLE" and potentially failing overall validation. Report ambiguous UDM criteria as a UDM flaw.
+- **EscalationPathways:** If overall validation status is FAILURE, Blueprint Mode decides corrective actions (re-queue, new tasks, human review). Systemic issues (e.g., UDM criteria consistently unachievable) may be escalated by Blueprint Mode.
 - **ID:** `RM-VC01`
 - **Purpose:** Objective quality gate to verify that a Milestone or Phase has been successfully completed according to all UDM-specified criteria by auditing outputs and statuses of constituent tasks.
 - **AI_Model_Dependency:** Gemini 2.5 Flash Preview 20-5.
@@ -310,7 +360,7 @@ This section defines each specialized Roo development and operational mode. Thes
 - **KeyToolsAndCapabilities:**
     - `WebSearchTool`.
     - `DocumentFetchingParsingTool` (v1.1).
-    - `Context7DocumentationTool`.
+    - `Context7DocumentationTool`: To interact with a Context7 MCP Server to resolve library names to Context7-compatible IDs and fetch specific documentation for those libraries.
     - Text Summarization & Synthesis (LLM-based).
     - `KnowledgeGraphQueryTool` (Optional, Future).
     - File System Access (for UDM & Logs).
@@ -329,6 +379,17 @@ This section defines each specialized Roo development and operational mode. Thes
 - **Purpose:** To perform interactive browser-based tasks by intelligently using a suite of browser control actions (tools) to achieve a specified goal. Handles tasks dependent on the 'Roocode browser' capability via the Claude API's tool-use features.
 - **AI_Model_Dependency:** Claude Sonnet 3.5 (via Vertex AI, using `@genkit-ai/vertexai` plugin).
 - **CorePromptReference:** `/prompts/claude_browser_mode_prompt_v2.0.prompt.txt`
+- **KeyToolsAndCapabilities (Suite of 8 Browser Actions available to Claude Sonnet 3.5 via Claude API tool_use, executed by Inter-Model Bridge):**
+    - `launchBrowser`
+    - `clickElement`
+    - `typeText`
+    - `scrollPage`
+    - `captureScreenshot`
+    - `getElementText`
+    - `checkElementExists`
+    - `closeBrowser`
+    - (Claude Sonnet 3.5's inherent reasoning, planning, and (multi-modal for screenshots) capabilities).
+    - Reporting Tool (to structure JSON output).
 - **Inputs (Standard Task Object from `roo_queue.json`):**
     - `task_id`, `udm_task_reference`, `description`.
     - `contextual_inputs`:

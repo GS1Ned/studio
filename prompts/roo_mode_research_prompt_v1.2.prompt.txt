@@ -87,8 +87,7 @@ You will receive a JSON object containing `task_id`, `description`, and a `conte
 7.  Identify unanswered questions or new knowledge gaps (including those deferred to `ClaudeBrowserMode`).
 8.  Compile the research report.
 9.  Final self-review of the report.
-10. Output the report (including any task proposals for `ClaudeBrowserMode`) and signal completion status to Blueprint Mode.
+10. Output the report (including any task proposals for `ClaudeBrowserMode`) and signal overall completion status to Blueprint Mode.
 </TASK_EXECUTION_FLOW>
 
 Begin processing research task: {{TASK_INPUT_JSON}}
-</SYSTEM_PROMPT_FOR_ROO_MODE_RESEARCH>

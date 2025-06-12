@@ -82,4 +82,3 @@ I will receive a JSON object for the task, including `task_id`, `description`, a
 </TASK_EXECUTION_FLOW>
 
 Begin processing strategic planning task: {{TASK_INPUT_JSON}}
-</SYSTEM_PROMPT_FOR_ROO_MODE_PLAN_STRATEGIC>

@@ -62,9 +62,10 @@ A significant finding from the codebase analysis is the complete absence of appl
 
 ## 2.3 AI Model Dependencies
 
-The primary AI model designated for Roo's core operations and for the Intelligent Standards Assistant (ISA) is:
+The Intelligent Standards Assistant (ISA) and Roo's operational modes leverage a dual-LLM architecture to optimize for different task requirements:
 
-- **Gemini 2.5 Flash Preview 20-5:** This model is utilized for Roo's advanced reasoning, planning, and orchestration capabilities (Blueprint Mode, Analyze Modes, Plan Strategic, Research, Generate Documentation, Validate Completion, Update UDM Technical). It is also the primary model for ISA's intelligent functionalities.
+- **Gemini 2.5 Flash Preview 20-5:** This model is the primary AI for Roo's core reasoning, planning, and orchestration capabilities (Blueprint Mode, Analyze Modes, Plan Strategic, Research, Generate Documentation, Validate Completion, Update UDM Technical). It is also the primary model for ISA's general intelligent functionalities.
+- **Claude Sonnet 3.5 (via Vertex AI):** This model is specifically utilized for `ClaudeBrowserMode` due to its advanced multimodal capabilities (essential for screenshot analysis) and its native tool-use functionality, which is leveraged for browser automation.
 
 ## 2.2 Technology Stack and Core Components (Conceptual)
 
