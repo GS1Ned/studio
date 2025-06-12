@@ -88,7 +88,7 @@ This section defines each specialized Roo development and operational mode. Thes
         - `planning_horizon`: (String, optional).
 - **KeyToolsAndCapabilities:**
     - `UDMQueryTool`: To read/query UDM sections.
-    - Synthesis & Reasoning (LLM-based): Core capability.
+    - Synthesis & Reasoning (LLM-based): Core capability, likely implemented as a primary Genkit flow orchestrating sub-tasks and tool calls.
     - Roadmap Generation/Update Tool (Conceptual): To structure output for UDM Section 05.
     - Risk Assessment Module (Conceptual, LLM-based).
     - Prioritization Framework (Conceptual, LLM-based).
@@ -143,7 +143,7 @@ This section defines each specialized Roo development and operational mode. Thes
         - `audience_level_hint`: (String, optional).
 - **KeyToolsAndCapabilities:**
     - `UDMQueryTool`: To read source UDM sections, style guides, glossary.
-    - Text Synthesis & Structuring (LLM-based): Core capability.
+    - Text Synthesis & Structuring (LLM-based): Core capability, likely implemented as a Genkit flow.
     - Markdown Formatting Tool (Conceptual, LLM-based).
     - Internal State Access (Conceptual): For documenting its own logic/prompts.
 - **Outputs (Generated documentation content and report):**
@@ -311,7 +311,7 @@ This section defines each specialized Roo development and operational mode. Thes
     - `WebSearchTool`.
     - `DocumentFetchingParsingTool` (v1.1).
     - `Context7DocumentationTool`.
-    - Text Summarization & Synthesis (LLM-based).
+    - Text Summarization & Synthesis (LLM-based): Core capability, with the overall research process orchestrated by a Genkit flow.
     - `KnowledgeGraphQueryTool` (Optional, Future).
     - File System Access (for UDM & Logs).
     - Capability to propose actions for `ClaudeBrowserMode` if direct fetching is insufficient.

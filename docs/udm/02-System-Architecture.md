@@ -60,15 +60,23 @@ These form the basis for the application's development. Further technologies (e.
 
 A significant finding from the codebase analysis is the complete absence of application source code within the `src/` directory. This means the core functionality and user interface of the Intelligent Standards Assistant (ISA) are not yet implemented. This gap will be addressed in subsequent development phases, focusing on building out the application components as outlined in the conceptual structure in Section 2.1.3.
 
-## 2.3 AI Model Dependencies
+## 2.3 AI Model Dependencies & Dual-LLM Architecture
 
-The primary AI model designated for Roo's core operations and for the Intelligent Standards Assistant (ISA) is:
+ISA employs a Genkit-native dual-LLM architecture:
 
-- **Gemini 2.5 Flash Preview 20-5:** This model is utilized for Roo's advanced reasoning, planning, and orchestration capabilities (Blueprint Mode, Analyze Modes, Plan Strategic, Research, Generate Documentation, Validate Completion, Update UDM Technical). It is also the primary model for ISA's intelligent functionalities.
+- **Primary Orchestration & General AI Tasks (Roo):**
+    - **Model:** Gemini 2.5 Flash Preview 20-5 (or latest approved equivalent).
+    - **Usage:** Utilized for Roo's advanced reasoning, planning, UDM interpretation, code generation analysis, documentation synthesis, and orchestration capabilities (e.g., Blueprint Mode, Analyze Modes, Plan Strategic, Research, Generate Documentation, Validate Completion, Update UDM Technical). It is the primary model for most of ISA's intelligent functionalities, accessed via appropriate Genkit plugins (e.g., `@genkit-ai/vertex-ai` or `@genkit-ai/google-ai`).
 
-## 2.2 Technology Stack and Core Components (Conceptual)
+- **Specialized Browser Interaction Tasks (`ClaudeBrowserMode`):**
+    - **Model:** Claude Sonnet 3.5 (or latest approved equivalent for advanced tool usage).
+    - **Usage:** Specifically utilized by the `ClaudeBrowserMode` (defined in UDM Section 04) for complex web interactions that require sophisticated understanding of web page content and planning sequences of browser actions. This mode is itself a Genkit flow that invokes the Claude model (via a suitable Genkit plugin like `@genkit-ai/vertex-ai` if Claude is available there, or a custom Anthropic plugin) which then uses the specialized browser action Genkit tools (defined in UDM Section 02.5).
 
-### 2.2.1 Core Technologies Identified (from `package.json`)
+This dual-LLM approach allows leveraging the strengths of each model for its designated purpose, orchestrated within the Genkit framework. Configuration details for these models and their Genkit plugins are specified in UDM Section 06.
+
+## 2.4 Technology Stack and Core Components (Conceptual) (Renumbered)
+
+### 2.4.1 Core Technologies Identified (from `package.json`) (Renumbered)
 
 Based on the `package.json` and `tsconfig.json` files, the foundational technologies for the ISA application are:
 
@@ -79,6 +87,6 @@ Based on the `package.json` and `tsconfig.json` files, the foundational technolo
 
 These form the basis for the application's development. Further technologies (e.g., Genkit, Firebase SDKs) will be integrated as the application's components are defined and implemented.
 
-### 2.2.2 Missing Core Application Codebase
+### 2.4.2 Missing Core Application Codebase (Renumbered)
 
 A significant finding from the codebase analysis is the complete absence of application source code within the `src/` directory. This means the core functionality and user interface of the Intelligent Standards Assistant (ISA) are not yet implemented. This gap will be addressed in subsequent development phases, focusing on building out the application components as outlined in the conceptual structure in Section 2.1.3.
