@@ -311,7 +311,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
 - **ExpectedOutputs:** Prompt file saved, UDM updated. Log.
 - **ValidationCriteria:** File exists with v1.1 content, UDM reference correct.
 - **Priority:** Medium
-- **Status:** TODO
+- **Status:** SUPERSEDED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T010.log`
 
 ---
@@ -581,7 +581,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
 - **ExpectedOutputs:** UDM Section 02.5 updated with v1.1 def. Previous def superseded/archived. Log.
 - **ValidationCriteria:** UDM 02.5 reflects full v1.1 def, emphasizing MCP and security.
 - **Priority:** High
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T028.log`
 
 ---
@@ -594,7 +594,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
 - **ExpectedOutputs:** T008's output (5-cycle roadmap in UDM 05) shows `TASK-C1-M1.1-T001` in Cycle 1 with high priority. Log for T008 confirms. Log for T029.
 - **ValidationCriteria:** Roadmap from T008 includes `ClaudeBrowserMode` item in Cycle 1 with high priority. T008 log confirms.
 - **Priority:** High
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T029.log`
 
 ---
@@ -607,7 +607,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
 - **ExpectedOutputs:** Prompt file v1.3 saved. UDM Section 04 updated. V1.2 prompt archived/noted. Log.
 - **ValidationCriteria:** V1.3 prompt file exists with new logic. UDM reference points to V1.3.
 - **Priority:** High
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T030.log`
 
 ---
@@ -629,7 +629,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
     - Log of actions.
 - **ValidationCriteria:** `FileSystemAccessTool` def and `ROO-MODE-UPDATE-UDM-TECHNICAL` prompt reviewed against `fs` research; refinements documented/implemented. Summary report generated.
 - **Priority:** High
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T031.log`
 
 ---
@@ -651,5 +651,5 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
     - Log of actions.
 - **ValidationCriteria:** UDM 02.5 reflects library recommendations. `ROO-MODE-UPDATE-UDM-TECHNICAL` prompt confirmed/updated. Summary report generated.
 - **Priority:** High
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T032.log`
