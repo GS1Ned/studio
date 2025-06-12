@@ -350,7 +350,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
 - **ExpectedOutputs:** Prompt file `/prompts/roo_mode_analyze_docs_prompt_v1.0.prompt.txt` saved; UDM Section 04 updated. Log.
 - **ValidationCriteria:** File exists with V1.0 content; UDM reference correct.
 - **Priority:** Medium
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T013.log`
 
 ---
@@ -363,7 +363,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
 - **ExpectedOutputs:** Prompt file `/prompts/roo_mode_analyze_codebase_prompt_v1.0.prompt.txt` saved; UDM Section 04 updated. Log.
 - **ValidationCriteria:** File exists with V1.0 content; UDM reference correct.
 - **Priority:** Medium
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T014.log`
 
 ---
@@ -376,7 +376,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
 - **ExpectedOutputs:** Prompt file `/prompts/claude_browser_mode_prompt_v2.0.prompt.txt` saved; UDM Section 04 updated. Log.
 - **ValidationCriteria:** File exists with V2.0 content; UDM references correct.
 - **Priority:** Medium
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T015.log`
 
 ---
@@ -397,7 +397,7 @@ This section outlines the initial 5-cycle strategic roadmap for the Intelligent 
 - **ValidationCriteria:**
     - UDM accurately reflects Genkit-native dual-LLM architecture, `ClaudeBrowserMode` as a Genkit flow using Claude on Vertex, and all 8 browser sub-action tools as Genkit tools in Sec 02.5. Configs in Sec 06 updated.
 - **Priority:** Very High
-- **Status:** TODO
+- **Status:** VALIDATED
 - **LogFile:** `/logs/tasks/TASK-P0-M0.1-T016.log`
 
 ---
