@@ -38,7 +38,7 @@ The recent research processing has solidified several key architectural decision
 ## Critical New Reference for Guiding Research - Refined Knowledge Gaps:
 
 A pivotal outcome of recent tasks is the update to the knowledge gap assessment:
-*   **File:** `logs/knowledge_gaps/TASK-P0-M0.1-T005_knowledge_gap_assessment.json`
+*   **File:** `/logs/knowledge_gaps/TASK-P0-M0.1-T005_knowledge_gap_assessment.json`
 *   **Content:** This JSON file now contains highly specific, Firebase-focused research questions derived from the initial "Exploratory Research Report."
 
 **This updated JSON file is now Roo's primary directive and guide for all subsequent detailed research, planning, and solution design for Cycle 1 and beyond.**
