@@ -1,8 +1,11 @@
 "use client";
 import React, { useState } from 'react';
 // import { genkitClient } from '@/lib/genkitClient';
-import { AnswerGs1QuestionsWithVectorSearchOutputSchema, AnswerGs1QuestionsWithVectorSearchInputSchema } from '@/ai/schemas';
-import { AiOutputCard } from '@/components/features/AiOutputCard';
+import { AnswerGs1QuestionsWithVectorSearchInputSchema } from '@/ai/schemas';
+import { AnswerGs1QuestionsWithVectorSearchOutputSchema, type AnswerGs1QuestionsWithVectorSearchOutput } from '@/ai/flows/answer-gs1-questions-with-vector-search';
+import { AiOutputCard } from '@/components/features/ai-output-card';
+import type { ExplainableOutput } from '@/lib/types';
+// import { genkitClient } from '@/lib/genkitClient';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const qaVectorSearchFormSchema = z.object({
-    query: z.string().min(2, { message: 'Query must be at least 2 characters.' }),
+    question: z.string().min(2, { message: 'Question must be at least 2 characters.' }),
     topK: z.preprocess(
         (val) => (val === '' ? undefined : Number(val)),
         z.number().int().positive().optional().default(5)
@@ -23,22 +26,22 @@ const qaVectorSearchFormSchema = z.object({
 
 type QaVectorSearchFormValues = z.infer<typeof qaVectorSearchFormSchema>;
 
-const extractExplainability = (output: AnswerGs1QuestionsWithVectorSearchOutputSchema) => {
-    const explainability = {
-        reasoningSteps: output.reasoningSteps,
-        citedSources: output.citedSources,
-        retrievedChunksCount: output.retrievedChunksCount, // Optionally add retrievedChunksCount here
-    };
-
-    const modelEvaluationMetrics = {
-         retrievedChunksCount: output.retrievedChunksCount, // Optionally add retrievedChunksCount here
-    };
-
-    return { explainability, modelEvaluationMetrics };
+const extractExplainability = (
+  output: AnswerGs1QuestionsWithVectorSearchOutput
+): ExplainableOutput => {
+  const count = output.retrievedChunksCount ?? 0;
+  return {
+    reasoningSteps: output.reasoningSteps,
+    retrievedChunksCount: count,
+    modelEvaluationMetrics: {
+      retrievedChunksCount: count,
+    },
+  };
 };
 
-const renderOutput = (output: AnswerGs1QuestionsWithVectorSearchOutputSchema) => {
-    const { explainability } = extractExplainability(output);
+const renderOutput = (output: AnswerGs1QuestionsWithVectorSearchOutput | null) => {
+    if (!output) return <p>No data</p>;
+    const explainability = extractExplainability(output);
 
     return (
         <div className="space-y-4">
@@ -58,22 +61,8 @@ const renderOutput = (output: AnswerGs1QuestionsWithVectorSearchOutputSchema) =>
                 <div>
                     <h3 className="text-lg font-semibold">Reasoning Steps:</h3>
                     <ul className="list-disc list-inside">
-                        {explainability.reasoningSteps.map((step, index) => (
+                        {explainability.reasoningSteps.map((step: string, index: number) => (
                             <li key={index}>{step}</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-            {explainability.citedSources && explainability.citedSources.length > 0 && (
-                <div>
-                    <h3 className="text-lg font-semibold">Cited Sources:</h3>
-                    <ul className="list-disc list-inside">
-                        {explainability.citedSources.map((source, index) => (
-                            <li key={index}>
-                                {source.sourceName}
-                                {source.pageNumber && `, Page ${source.pageNumber}`}
-                                {source.sectionTitle && `, Section: ${source.sectionTitle}`}
-                            </li>
                         ))}
                     </ul>
                 </div>
@@ -83,14 +72,14 @@ const renderOutput = (output: AnswerGs1QuestionsWithVectorSearchOutputSchema) =>
 };
 
 const AdvancedQaVectorSearchPage = () => {
-    const [output, setOutput] = useState<AnswerGs1QuestionsWithVectorSearchOutputSchema | null>(null);
+    const [output, setOutput] = useState<AnswerGs1QuestionsWithVectorSearchOutput | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
     const form = useForm<QaVectorSearchFormValues>({
         resolver: zodResolver(qaVectorSearchFormSchema),
         defaultValues: {
-            query: '',
+            question: '',
             topK: 5,
         },
     });
@@ -100,8 +89,7 @@ const AdvancedQaVectorSearchPage = () => {
         setOutput(null);
         setError(null);
         try {
-            // const result = await genkitClient.answerGs1QuestionsWithVectorSearch(values as AnswerGs1QuestionsWithVectorSearchInputSchema);
-            const result = null; // TODO: Restore genkitClient functionality
+            const result = null; // TODO: connect Genkit client
             setOutput(result);
         } catch (err) {
             console.error('Error calling Genkit flow:', err);
@@ -127,7 +115,7 @@ const AdvancedQaVectorSearchPage = () => {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             <FormField
                                 control={form.control}
-                                name="query"
+                                name="question"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Your Question</FormLabel>
@@ -178,12 +166,13 @@ const AdvancedQaVectorSearchPage = () => {
                     </Form>
 
                     <div className="mt-8">
-                        <AiOutputCard
-                            output={output}
-                            loading={loading}
-                            error={error}
+                        <AiOutputCard<AnswerGs1QuestionsWithVectorSearchOutput | null>
+                            title="AI Answer"
+                            data={output}
                             renderOutput={renderOutput}
-                            extractExplainability={extractExplainability}
+                            explainability={output ? extractExplainability(output) : undefined}
+                            isLoading={loading}
+                            error={error?.message || null}
                         />
                          {loading && (
                             <div className="space-y-4 mt-4">
