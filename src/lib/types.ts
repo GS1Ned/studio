@@ -30,6 +30,7 @@ export interface ExplainableOutput {
   reasoningSteps?: string[];
   confidenceScore?: number | string;
   modelEvaluationMetrics?: Record<string, string | number>;
+  retrievedChunksCount?: number;
   // Add other common explainability fields here
 }
 
