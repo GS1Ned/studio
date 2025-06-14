@@ -9,7 +9,7 @@ async function callFlow<TInput extends object, TOutput>(name: string, input: TIn
     body: JSON.stringify(input),
   });
   if (!res.ok) {
-    throw new Error(`Genkit request failed with status ${res.status}`);
+    throw new Error(`Genkit request failed with status ${res.status}: ${res.statusText}`);
   }
   const data = await res.json();
   return schema.parse(data);
