@@ -7,6 +7,7 @@ This document serves as the central blueprint, strategic roadmap, and evolving d
 
 *   **2023-XX-XX:** The `ISAIntelligent-Standards-Assistant-(ISA)-X1` feature branch, containing foundational work and initial AI flow implementations, was successfully merged into the `main` branch. The `ISAIntelligent-Standards-Assistant-(ISA)-X1` branch can now be safely deleted from the remote repository.
 *   **2024-05-17:** Enhanced the 'Q&A with Vector Search' UI (`/advanced/qa-vector-search`) to display the `retrievedChunksCount`, providing users with visibility into the number of source chunks used by the AI for answer synthesis. Minor flow robustness enhancements were also made to this feature, aligning with the plan to transition to live backend services in Phase 2.
+*   **2025-06-14:** Added structured logging with `pino`, a project setup script, and CI workflow running lint, typecheck and build. The QA vector search page once again calls the Genkit flow and shows cited sources. Emulator settings now live in `firebase.json` and example environment variables are provided via `.env.example`.
 
 
 

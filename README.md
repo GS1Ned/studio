@@ -7,6 +7,8 @@ This repository hosts the **Intelligent Standards Assistant** – a Next.js and 
 - **AI Orchestration**: Genkit using Google Gemini models
 - **Deployment**: Firebase App Hosting with hardened Firestore security
 - **Infrastructure as Code**: Terraform modules under `iam_infra/` with a GitHub Actions workflow
+- **Logging**: Structured logging via [Pino](https://github.com/pinojs/pino)
+- **Continuous Integration**: Lint, type check and build verified by `ci.yml`
 
 See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automation details are in `technical_report.md`.
 
@@ -46,3 +48,7 @@ See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automa
 - Conceptual demos for vector search and knowledge graph queries
 
 For more details on phases and planned work, consult the [Strategic Roadmap](docs/blueprint.md).
+## Troubleshooting
+- **OpenTelemetry build warnings**: During `npm run build`, Next.js may warn about missing `@opentelemetry/exporter-jaeger` or the `require.extensions` API. These come from Genkit's optional tracing setup. The warnings are harmless but can be silenced by installing the Jaeger exporter:
+  ```bash
+  npm install --save-dev @opentelemetry/exporter-jaeger.
