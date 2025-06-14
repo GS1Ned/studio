@@ -37,3 +37,16 @@ export const DetectStandardErrorsInputSchema = z.object({
     .min(100, "Document content must be at least 100 characters for meaningful error detection.")
     .describe('The content of the standards document to analyze for errors and inconsistencies.'),
 });
+
+// Schema for src/ai/flows/answer-gs1-questions-with-vector-search.ts
+export const DocumentChunkSchema = z.object({
+  content: z.string().describe('Chunk content from a source document.'),
+  sourceName: z.string().describe('Source document name.'),
+  pageNumber: z.number().optional().describe('Optional page number.'),
+  sectionTitle: z.string().optional().describe('Optional section title.'),
+});
+
+export const AnswerGs1QuestionsWithVectorSearchInputSchema = z.object({
+  question: z.string().describe('The question to ask.'),
+  topK: z.number().optional().default(5).describe('Number of chunks to retrieve from the vector store.'),
+});

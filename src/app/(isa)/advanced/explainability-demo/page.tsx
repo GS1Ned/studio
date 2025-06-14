@@ -55,8 +55,8 @@ export default function ExplainabilityDemoPage() {
     },
   };
 
-  const renderDemoOutput = (data: DemoData) => (
-    <p>{data.content}</p>
+  const renderDemoOutput = (data: DemoData | null) => (
+    <p>{data?.content}</p>
   );
 
   return (
@@ -77,7 +77,7 @@ export default function ExplainabilityDemoPage() {
       </Card>
 
       {(isLoading || error || demoOutput) && (
-        <AiOutputCard<DemoData>
+        <AiOutputCard<DemoData | null>
           title={demoOutput?.title || "AI Output"}
           data={demoOutput}
           renderOutput={renderDemoOutput}

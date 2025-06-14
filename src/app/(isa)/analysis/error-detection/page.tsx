@@ -62,7 +62,10 @@ export default function ErrorDetectionPage() {
                 <CardContent className="space-y-2 text-sm">
                   <p><strong className="font-medium">Description:</strong> {issue.description}</p>
                   {issue.locationContext && (
-                    <p><strong className="font-medium">Context:</strong> <em className="bg-muted p-1 rounded text-xs">"{issue.locationContext}"</em></p>
+                    <p>
+                      <strong className="font-medium">Context:</strong>{' '}
+                      <em className="bg-muted p-1 rounded text-xs">&quot;{issue.locationContext}&quot;</em>
+                    </p>
                   )}
                   {issue.suggestedCorrection && (
                     <Alert variant="default" className="mt-2">

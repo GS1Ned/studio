@@ -40,15 +40,6 @@ export const AnswerGs1QuestionsWithVectorSearchOutputSchema = z.object({
 export type AnswerGs1QuestionsWithVectorSearchOutput = z.infer<typeof AnswerGs1QuestionsWithVectorSearchOutputSchema>;
 
 
-async function generateMockQueryEmbedding(queryText: string): Promise<number[]> {
-  console.log(`[FLOW_VECTOR_SEARCH][MOCK_EMBEDDING] Generating embedding for query: "${queryText}"`);
-  await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50)); 
-  const embedding = Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4)));
-  console.log(`[FLOW_VECTOR_SEARCH][MOCK_EMBEDDING] Generated embedding (first 3 dims): [${embedding.slice(0,3).join(', ')}, ...]`);
-  return embedding;
-}
-
-
 const SynthesisPromptInputSchema = z.object({
   question: z.string(),
   documentChunks: z.array(DocumentChunkSchema),
@@ -104,20 +95,15 @@ export async function answerGs1QuestionsWithVectorSearch(
   input: AnswerGs1QuestionsWithVectorSearchInput
 ): Promise<AnswerGs1QuestionsWithVectorSearchOutput> {
   let retrievedChunksCount = 0;
-  console.log(`[FLOW_VECTOR_SEARCH] Received input: question="${input.question}", topK=${input.topK}`);
+  console.log(`[FLOW_VECTOR_SEARCH] Received input: question="${input.question}"`);
   try {
-    // Step 1: Simulate generating an embedding for the user's question.
-    const questionEmbedding = await generateMockQueryEmbedding(input.question);
-    
-    // Step 2: Call the (mocked) vector store tool to retrieve document chunks.
+    // Step 1: Call the (mocked) vector store tool to retrieve document chunks.
     const toolInput = {
-      queryText: input.question, 
-      queryEmbedding: questionEmbedding,
-      topK: input.topK,
+      query: input.question,
     };
     console.log(`[FLOW_VECTOR_SEARCH] Calling queryVectorStoreTool with input:`, JSON.stringify(toolInput, null, 2));
     const toolOutput = await queryVectorStoreTool(toolInput);
-    
+
     if (!toolOutput || !toolOutput.results) {
         console.error("[FLOW_VECTOR_SEARCH] queryVectorStoreTool did not return valid results.");
         return {
