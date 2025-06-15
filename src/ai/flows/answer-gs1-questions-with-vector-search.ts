@@ -20,6 +20,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { AnswerGs1QuestionsWithVectorSearchInputSchema, DocumentChunkSchema } from '@/ai/schemas'; 
 import { queryVectorStoreTool } from '@/ai/tools/vector-store-tools';
+import { logger } from '@/lib/logger';
 
 
 export type AnswerGs1QuestionsWithVectorSearchInput = z.infer<typeof AnswerGs1QuestionsWithVectorSearchInputSchema>;
@@ -38,15 +39,6 @@ export const AnswerGs1QuestionsWithVectorSearchOutputSchema = z.object({
   retrievedChunksCount: z.number().optional().describe('Number of chunks retrieved from the vector store.')
 });
 export type AnswerGs1QuestionsWithVectorSearchOutput = z.infer<typeof AnswerGs1QuestionsWithVectorSearchOutputSchema>;
-
-
-async function generateMockQueryEmbedding(queryText: string): Promise<number[]> {
-  console.log(`[FLOW_VECTOR_SEARCH][MOCK_EMBEDDING] Generating embedding for query: "${queryText}"`);
-  await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 50)); 
-  const embedding = Array.from({ length: 10 }, () => parseFloat(Math.random().toFixed(4)));
-  console.log(`[FLOW_VECTOR_SEARCH][MOCK_EMBEDDING] Generated embedding (first 3 dims): [${embedding.slice(0,3).join(', ')}, ...]`);
-  return embedding;
-}
 
 
 const SynthesisPromptInputSchema = z.object({
@@ -104,22 +96,17 @@ export async function answerGs1QuestionsWithVectorSearch(
   input: AnswerGs1QuestionsWithVectorSearchInput
 ): Promise<AnswerGs1QuestionsWithVectorSearchOutput> {
   let retrievedChunksCount = 0;
-  console.log(`[FLOW_VECTOR_SEARCH] Received input: question="${input.question}", topK=${input.topK}`);
+  logger.info(`[FLOW_VECTOR_SEARCH] Received input: question="${input.question}"`);
   try {
-    // Step 1: Simulate generating an embedding for the user's question.
-    const questionEmbedding = await generateMockQueryEmbedding(input.question);
-    
-    // Step 2: Call the (mocked) vector store tool to retrieve document chunks.
+    // Step 1: Call the (mocked) vector store tool to retrieve document chunks.
     const toolInput = {
-      queryText: input.question, 
-      queryEmbedding: questionEmbedding,
-      topK: input.topK,
+      query: input.question,
     };
-    console.log(`[FLOW_VECTOR_SEARCH] Calling queryVectorStoreTool with input:`, JSON.stringify(toolInput, null, 2));
+    logger.info(`[FLOW_VECTOR_SEARCH] Calling queryVectorStoreTool with input: ${JSON.stringify(toolInput, null, 2)}`);
     const toolOutput = await queryVectorStoreTool(toolInput);
-    
+
     if (!toolOutput || !toolOutput.results) {
-        console.error("[FLOW_VECTOR_SEARCH] queryVectorStoreTool did not return valid results.");
+        logger.error("[FLOW_VECTOR_SEARCH] queryVectorStoreTool did not return valid results.");
         return {
             answer: "Failed to retrieve information from the conceptual vector store. The tool did not provide valid results.",
             citedSources: [],
@@ -129,11 +116,11 @@ export async function answerGs1QuestionsWithVectorSearch(
     }
     const retrievedDocumentChunks = toolOutput.results;
     retrievedChunksCount = retrievedDocumentChunks.length;
-    console.log(`[FLOW_VECTOR_SEARCH] queryVectorStoreTool returned ${retrievedChunksCount} chunk(s).`);
+    logger.info(`[FLOW_VECTOR_SEARCH] queryVectorStoreTool returned ${retrievedChunksCount} chunk(s).`);
     if (retrievedChunksCount > 0) {
-        console.log('[FLOW_VECTOR_SEARCH] First retrieved chunk content (preview):', retrievedDocumentChunks[0].content.substring(0, 100) + '...');
+        logger.info('[FLOW_VECTOR_SEARCH] First retrieved chunk content (preview): ' + retrievedDocumentChunks[0].content.substring(0, 100) + '...');
     } else {
-        console.log('[FLOW_VECTOR_SEARCH] No chunks retrieved by queryVectorStoreTool.');
+        logger.info('[FLOW_VECTOR_SEARCH] No chunks retrieved by queryVectorStoreTool.');
     }
     
     // Step 3: Synthesize an answer from the retrieved chunks using an LLM.
@@ -141,12 +128,12 @@ export async function answerGs1QuestionsWithVectorSearch(
       question: input.question,
       documentChunks: retrievedDocumentChunks,
     };
-    console.log(`[FLOW_VECTOR_SEARCH] Calling synthesizeAnswerFromChunksPrompt with ${retrievedDocumentChunks.length} chunks.`);
+    logger.info(`[FLOW_VECTOR_SEARCH] Calling synthesizeAnswerFromChunksPrompt with ${retrievedDocumentChunks.length} chunks.`);
 
     const { output: synthesisOutput } = await synthesizeAnswerFromChunksPrompt(synthesisInput);
 
     if (!synthesisOutput) {
-      console.error('[FLOW_VECTOR_SEARCH] synthesizeAnswerFromChunksPrompt did not return a valid output.');
+      logger.error('[FLOW_VECTOR_SEARCH] synthesizeAnswerFromChunksPrompt did not return a valid output.');
       return {
         answer: "I encountered an issue generating an answer from the retrieved information. The AI model failed to produce a structured response during synthesis. Please try again.",
         citedSources: [],
@@ -155,14 +142,14 @@ export async function answerGs1QuestionsWithVectorSearch(
       };
     }
     
-    console.log(`[FLOW_VECTOR_SEARCH] Synthesis successful. Answer preview: ${synthesisOutput.answer.substring(0,100)}...`);
+    logger.info(`[FLOW_VECTOR_SEARCH] Synthesis successful. Answer preview: ${synthesisOutput.answer.substring(0,100)}...`);
     return {
       ...synthesisOutput,
       retrievedChunksCount: retrievedChunksCount,
     };
 
   } catch (error: any) {
-    console.error("[FLOW_VECTOR_SEARCH] Error in answerGs1QuestionsWithVectorSearch flow:", error);
+    logger.error({ err: error }, '[FLOW_VECTOR_SEARCH] Error in answerGs1QuestionsWithVectorSearch flow');
     return {
       answer: `An unexpected error occurred while processing your request with vector search: ${error.message || error}. Please check the input or try again later.`,
       citedSources: [],

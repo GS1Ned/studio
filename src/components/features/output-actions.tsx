@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 
 interface OutputActionsProps {
   className?: string;
@@ -25,7 +26,7 @@ export function OutputActions({ className, dataToExport }: OutputActionsProps) {
       title: "Export Initiated (Placeholder)",
       description: `Preparing to export data as ${format}. This feature is not yet fully implemented.`,
     });
-    console.log(`Exporting data as ${format}:`, dataToExport);
+    logger.info(`Exporting data as ${format}`, { data: dataToExport });
   };
 
   return (
