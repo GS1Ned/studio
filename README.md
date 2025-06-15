@@ -48,10 +48,7 @@ See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automa
 - Conceptual demos for vector search and knowledge graph queries
 
 For more details on phases and planned work, consult the [Strategic Roadmap](docs/blueprint.md).
-
 ## Troubleshooting
 - **OpenTelemetry build warnings**: During `npm run build`, Next.js may warn about missing `@opentelemetry/exporter-jaeger` or the `require.extensions` API. These come from Genkit's optional tracing setup. The warnings are harmless but can be silenced by installing the Jaeger exporter:
   ```bash
   npm install --save-dev @opentelemetry/exporter-jaeger
-  ```
-  or by setting `OTEL_SDK_DISABLED=true` in your `.env` to disable tracing.
