@@ -1,8 +1,9 @@
 # Archive
 
 This directory stores deprecated or historical documentation.
-codex/create-docs/archive-folder
+# Archive
 
+This directory stores deprecated or historical documentation.
 
 When archiving documents, please consider:
 - Ensuring the document is genuinely obsolete or has been superseded.
