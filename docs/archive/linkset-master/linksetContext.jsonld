@@ -1,0 +1,29 @@
+{
+  "@context": {
+    "@vocab": "http://www.iana.org/assignments/relation/",
+    "@protected": true,
+    "anchor":"@id",
+    "href":"@id",
+    "linkset": "@graph",
+    "_linkset": "@graph",
+    "dcterms": "http://purl.org/dc/terms/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "gs1": "https://gs1.org/voc/",
+    "schema": "http://schema.org/",
+    "hreflang": {"@id":"http://purl.org/dc/terms/language","@container": "@set"},
+    "title": {"@id":"http://purl.org/dc/terms/title"},
+    "title*": {"@id":"http://purl.org/dc/terms/title","@container": "@set"},
+    "type": {"@id":"http://purl.org/dc/terms/format" },
+    "creator": {"@id":"http://purl.org/dc/terms/creator"},
+    "creatorName": {"@id":"http://purl.org/dc/elements/1.1/creator"},
+    "modified": {"@id":"http://purl.org/dc/terms/modified"},
+    "_comment": {"@id":"https://ontologi.es/doap-bugs#comment"},
+    "itemDescription": {"@id":"http://www.w3.org/2000/01/rdf-schema#comment"},
+    "id":"@id",
+    "a":"@type", 
+    "language": "@language",
+    "value":"@value"
+  }
+}

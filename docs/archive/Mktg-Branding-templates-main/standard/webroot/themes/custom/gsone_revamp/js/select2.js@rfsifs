@@ -1,0 +1,25 @@
+(function ($) {
+    
+    $(document).ready(function() {
+        function matchStart(params, data) {
+            params.term = params.term || '';
+            if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) == 0) {
+                return data;
+            }
+            return false;
+        }
+        
+        $('.select2-js select').select2({
+            matcher: function(params, data) {
+                return matchStart(params, data);
+            },
+        });
+        $("[id^='edit-gs1-locations']").on("select2:open", function() {
+            $(".select2-search__field").attr("placeholder", "Search");
+        });
+        $("[id^='edit-gs1-locations']").on("select2:close", function() {
+            $(".select2-search__field").attr("placeholder", null);
+        });        
+    } );
+
+})(jQuery);

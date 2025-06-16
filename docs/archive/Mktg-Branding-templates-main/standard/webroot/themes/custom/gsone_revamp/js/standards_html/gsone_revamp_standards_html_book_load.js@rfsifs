@@ -1,0 +1,434 @@
+(function ($, Drupal, drupalSettings) {
+
+    //
+    // ul-select
+    // https://github.com/zgreen/ul-select
+    //
+
+    $.fn.ulSelect = function(){
+        var ul = $(this);
+
+        if (!ul.hasClass('zg-ul-select')) {
+            ul.addClass('zg-ul-select');
+        }
+        // SVG arrow
+        // var arrow = '<svg id="ul-arrow" xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="32" viewBox="0 0 32 32"><line stroke-width="1" stroke="#449FDB" opacity=""/><path d="M4.131 8.962c-0.434-0.429-1.134-0.429-1.566 0-0.432 0.427-0.432 1.122 0 1.55l12.653 12.528c0.434 0.429 1.133 0.429 1.566 0l12.653-12.528c0.432-0.429 0.434-1.122 0-1.55s-1.136-0.429-1.566-0.002l-11.87 11.426-11.869-11.424z" fill="#fff"/></svg>';
+        var arrow = '<svg id="ul-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#002C6C" class="bi bi-chevron-down" viewBox="0 0 16 16">\n' +
+            '    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"></path>\n' +
+            '</svg>';
+        $('li:first-of-type', this).addClass('active').append(arrow);
+        $(this).on('click', 'li', function(event){
+
+            // Remove div#selected if it exists
+            if ($('#selected--zg-ul-select').length) {
+                $('#selected--zg-ul-select').remove();
+            }
+            ul.before('<div id="selected--zg-ul-select">');
+            var selected = $('#selected--zg-ul-select');
+            $('li #ul-arrow', ul).remove();
+            ul.toggleClass('active');
+            // Remove active class from any <li> that has it...
+            ul.children().removeClass('active');
+            // And add the class to the <li> that gets clicked
+            $(this).toggleClass('active');
+
+            var selectedText = $(this).text();
+            if (ul.hasClass('active')) {
+                // selected.text(selectedText).addClass('active').append(arrow);
+                $("#be-mobile li:first").append(arrow);
+                $("#be-mobile li:first").css({"justify-content":"space-between", "display": "flex"});
+                $("#be-mobile li:first svg").css({"transform":"rotate(180deg)"});
+            }
+            else {
+                $("#be-mobile li:first").removeAttr("style");
+                selected.text('').removeClass('active');
+                $('li.active', ul).append(arrow);
+                //trigger custom event
+                ul.trigger( "mobile-menu:closed" );
+            }
+
+        });
+
+        $(document).on('click', function(event){
+            if($('ul.zg-ul-select').length) {
+                if(!$('ul.zg-ul-select').has(event.target).length == 0) {
+                    return;
+                }
+                else {
+                    $('ul.zg-ul-select').removeClass('active');
+                    $('#selected--zg-ul-select').removeClass('active').text('');
+                    $('#ul-arrow').remove();
+                    $('ul.zg-ul-select li.active').append(arrow);
+                }
+            }
+        });
+    }
+
+    var internalLinkClick = function(event){
+        let target = event.target;
+        let href = target.getAttribute('href');
+
+        if( !href ) {
+            //possible child of <a>, check parents
+            target = $(target).parents('a.internal-link')[0];
+            href = target.getAttribute('href');
+        }
+
+        if( href.substr(0,1) === '#' ) href = href.substr(1,href.length);
+
+        let snid = target.getAttribute('data-snid');
+        let ssnid = target.getAttribute('data-ssnid');
+
+        _section_control(snid, ssnid, href);
+
+    };
+
+    var initScroll = function(){
+
+        var mainSections = document.querySelectorAll(".article .section-content");
+
+        let debouncedScroll = throttle(function() {
+            let fromTop = window.scrollY;
+            let stateArgs = {};
+
+            //if before the first chapter: set active menu to first chapter; set history state to original URL
+            if ( fromTop < mainSections[0].offsetTop ){
+                let snid = mainSections[0].id.substr( 8 );
+                let args = {
+                    snid: snid,
+                    ssnid: false,
+                    href: '',
+                };
+                // _update_active_menu_entry(args);
+                _update_history_state('clear');
+            }
+
+            for (let section of mainSections) {
+                let snid = section.id.substr( 8 );
+                let args = {
+                    snid: snid,
+                    ssnid: false,
+                    href: '',
+                };
+                if (
+                    section.offsetTop <= fromTop &&
+                    section.offsetTop + section.offsetHeight > fromTop
+                ) {
+
+                    _update_active_menu_entry(args);
+
+                    stateArgs.snid = snid;
+
+                    //find subchapter and update url
+                    let subsections = $(section).find('.subsection-content').toArray();
+                    for (let subsection of subsections) {
+
+                        if (
+                            //account for the title height: 67px
+                            subsection.offsetTop - 150 <= fromTop &&
+                            subsection.offsetTop + subsection.offsetHeight > fromTop
+                        ) {
+
+                            let ssnid = $(subsection).prev('.subsection-title').attr('data-ssnid');
+                            let args = {
+                                snid: snid,
+                                ssnid: ssnid,
+                                href: '',
+                            };
+                            _update_active_menu_entry(args);
+
+                            stateArgs.ssnid = ssnid;
+                            break;
+                        }
+
+                    }
+
+                    _update_history_state( stateArgs );
+                    break;
+
+                }
+            }
+
+        },500);
+
+        window.addEventListener("scroll", debouncedScroll);
+
+    }
+
+    Drupal.behaviors.gsone_standards_html_revamp = {
+        attach:function(context, settings) {
+            //init sticky sidebar
+            $('#sidebar').stickySidebar({
+                containerSelector: ".row.side-menu",
+                innerWrapperSelector: '.sidebar__inner',
+                resizeSensor: true,
+            });
+            let hash = null;
+            if (window.location.hash) {
+                hash = window.location.hash.substring(1); //remove #;
+            }
+
+            //init book
+            $('article.node-html-std-book-outlet').once().each(function() {
+
+                //generate mobile menu
+                $('#be-mobile').ulSelect();
+
+                //init menu links
+                $('.main-chapters li, .section-content .section-title, .section-content .subsection-title').click(function(){
+                    //bypass mobile the first time - make sure select is open
+                    if ( this.parentElement.id === 'be-mobile' && !this.parentElement.classList.contains('active') ) return true;
+                    section_click( $(this) );
+                });
+
+                //init internal links for section bodies (for subsection it need to be done on node load)
+                $('.internal-link').click(function(event){
+                    event.preventDefault();
+                    internalLinkClick(event);
+                });
+
+                //init language switcher
+                $('#lang-switcher').on('change',function(event){
+                    window.location = event.target.value;
+                });
+
+                // init section from url
+                document.addEventListener('readystatechange', event => {
+                    if (event.target.readyState === "complete") {
+                        initSection(hash);
+                    }
+                });
+
+
+
+                //if desktop, do menu update on scroll
+                initScroll();
+
+            });
+
+        }
+    }
+
+    function initSection(hash) {
+
+        let section_readableId, subsection_readableId, section, subsection, matches;
+
+        if (!hash) {
+            // let matches = window.location.hash.match( /(?<=\#)(.*?)(?=\+)/g );
+            hash = window.location.hash.substring(1); //remove #;
+        }
+        if( hash.indexOf('+') !== -1 ){
+            matches = hash.split('+');
+            section_readableId = matches[0];
+            subsection_readableId = matches[1];
+        } else{
+            section_readableId = hash;
+        }
+
+        section = drupalSettings.nid_readableId_map.readablId2nid[section_readableId] ? drupalSettings.nid_readableId_map.readablId2nid[section_readableId] : false;
+        subsection = drupalSettings.nid_readableId_map.readablId2nid[subsection_readableId] ? drupalSettings.nid_readableId_map.readablId2nid[subsection_readableId] : false;
+
+        if( section ){
+            _section_control(section, subsection);
+        }
+        else{
+            //no parameters, just show the first section
+            let first_section_key = Object.keys(drupalSettings.anchors)[1];
+            let snid = drupalSettings.anchors[first_section_key].section_nid;
+            history.pushState( { section: snid, subsection: false}, '', '' );
+        }
+
+    }
+
+    function _section_control(snid, ssnid, href, menu_height){
+        let args = {
+            snid: snid || false,
+            ssnid: ssnid || false,
+            href: href || '',
+            menu_height: menu_height || '',
+        };
+
+        //Scroll to anchor
+        _do_scroll(args);
+    }
+
+    function _do_after_scroll(args){
+        // //Update Menu selection
+        _update_active_menu_entry(args);
+
+        // //Update history
+        _update_history_state(args);
+    }
+
+    function _update_active_menu_entry(args){
+
+        if( !args.snid && !args.ssnid )  return false;
+
+        if (args.snid && !args.ssnid) {;
+            $('.paragraph--type--list-of-links li').removeClass('active');
+            $('.paragraph--type--list-of-links ul').removeClass('active');
+            $('.paragraph--type--list-of-links ul li').addClass('hidden');
+            $('.paragraph--type--list-of-links li[data-snid='+args.snid+']').addClass('active');
+            $('.paragraph--type--list-of-links ul[data-book-id='+args.snid+']').addClass('active');
+            $('.paragraph--type--list-of-links ul[data-book-id='+args.snid+'] li').removeClass('hidden');
+        }
+        if (args.ssnid && args.snid) {
+            $('.paragraph--type--list-of-links li').removeClass('active');
+            $('.paragraph--type--list-of-links ul').removeClass('active');
+            $('.paragraph--type--list-of-links ul li').addClass('hidden');
+            $('.paragraph--type--list-of-links li[data-snid='+args.snid+']').addClass('active');
+            $('.paragraph--type--list-of-links ul[data-book-id='+args.snid+']').addClass('active');
+            $('.paragraph--type--list-of-links ul[data-book-id='+args.snid+'] li').removeClass('hidden');
+            $('.paragraph--type--list-of-links ul li').removeClass('active');
+            $('.paragraph--type--list-of-links ul li[data-ssnid='+args.ssnid+']').addClass('active');
+        }
+
+    }
+
+    // function _update_history_state(section_rc, subsection_rc, args){
+    function _update_history_state(args){
+
+        //if clear: clear state
+        if ( args === 'clear' ){
+            history.pushState('', '', ' ');
+            return;
+        }
+
+        let current_state = history.state;
+        let snid = args.snid;
+        let snid_safe = ( snid ? snid : ( (current_state && current_state.section) ? current_state.section : false) );
+        let ssnid = args.ssnid;
+        // let ssvisible = ( ssnid && $('#subsection-'+ssnid).is(':visible') ) ? true : false;
+
+        let state = {
+            section: snid_safe ? snid_safe : false,
+            subsection: ssnid ? ssnid : false
+        };
+
+        if( JSON.stringify(state) !== JSON.stringify(current_state) ){
+            //update state
+            let url = '';
+            if( state.section ) {
+                let readableId = drupalSettings.nid_readableId_map.nid2readablId[state.section];
+                url += '#'+readableId;
+                if( state.subsection ) {
+                    let readableId = drupalSettings.nid_readableId_map.nid2readablId[state.subsection];
+                    url += '+'+readableId;
+                }
+            }
+            history.pushState(state, url, url);
+        }
+
+    }
+
+    // function _do_scroll(section_rc, subsection_rc, args){
+    function _do_scroll(args){
+
+        let snid = args.snid;
+        let ssnid = args.ssnid;
+        let href = args.href;
+        let href_exists = '';
+
+        if (href) {
+            href_exists = !!($('#' + href).length);
+
+        }
+
+        // let section_loaded = (section_rc && section_rc === LOADED_SUCCESFULLY) ? true : false;
+        // let ssvisible = ( ssnid && $('#subsection-'+ssnid).is(':visible') ) ? true : false;
+        let selector = '';
+        switch (true){
+            //anchor exists on dom - scroll to anchor
+            case (href && href_exists):
+                selector = '#'+href;
+                args.snid = '';
+                args.ssnid = '';
+                break;
+            //new section
+            case (!ssnid):
+                selector = '#section-'+snid;
+                break;
+            //subsection visile
+            case (!!ssnid): //fallback
+                selector = '#subsection-'+ssnid;
+                break;
+        }
+
+        _generic_scrollTop(selector, args);
+
+    }
+
+    function _generic_scrollTop(selector, args){
+
+        if($(selector).length && args.href && !args.snid && !args.ssnid){
+            $('html, body').animate({
+                scrollTop: $(selector).offset().top
+            }, 500, "swing",
+                function(){ return _do_after_scroll(args); });
+        }
+        else if($(selector).length && args.snid && !args.menu_height && !args.ssnid){
+            $('html, body').animate({
+                    scrollTop: $(selector).offset().top - 20
+                }, 500, "swing",
+                function(){ return _do_after_scroll(args); });
+
+        }
+        else if($(selector).length && args.snid && args.menu_height && !args.ssnid){
+
+            $('html, body').animate({
+                    scrollTop: $(selector).offset().top - args.menu_height - 20
+                }, 500, "swing",
+                function(){ return _do_after_scroll(args); });
+        }
+        else if($(selector).length && args.ssnid){
+            $('html, body').animate({
+                    scrollTop: $(selector).offset().top - 100
+                }, 500, "swing",
+                function(){ return _do_after_scroll(args); });
+        }
+    }
+
+    function section_click(el){;
+        let snid = el.attr('data-snid');
+        let ssnid = el.attr('data-ssnid');
+        let mlid = el.attr('data-mlid');
+
+        if (el.parent().attr('id') == 'be-mobile') {
+            var menu_height = el.parent().height();
+        }
+
+        if (mlid && !snid) {
+            _section_control(mlid, ssnid, '', menu_height);
+        }
+        else {
+            _section_control(snid, ssnid, '', menu_height);
+        }
+
+    }
+
+    // function toggle(elm) {
+    //     $(elm).children('.question').toggleClass('show');
+    // }
+    //
+    // function throbber() {
+    //     return '<div class="ajax-progress"><div class="throbber"></div></div>';
+    // }
+
+    // //debounce function - min
+    // function debounce(a,b,c){var d;return function(){var e=this,f=arguments;clearTimeout(d),d=setTimeout(function(){d=null,c||a.apply(e,f)},b),c&&!d&&a.apply(e,f)}}
+
+    //throttle
+    function throttle (callback, limit) {
+        var wait = false;                  // Initially, we're not waiting
+        return function () {               // We return a throttled function
+            if (!wait) {                   // If we're not waiting
+                callback.call();           // Execute users function
+                wait = true;               // Prevent future invocations
+                setTimeout(function () {   // After a period of time
+                    wait = false;          // And allow future invocations
+                }, limit);
+            }
+        }
+    }
+
+})(jQuery, Drupal, drupalSettings);

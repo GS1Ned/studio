@@ -1,0 +1,19 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: node:10.16-alpine
+    steps:
+      - checkout
+      - run:
+          name: 'Save npm token'
+          command: 'echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc'
+      - run:
+          name: 'Install dependencies'
+          command: 'npm ci'
+      - run:
+          name: 'Build SDK'
+          command: 'npm run build'
+      - run:
+          name: 'Unit tests'
+          command: 'npm test'
