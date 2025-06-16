@@ -1,0 +1,21 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://id.gs1.org/01/09506000134369",
+      "prev": [
+        {
+          "hrefkkkkk": "https://dalgiardino.com/extra-virgin-olive-oil/",
+          "title": "My default link"
+        }
+      ],
+      "next": [
+        {
+          "href": "https://dalgiardino.com/extra-virgin-olive-oil/",
+          "title":"Here's a title",
+          "type": "text/html",
+          "hreflang": ["en"]
+        }
+      ]
+    }
+  ]
+}

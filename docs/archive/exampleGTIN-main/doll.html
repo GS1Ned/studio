@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+  <title id="pagetitle">GS1 example product</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="https://ref.gs1.org/styles/base.css">
+  <style type="text/css">
+    figure#jdoll, p#cooText {
+      margin:0 auto;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    figure#jdoll img {
+      width:100%
+    }
+
+    figure#jdoll figcaption {
+      font-size:8pt;
+      font-style: italic;
+      text-align: right;
+    }
+
+
+    @media (min-width: 600px) {
+  }
+
+
+  </style>
+</head>
+<body>
+<!--<header>
+  <div id="corporateHead">
+    <a href="/"><img src="https://ref.gs1.org/logos/gs1logo.png" alt="GS1 logo" id="logo"></a>
+    <p id="headerTitle">ref.gs1.org</p>
+    <p id="strapline">The Global Language of Business</p>
+  </div><div id="headerBlock">
+  <h1 id="title">GS1 example product</h1>
+</div>
+</header>
+-->
+<main>
+
+<p id="cooText">Made in <span id="coo"></span>.</p>
+<figure id="jdoll">
+  <img src="j-doll.jpg" alt="A child's toy - a Japanese doll">
+  <figcaption><a href="https://flic.kr/p/WbMgjL">J-Doll</a> by <a href="https://flickr.com/photos/ilweranta/">Eirien</a> cc <a href="https://creativecommons.org/licenses/by/2.0/">by</a></figcaption>
+</figure>
+
+
+
+</main>
+
+
+<script>
+  const re = RegExp('10=([^&$]+)');
+  let batchArray = re.exec(location.search);
+  const batch = batchArray !== null ? batchArray[1] : '';
+  let cooSpan = document.getElementById('cooSpan');
+  // console.log(`We have a batch of ${batch}`);
+  if (batch === 'ABC') {
+    coo.innerHTML = 'Indonesia, Philippines and Malaysia';
+  } else if (batch === 'DEF') {
+    coo.innerHTML = 'China and Indonesia';
+  } else {
+    coo.innerHTML = 'Indonesia and Vietnam';
+  }
+
+
+
+</script>
+
+
+
+
+
+
+</body>
+</html>

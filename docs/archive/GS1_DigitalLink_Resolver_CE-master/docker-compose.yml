@@ -1,0 +1,63 @@
+services:
+  database-service:
+    build: './database_server'
+    container_name: database-server
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=gs1resolver
+      - MONGO_INITDB_ROOT_PASSWORD=gs1resolver
+    ports:
+      - "27017:27017"
+    volumes:
+      - resolver-database-volume:/data/db
+    networks:
+      - resolver-internal-network
+
+  data-entry-service:
+    build: './data_entry_server'
+    container_name: data-entry-server
+    environment:
+      - SESSION_TOKEN=secret
+      - MONGO_URI=mongodb://gs1resolver:gs1resolver@database-service:27017
+    depends_on:
+      - database-service
+    restart: always
+    networks:
+      - resolver-internal-network
+
+  web-service:
+    build: './web_server'
+    container_name: resolver-web-server
+    depends_on:
+      - database-service
+    restart: always
+    networks:
+      - resolver-internal-network
+
+  frontend-proxy-service:
+    build: './frontend_proxy_server'
+    container_name: frontend-proxy-server
+    depends_on:
+      - web-service
+      - data-entry-service
+    restart: always
+    ports:
+      - "8080:80"
+    networks:
+      - resolver-internal-network
+
+  test-service:
+    build: './test_suite'
+    container_name: test-service
+    restart: always
+    ports:
+      - "4001:5000"
+    networks:
+      - resolver-internal-network
+
+volumes:
+  resolver-database-volume: {}
+
+networks:
+  resolver-internal-network:
+    name: resolver-internal-network

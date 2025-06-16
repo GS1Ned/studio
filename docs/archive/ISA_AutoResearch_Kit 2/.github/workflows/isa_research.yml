@@ -1,0 +1,35 @@
+
+name: ISA Gemini Research Trigger
+
+on:
+  push:
+    paths:
+      - 'research_prompts/**'
+      - '.github/workflows/isa_research.yml'
+  workflow_dispatch:
+
+jobs:
+  gemini_research:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Run Gemini Research Task
+      run: |
+        echo "Triggering Gemini 2.5 auto-research for ISA phase..."
+        # Placeholder: Call Gemini via CLI/API
+        # TODO: Replace this with actual invocation logic
+        echo "Gemini Research Agent activated for phase context."
+
+    - name: Store Results
+      run: |
+        mkdir -p research_insights
+        echo "# Research Insights" > research_insights/latest_run.md
+        echo "✅ Placeholder result - awaiting Gemini output" >> research_insights/latest_run.md
+
+    - name: Commit results
+      uses: EndBug/add-and-commit@v9
+      with:
+        message: "Add latest Gemini research run output"
+        add: 'research_insights/'
