@@ -51,3 +51,6 @@ For more details on phases and planned work, consult the [Strategic Roadmap](doc
 - **OpenTelemetry build warnings**: During `npm run build`, Next.js may warn about missing `@opentelemetry/exporter-jaeger` or the `require.extensions` API. These come from Genkit's optional tracing setup. The warnings are harmless but can be silenced by installing the Jaeger exporter:
   ```bash
   npm install --save-dev @opentelemetry/exporter-jaeger
+
+```
+- **Emulator port already in use**: If the Firebase emulators fail to start, check for other processes using the ports and kill them or adjust `firebase.json`.
