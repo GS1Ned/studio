@@ -1,4 +1,3 @@
-<<<<<<< codex/update-readme-and-folder-phase-map
 # Repository Folder ⇔ Roadmap Phase Map
 
 | Folder | Description | Related Phase |
@@ -14,7 +13,6 @@
 | `/scripts/` | General utilities and setup scripts | Multi-phase |
 
 This table links repository structure with the chronological roadmap so contributors can easily locate phase-specific materials. Later-phase folders serve primarily as references for future work.
-=======
 # Folder to Roadmap Phase Mapping
 
 This table maps the main repository folders to the relevant ISA development phases as described in `docs/blueprint.md`.
@@ -29,6 +27,4 @@ This table maps the main repository folders to the relevant ISA development phas
 | `/docs` | Phase 4: Self-Healing Docs | Blueprint, technical reports, and prompts. |
 | `/dataconnect` | Phase 5: Knowledge Graph Core | Data ingestion configuration for the future KG. |
 | `/dataconnect-generated` | Phase 5: Knowledge Graph Core | Generated client code for data connectors. |
-|
->>>>>>> main-6-juni
-
+Other folders will be mapped as the project progresses through later phases.

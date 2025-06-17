@@ -28,7 +28,9 @@ This guide outlines how to configure a local development environment for the Int
    firebase login
    ```
    Make sure you have access to the appropriate Firebase project.
-
+   After signing in you can set the active project using the helper script:
+   ```bash
+   ./scripts/configure_firebase.sh
 4. **Initialize the Firebase emulators**
    ```bash
    firebase emulators:start
