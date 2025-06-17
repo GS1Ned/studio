@@ -1,0 +1,21 @@
+{
+  "name": "gmn-helpers",
+  "version": "1.0.0",
+  "private": true,
+  "description": "setup node action",
+  "scripts": {
+    "lint": "eslint gmn.js exampleuser.node.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com:gs1/gmn-helpers.git"
+  },
+  "author": "GS1",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "eslint": "^8.47.0",
+    "jest-cli": "^29.6.2",
+    "jsdoc": "^4.0.2"
+  }
+}

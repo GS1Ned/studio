@@ -1,0 +1,290 @@
+name: GS1 Encoders CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  #
+  #  CI jobs
+  #
+
+  ci-clang:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: clang CI
+      run: |
+        make -C src/c-lib -j `nproc` test CC=clang SANITIZE=yes SLOW_TESTS=yes
+        make -C src/c-lib -j `nproc` lib CC=clang SANITIZE=yes
+        make -C src/c-lib -j `nproc` app CC=clang SANITIZE=yes
+        LD_LIBRARY_PATH=src/c-lib/build src/c-lib/build/gs1encoders.bin --version
+        make -C src/c-lib -j `nproc` app-static CC=clang SANITIZE=yes
+        src/c-lib/build/gs1encoders-linux.bin --version
+
+  ci-gcc:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: gcc CI
+      run: |
+        make -C src/c-lib -j `nproc` test CC=gcc SLOW_TESTS=yes
+        make -C src/c-lib -j `nproc` lib CC=gcc
+        make -C src/c-lib -j `nproc` app CC=gcc
+        LD_LIBRARY_PATH=src/c-lib/build src/c-lib/build/gs1encoders.bin --version
+        make -C src/c-lib -j `nproc` app-static CC=gcc
+        src/c-lib/build/gs1encoders-linux.bin --version
+
+  ci-msvc:
+
+    runs-on: windows-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1
+
+    - name: MSVC CI
+      working-directory: src
+      run: |
+        msbuild /t:Restore,Build /p:Configuration=release /p:Platform="x86" gs1encoders.sln
+        c-lib\build\test\Win32\Release\gs1encoders-test.exe
+        c-lib\build\console-app\Win32\Release\gs1encoders-app.exe --version
+        dotnet-app\bin\Release\netcoreapp3.1\gs1encoders-dotnet-app.exe --version
+
+  ci-macos:
+
+    runs-on: macos-10.15
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: clang CI
+      run: |
+        make -C src/c-lib -j `sysctl -n hw.logicalcpu` test SANITIZE=noleak SLOW_TESTS=yes
+        make -C src/c-lib -j `sysctl -n hw.logicalcpu` lib SANITIZE=noleak
+        make -C src/c-lib -j `sysctl -n hw.logicalcpu` app SANITIZE=noleak
+        DYLD_LIBRARY_PATH=src/c-lib/build src/c-lib/build/gs1encoders.bin --version
+        make -C src/c-lib -j `sysctl -n hw.logicalcpu` app-static SANITIZE=noleak
+        src/c-lib/build/gs1encoders-linux.bin --version
+
+  ci-scan-build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: clang static analyser CI
+      run: |
+        sudo apt-get update
+        sudo apt-get -y --no-install-recommends install clang-tools
+        scan-build -o plist make -C src/c-lib -j `nproc` all CC=clang
+        scan-build -o plist make -C src/c-lib -j `nproc` test CC=clang SLOW_TESTS=yes
+        [ "$(find plist/ -name *.html)" = '' ];
+
+    - name: "clang static analyzer: Store assets on failure"
+      uses: actions/upload-artifact@v2
+      with:
+        name: clang-scan.tgz
+        path: plist/**/*.html
+        retention-days: 30
+      if: ${{ failure() }}
+
+
+  #
+  #  Production builds
+  #
+
+  build-release-windows:
+
+    if: startsWith(github.ref, 'refs/tags/')
+
+    needs:
+      - ci-gcc
+      - ci-clang
+      - ci-msvc
+      - ci-macos
+      - ci-scan-build
+
+    runs-on: windows-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Windows release build
+      working-directory: src
+      run: |
+        msbuild /t:Restore,Build /p:Configuration=release /p:Platform="x86" /p:RuntimeIdentifier=win-x86 gs1encoders.sln
+        msbuild /p:Configuration=release /p:Platform="x86" /p:PublishSingleFile=True /p:SelfContained=True /p:RuntimeIdentifier=win-x86 /p:PublishDir=bin\Release\netcoreapp3.1\win-x86\publish\ gs1encoders.sln -target:gs1encoders-dotnet-app:Publish
+
+    - name: ZIP development libs
+      working-directory: src/c-lib/build/library/Win32/Release
+      run: |
+        7z a gs1encoders-windows-libs.zip gs1encoders.h gs1encoders.lib gs1encoders.dll
+
+    - name: Store Windows development libs
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-libs
+        path: src/c-lib/build/library/Win32/Release/gs1encoders-windows-libs.zip
+
+    - name: ZIP console application
+      working-directory: src/c-lib/build/console-app/Win32/Release
+      run: |
+        7z a gs1encoders-windows-console-app.zip gs1encoders-app.exe gs1encoders.dll
+
+    - name: Store Windows console app
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-console-app
+        path: src/c-lib/build/console-app/Win32/Release/gs1encoders-windows-console-app.zip
+
+    - name: ZIP GUI application
+      working-directory: src/dotnet-app/bin/Release\netcoreapp3.1\win-x86\publish
+      run: |
+        7z a gs1encoders-windows-gui-app.zip gs1encoders-dotnet-app.exe ../../gs1encoders.dll
+
+    - name: Store Windows GUI app
+      uses: actions/upload-artifact@v2
+      with:
+        name: windows-gui-app
+        path: src/dotnet-app/bin/Release/netcoreapp3.1/win-x86/publish/gs1encoders-windows-gui-app.zip
+
+
+  build-release-linux:
+
+    if: startsWith(github.ref, 'refs/tags/')
+
+    needs:
+      - ci-gcc
+      - ci-clang
+      - ci-msvc
+      - ci-macos
+      - ci-scan-build
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Linux release build
+      run: |
+        make -C src/c-lib -j `nproc` CC=clang
+        src/c-lib/build/gs1encoders-linux.bin --version
+
+    - name: Store Linux build
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-app
+        path: src/c-lib/build/gs1encoders-linux.bin
+
+
+  #
+  #  Create release and upload artifacts
+  #
+
+  create-release:
+
+    runs-on: ubuntu-latest
+
+    needs:
+      - build-release-linux
+      - build-release-windows
+
+    steps:
+
+    - name: Load Windows libs
+      uses: actions/download-artifact@v2
+      with:
+        name: windows-libs
+
+    - name: Load Windows console app
+      uses: actions/download-artifact@v2
+      with:
+        name: windows-console-app
+
+    - name: Load Windows GUI app
+      uses: actions/download-artifact@v2
+      with:
+        name: windows-gui-app
+
+    - name: Load Linux app
+      uses: actions/download-artifact@v2
+      with:
+        name: linux-app
+
+    - name: Get version
+      id: get_version
+      run: |
+        VERSION=${GITHUB_REF/refs\/tags\//}
+        echo ::set-output name=VERSION::$VERSION
+
+    - name: Create GitHub release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        release_name: ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+
+    - name: "Upload asset: Windows development libs"
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gs1encoders-windows-libs.zip
+        asset_name: gs1encoders-windows-libs.zip
+        asset_content_type: application/zip
+
+    - name: "Upload asset: Windows console application"
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gs1encoders-windows-console-app.zip
+        asset_name: gs1encoders-windows-console-app.zip
+        asset_content_type: application/zip
+
+    - name: "Upload asset: Windows GUI application"
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gs1encoders-windows-gui-app.zip
+        asset_name: gs1encoders-windows-gui-app.zip
+        asset_content_type: application/zip
+
+    - name: "Upload asset: Linux bin"
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gs1encoders-linux.bin
+        asset_name: gs1encoders-linux.bin
+        asset_content_type: application/octet-stream
+

@@ -1,0 +1,51 @@
+{
+  "name": "digital-link.js",
+  "version": "1.3.0",
+  "description": "A Javascript SDK for creating, validating and working with the GS1 Digital Link.",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js --mode production",
+    "build-dev": "webpack --config webpack.config.js --mode development",
+    "test": "nyc mocha tests/index.js && rm -rf .nyc_output",
+    "prepublishOnly": "npm run build",
+    "prettier": "prettier --write src/**/*.js",
+    "lint": "eslint src"
+  },
+  "eslintConfig": {
+    "extends": "@evrythng/eslint-config-evrythng"
+  },
+  "author": "EVRYTHNG",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@babel/core": "^7.17.2",
+    "@babel/preset-env": "^7.16.11",
+    "@evrythng/eslint-config-evrythng": "^4.0.1",
+    "babel-loader": "^8.2.3",
+    "chai": "^4.3.6",
+    "mocha": "^9.2.0",
+    "nyc": "^15.1.0",
+    "webpack": "^5.68.0",
+    "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "@ollah666/checkdigitcalculator": "^1.0.4",
+    "apg-lib": "^3.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evrythng/digital-link.js"
+  },
+  "nyc": {
+    "exclude": [
+      "tests/*",
+      "lib"
+    ],
+    "reporter": [
+      "cobertura",
+      "html",
+      "lcov",
+      "text-summary"
+    ],
+    "report-dir": "./reports"
+  }
+}
