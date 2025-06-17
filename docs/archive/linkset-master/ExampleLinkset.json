@@ -1,0 +1,125 @@
+{
+  "@context": {
+    "@vocab": "http://www.iana.org/assignments/relation/",
+    "anchor":"@id",
+    "href":"@id",
+    "linkset": "@graph",
+    "_linkset": "@graph",
+    "dcterms": "http://purl.org/dc/terms/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "gs1": "https://gs1.org/voc/",
+    "schema": "http://schema.org/",
+    "hreflang": {"@id":"http://purl.org/dc/terms/language","@container": "@set"},
+    "title": {"@id":"http://purl.org/dc/terms/title"},
+    "title*": {"@id":"http://purl.org/dc/terms/title","@container": "@set"},
+    "type": {"@id":"http://purl.org/dc/terms/format" },
+    "creator": {"@id":"http://purl.org/dc/terms/creator"},
+    "creatorName": {"@id":"http://purl.org/dc/elements/1.1/creator"},
+    "modified": {"@id":"http://purl.org/dc/terms/modified"},
+    "_comment": {"@id":"https://ontologi.es/doap-bugs#comment"},
+    "itemDescription": {"@id":"http://www.w3.org/2000/01/rdf-schema#comment"},
+    "id":"@id",
+    "a":"@type",
+    "language": "@language",
+    "value":"@value"
+  }
+,
+
+  "linkset": [
+    {
+      "creator": "https://id.gs1.org/414/{primaryGLN}",
+      "creatorName": "Dal Giardino, a fictitious brand",
+      "modified" : "2020-05-28",
+      "_comment": "Value of dcterms:creator is a URI. If we have a primary GLN, we can use that. If not, provide a URL of a contact page. This is different from dc:creator which takes a string as the value. Add any more metadata here that applies to all the links, possibly including Dal Giardino's digital signature"
+    },
+    {
+      "anchor": "https://id.gs1.org/01/09506000134352",
+      "_comment" : "anchor is a mandatory member with a value that represents the link context.",
+      "itemDescription": "Dal Giardino Risotto Rice with Mushrooms 411g",
+      "https://gs1.org/voc/defaultLink": [
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/",
+          "_comment": "There is just the href for the default. No other attributes"
+        }
+      ],
+      "https://gs1.org/voc/pip": [
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/",
+          "hreflang": ["en", "es", "vi", "ja"],
+    		  "title": "Product information",
+          "title*": [ { "value": "Product information" , "language" : "en" },
+            { "value": "Información del Producto" , "language" : "es" },
+            { "value": "Trang thông tin sản phẩm" , "language" : "vi" } ]
+        },
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.es",
+          "hreflang": ["es"],
+    		  "title": "Información del Producto"
+        },
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.vi",
+          "hreflang": ["vi"],
+    		  "title": "Trang thông tin sản phẩm"
+        }
+      ],
+      "https://gs1.org/voc/hasRetailers": [
+        {
+          "href": "https://dalgiardino.com/where-to-buy/",
+          "hreflang": ["en", "es", "vi"],
+          "title": "Where to buy",
+          "title*": [ { "value": "Where to buy" , "language" : "en" }, { "value": "Donde comprar" , "language" : "es" }, { "value": "Nơi bán" , "language" : "vi" } ]
+        },
+        {
+          "href": "https://dalgiardino.com/where-to-buy/index.html.es",
+  	   	  "hreflang": ["es"],
+    		  "title": "Donde comprar"
+        },
+        {
+          "href": "https://dalgiardino.com/where-to-buy/index.html.vi",
+  	   	  "hreflang": ["vi"],
+    		  "title": "Nơi bán"
+        }
+      ],
+      "https://gs1.org/voc/recipeInfo": [
+        {
+          "href": "https://dalgiardino.com/mushroom-squash-risotto/",
+          "hreflang": ["en", "es", "ja"],
+    		  "title": "Wild Mushroom And Butternut Squash Risotto",
+          "title*": [ { "value": "Wild Mushroom And Butternut Squash Risotto" , "language" : "en" }, { "value": "Recetas" , "language" : "es" }, { "value": "キノコと砕いたバターナッツ入りのリゾット" , "language" : "ja" } ]
+        },
+        {
+          "href": "https://dalgiardino.com/mushroom-squash-risotto/index.html.es",
+          "hreflang": ["es"],
+    		  "title": "Recetas"
+        },
+        {
+          "href": "https://dalgiardino.com/mushroom-squash-risotto/index.html.ja",
+          "hreflang": ["ja"],
+    		  "title": "キノコと砕いたバターナッツ入りのリゾット"
+        }
+      ],
+      "https://gs1.org/voc/productSustainabilityInfo": [
+        {
+          "href": "https://dalgiardino.com/about/",
+          "hreflang": ["en", "es", "vi"],
+    		  "title": "About Dal Giardino",
+          "title*": [ { "value": "About Dal Giardino" , "language" : "en" },
+            { "value": "Sobre Dal Giardino" , "language" : "es" },
+            { "value": "Phát triển bền vững và t" , "language" : "vi" } ]
+        },
+        {
+          "href": "https://dalgiardino.com/about/index.html.es",
+          "hreflang": ["es"],
+    		  "title": "Sobre Dal Giardino"
+        },
+        {
+          "href": "https://dalgiardino.com/about/index.html.vi",
+          "hreflang": ["vi"],
+    		  "title": "Phát triển bền vững và t"
+        }
+      ]
+    }
+  ]
+}

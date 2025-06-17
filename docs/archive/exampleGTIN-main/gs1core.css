@@ -1,0 +1,24 @@
+/* Gotham font licensed for many subdomains of gs1.org and gs1.github.io */
+@import url(https://cloud.typography.com/6247692/752844/css/fonts.css);
+
+body {
+  font-family: "Gotham SSm A", "Gotham SSm B", Verdana, sans-serif;
+}
+
+/* The GS1 color palette */
+:root {
+  --gs1Blue: #002C6C;
+  --gs1Peach: #FBB034;
+  --gs1LightMediumGray: #B1B3B3;
+  --gs1Orange: #F26334;
+  --gs1Sky: #00B6DE;
+  --gs1LightGrayShade: #D8D8D8;
+  --gs1Link: #008DBD;
+  --gs1DarkGray: #454545;
+  --gs1LightGray: #F4f4f4;
+  --gs1Grass: #7AC143;
+  --gs1DarkMediumGray: #888B8D;
+  --gs1Error: rgb(242, 99, 52, .15);
+  --gs1Warning: rgb(251, 176, 52, .15);
+  --gs1Success: rgb(122, 193, 67, .15);
+}
