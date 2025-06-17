@@ -18,7 +18,7 @@ fi
 # Configure Firebase CLI project
 if command -v firebase >/dev/null 2>&1; then
   echo "[configure] Setting Firebase project to $GCP_PROJECT_ID"
-  firebase use --add "$GCP_PROJECT_ID" || true
+  firebase use --add "$GCP_PROJECT_ID"
 else
   echo "[configure] Firebase CLI not installed" >&2
 fi
