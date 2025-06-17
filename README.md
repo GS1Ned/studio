@@ -35,6 +35,8 @@ See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automa
    ```
    This starts the Genkit developer UI on http://localhost:4000/dev.
 
+For detailed instructions on configuring Firebase emulators, VS Code, and Roocode integration, see [docs/dev_environment_setup.md](docs/dev_environment_setup.md).
+
 ## Useful Scripts
 - `./scripts/setup.sh` – one-time project setup (installs dependencies and runs checks)
 - `npm run build` – build the Next.js application
