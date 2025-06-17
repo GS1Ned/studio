@@ -1,5 +1,3 @@
-# Archive
-
 # 📁 `docs/archive/` — Archive of Project Foundations & Standard Inputs
 
 ## 🧠 Purpose
