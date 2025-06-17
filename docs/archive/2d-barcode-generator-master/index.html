@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width" />
+  <title>GS1 Digital Link Barcode Generator</title>
+  <script src="https://gs1.github.io/GS1DigitalLinkCompressionPrototype/src/GS1DigitalLinkToolkit.js"></script>
+  <style type="text/css">
+    body {font-family: sans-serif}
+
+    h1 {
+      background-color: #F26334;
+      color: white;
+      padding-left: 0.5em;
+    }
+
+    sup {
+      font-size: 10px;
+    }
+
+    section#inputForm {
+      background-color: #ddd;
+    }
+
+    input {margin: 0 2em 0 0.5em}
+    select {margin: 0 2em 1em 0}
+
+    section#inputForm section#primaryKeyInput select#primaryKeyAI, section#inputForm section#daInput div select {
+      overflow: hidden;
+      height: 2em;
+      max-width: 100%;
+    }
+
+    section label {
+      margin-bottom: .2em;
+      display:block;
+    }    
+
+    section input[type=text] {
+      margin: 0 .5em 1em 0;
+      width: 18em;
+    }
+
+    section#resolverInput p label {
+      display: inline;
+    }
+
+
+    span.addDA, span.removeDA {
+      display: inline-block;
+      width:2em;
+      text-align:center;
+      border: dotted thin black;
+      border-radius:0.3em;
+      margin-right: .5em;
+    }
+
+    section#outputArea figure img {
+      width: 116px;
+    }
+
+    section#outputArea p span.th {
+      display: block;
+    }
+
+    section#outputArea figure {
+      margin-left: 0;
+    }
+
+    section#outputArea figure figcaption {
+      overflow: auto;
+      height: 2em;
+    }
+
+
+    footer {
+      font-size:10px;
+      border-top: thin solid black;
+      padding;top: 1em;
+      margin-top: 2em;
+    }
+
+
+  media screen and (min-width: 600px) {
+
+    section#outputArea figure figcaption {
+      overflow: visible;
+    }
+
+  }
+
+  </style>
+</head>
+<body>
+
+<header><img src="gs1logo.png" alt="GS1 logo" /><h1>GS1 Digital Link Barcode Generator</h1></header>
+<main>
+<p>This tool is designed to show how different GS1 syntaxes can be used in different data carriers. Three different syntaxes are shown:</p>
+<ol>
+  <li>Plain syntax (just the <abbr title="Global Trade Item Number">GTIN</abbr> in a 1D EAN/UPC barcode);</li>
+  <li>GS1 element string syntax;</li>
+  <li>GS1 Digital Link syntax, including its compressed form.</li>
+</ol>
+<p>The latter two syntaxes are shown in Data Matrix and QR symbols.</p>
+<p><strong>N.B.</strong> The codes here are for demo purposes only and are <strong>not</strong> suitable for use on real world products.</p>
+
+<section id="inputForm"><h2>Input</h2>
+  <button id="useExample">Use example data</button>
+  <section id="primaryKeyInput"><h3>Primary key</h3>
+    <label for="primaryKeyAI">Primary key (AI)</label> <select id="primaryKeyAI"></select> 
+    <label for="primaryKeyValue">Value</label> <input type="text" id="primaryKeyValue" />
+  </section>
+
+  <section id="keyQualifierInput"></section>
+
+  <section id="daInput"></section>
+
+  <section id="resolverInput">
+    <h2>For GS1 Digital Link</h2>
+    <p><label for="goResolver">Use GS1 Global Office resolver </label> <input type="checkbox" checked id="goResolver" /> 
+    <br /><label for="userResolver">Your resolver </label> <input type="text" id="userResolver" disabled value="https://" /></p>
+  </section>
+</section>
+
+<section id="outputArea">
+
+</section>
+
+<footer>
+<p id="_1">1. For clarity, this is a regular QR, containing a URL formatted according to the <a href="https://www.gs1.org/standards/gs1-digital-link">GS1 Digital Link</a> standard, and <strong>not</strong> a 'GS1 QR' code that uses the AI syntax.</p>
+<p>Barcodes generated using Metafloor's <a href="https://github.com/metafloor/bwip-js/wiki/Online-Barcode-API">Online Barcode API</a> which is based on Terry Burton's <a href="https://bwipp.terryburton.co.uk/">Barcode Writer in Pure PostScript</a>.</p>
+</main>
+
+
+<script>
+let gs1dlt = new GS1DigitalLinkToolkit();
+let noDaAttributes = 0;
+const placeHolder = 'Please select a data attribute';
+const terryScript = 'http://bwipjs-api.metafloor.com/?bcid='; // gs1datamatrix&text=(01)' +  gtins[i].gtin;
+
+
+window.onload = init;    
+
+function init() {
+  let primaryKeyAI = document.getElementById('primaryKeyAI');
+  let primaryKeyValue = document.getElementById('primaryKeyValue');
+  primaryKeyAI.addEventListener('change', function () {updateKQs(this.value)}, false);
+
+  gs1dlt.aitable.forEach(function (k) {
+    if (k.type == 'I') {                        // We have a primay key
+      let o = document.createElement('option');
+      o.value = k.ai;
+      o.appendChild(document.createTextNode('[' + k.ai + '] ' + k.title));
+      if (k.ai == '01') {o.selected = true} // default to GTIN
+      primaryKeyAI.appendChild(o);
+    }
+  });
+  updateKQs(primaryKeyAI.value);
+  updateDAs();
+  let goResolver = document.getElementById('goResolver');
+  goResolver.addEventListener('change', function() {document.getElementById('userResolver').disabled = this.checked ? true : false}, false);
+  createGenerateButton();
+  let gButton = document.getElementById('useExample');
+  gButton.addEventListener('click', fillExample, false);
+}
+
+function createGenerateButton() {
+  let h2 = document.createElement('h2');
+  h2.appendChild(document.createTextNode('Output'));
+  let gButton = document.createElement('button');
+  gButton.id = 'generate';
+  gButton.appendChild(document.createTextNode('Generate Barcode'));
+  gButton.addEventListener('click', generateOutput, false);
+  let outputArea = document.getElementById('outputArea');
+  outputArea.appendChild(h2);
+  outputArea.appendChild(gButton);
+}
+
+function updateKQs(primaryAI) {
+  let kqInput = document.getElementById('keyQualifierInput');
+  kqInput.innerHTML = '';
+  let h3 = document.createElement('h3');
+  h3.appendChild(document.createTextNode('Key qualifiers'));
+  kqInput.appendChild(h3);
+  if (gs1dlt.aiQualifiers[primaryAI] != undefined) {
+    gs1dlt.aiQualifiers[primaryAI].forEach(function (kq) {
+      let label = document.createElement('label');
+      label.for = kq;
+      label.appendChild(document.createTextNode('[' + kq + '] ' + gs1dlt.aitable.find(x => x.ai == kq).title));
+      let input = document.createElement('input');
+      input.type='text';
+      input.id = kq;
+      kqInput.appendChild(label);
+      kqInput.appendChild(input);
+    });
+  } else {
+    kqInput.appendChild(document.createTextNode('There are no qualifiers for a ' + gs1dlt.aitable.find(x => x.ai == primaryAI).title));
+  }
+}
+
+function updateDAs() {
+  daInput = document.getElementById('daInput');
+  daInput.innerHTML = '';
+  let h3 = document.createElement('h3');
+  h3.appendChild(document.createTextNode('Data attributes'));
+  daInput.appendChild(h3);
+  daInput.appendChild(createDataAttributeInput());
+}
+
+
+function createDataAttributeInput() {
+  noDaAttributes++;
+  let div = document.createElement('div');
+  div.id = 'daInput' + noDaAttributes;
+  let sel = document.createElement('select');
+  sel.id = 'DaSelector' + noDaAttributes;
+  let o = document.createElement('option');
+  o.appendChild(document.createTextNode(placeHolder));
+  sel.appendChild(o);
+  gs1dlt.aitable.forEach(function (k) {
+    if (k.type == 'D') {
+      o = document.createElement('option');
+      o.value = k.ai;
+      o.appendChild(document.createTextNode('[' + k.ai + ']' + ' ' + k.title));
+      sel.appendChild(o);
+    }
+  });
+  let label = document.createElement('label');
+  label.for = 'DaValue' + noDaAttributes;
+  label.appendChild(document.createTextNode('Value'));
+  let input = document.createElement('input');
+  input.type = 'text';
+  input.id = 'DaValue' + noDaAttributes;
+  div.appendChild(sel);
+  div.appendChild(label);
+  div.appendChild(input);
+  let span = document.createElement('span');
+  span.classList.add('addDA');
+  span.title = 'Add another data attribute';
+  span.appendChild(document.createTextNode('+'));
+  span.addEventListener('click', addDataAttribute, false);
+  div.appendChild(span);
+  span = document.createElement('span');
+  span.classList.add('removeDA');
+  if (noDaAttributes > 1) {span.title = 'Remove this data attribute'}
+  span.appendChild(document.createTextNode('-'));
+  span.addEventListener('click', function() {removeDataAttribute(div.id)}, false);
+  div.appendChild(span);
+  return div;
+}
+
+function addDataAttribute() {
+  document.getElementById('daInput').appendChild(createDataAttributeInput());
+}
+
+function removeDataAttribute(e) {
+  if (e == 'daInput1') {
+    document.getElementById('DaValue1').value = '';
+    document.getElementById('DaSelector1').value = placeHolder;
+  } else {
+    let nodeToRemove = document.getElementById(e);
+    nodeToRemove.parentNode.removeChild(nodeToRemove);
+  }
+}
+
+function fillExample() {
+  document.getElementById('primaryKeyAI').value = '01';
+  document.getElementById('primaryKeyValue').value = '09506000134352';
+  updateKQs('01');
+  document.getElementById('10').value = 'ABCDEF';
+  document.getElementById('21').value = '1234';
+  updateDAs();
+  let children = document.getElementById('daInput').childNodes;
+  let n = children[1].id.substr(7);
+  document.getElementById('DaSelector' + n).value = '17';
+  document.getElementById('DaValue' + n).value = '221225';
+}
+
+function generateOutput() {
+  // Basic assumption is the the gs1dlt will do our error checking for us. 
+  // So we construct an associatve array as if there are no errors in the input data, but try and give meaningful error messages from the gs1dlt
+  let a = {};
+  let outputArea = document.getElementById('outputArea');
+  outputArea.innerHTML = '';
+  createGenerateButton();
+  // primary key is easy
+  a[document.getElementById('primaryKeyAI').value] = document.getElementById('primaryKeyValue').value;
+
+  // now we want the key qualifers (if any)
+  let kqInput = document.getElementById('keyQualifierInput');
+  let children = kqInput.childNodes;
+  children.forEach(function(i) {
+    if ((i.nodeName == 'INPUT') && (i.value !== '')) {
+      a[i.id] = i.value;
+    }
+  });
+
+  // Now we want the data attributes
+
+  let daInput = document.getElementById('daInput');
+  divs = daInput.childNodes;
+  divs.forEach(function(i) {
+    if (i.nodeName == 'DIV') {
+      let dataAttributes = i.childNodes;
+      let k, v;
+      dataAttributes.forEach(function(d) {
+        if (d.nodeName == 'SELECT') {
+          k = d.value;
+        } else if (d.nodeName == 'INPUT') {
+          v = d.value;
+        }
+      });
+      if (v !== '') {a[k] = v};
+    }
+  });
+  console.log(a);
+
+  // So we have our associative array (a) and we want to pass this into the gs1dlt
+
+  try {
+    // If we're here, we have a valid set of AIs and values
+    // Start with Human readable AI syntax
+    // The next line will raise an error if there's anything wrong with any of the values
+    let gs1ElementStrings = gs1dlt.buildGS1elementStrings(a,true);
+    // But it's not ordered with fixed length strings first so we actually need to use the sorted function
+    gs1ElementStrings = sortElementString(a);
+    let p = document.createElement('p');
+    p.id = 'AIbrackets';
+    let thSpan = document.createElement('span');
+    thSpan.classList.add('th');
+    thSpan.appendChild(document.createTextNode('Human-readable AI syntax'));
+    p.appendChild(thSpan);
+    let tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    tdSpan.appendChild(document.createTextNode(gs1ElementStrings));
+    p.appendChild(tdSpan);
+    outputArea.appendChild(p);
+
+    // Now AI syntax
+
+    p = document.createElement('p');
+    p.id = 'AInoBrackets';
+    thSpan = document.createElement('span');
+    thSpan.classList.add('th');
+    thSpan.appendChild(document.createTextNode('Pure AI syntax'));
+    p.appendChild(thSpan);
+    tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    tdSpan.appendChild(document.createTextNode(gs1dlt.buildGS1elementStrings(a,false)));
+    // That function *does* put the fixed length AIs first
+    p.appendChild(tdSpan);
+    outputArea.appendChild(p);
+
+    //Now DL URI
+    // remember to %-encode the element string before passing to DL Toolkit
+
+    let dlURI = gs1dlt.gs1ElementStringsToGS1DigitalLink(encodeURIComponent(gs1ElementStrings), false, getResolver())
+    p = document.createElement('p');
+    p.id = 'dlURI';
+    thSpan = document.createElement('span');
+    thSpan.classList.add('th');
+    thSpan.appendChild(document.createTextNode('GS1 Digital Link URI'));
+    p.appendChild(thSpan);
+    tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    let hyperlink = document.createElement('a');
+    hyperlink.href = dlURI;
+    hyperlink.title = gs1ElementStrings;
+    hyperlink.appendChild(document.createTextNode(dlURI));
+    tdSpan.appendChild(hyperlink);
+    p.appendChild(tdSpan);
+    outputArea.appendChild(p);
+
+    //Now Compressed DL URI
+    // remember to %-encode the element string before passing to DL Toolkit (not sure this is still necessary 2021-07-12)
+
+    let res = getResolver();
+    if (res.lastIndexOf('/') === res.length-1) {res = res.substring(0,res.length-1)}
+    let compDL = gs1dlt.compressGS1DigitalLink(dlURI, false, res, false, true, false);
+    console.log(`Compressed URL is ${compDL}`);
+
+    p = document.createElement('p');
+    p.id = 'compDL';
+    thSpan = document.createElement('span');
+    thSpan.classList.add('th');
+    thSpan.appendChild(document.createTextNode('Compressed GS1 Digital Link URI'));
+    p.appendChild(thSpan);
+    tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    hyperlink = document.createElement('a');
+    hyperlink.href = dlURI;
+    hyperlink.title = gs1ElementStrings;
+    hyperlink.appendChild(document.createTextNode(compDL));
+    tdSpan.appendChild(hyperlink);
+    p.appendChild(tdSpan);
+    outputArea.appendChild(p);
+
+    // Now we need to create the figurs that contain the barcodes.
+    // Since this triggers an HTTP GET in the browser for each one, we need to
+    // Add them asynchronously so that the API we're calling doesn't get overloaded
+    // So we'll put all the figure objects into an array and then process that
+    // array asynchronously to add to the output DOM
+
+    let barcodes = [];
+
+    // GS1 DataMatrix
+    let figure = document.createElement('figure');
+    figure.id = 'dm';
+    let img = document.createElement('img');
+    img.alt = 'GS1 Data Matrix for supplied data';
+    img.src = terryScript + 'gs1datamatrix&text=' + gs1ElementStrings;
+    // console.log('sending ' + gs1ElementStrings + ' to the DataMatrix generator');
+    figure.appendChild(img);
+    let figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(gs1ElementStrings));
+    figure.appendChild(figcaption);
+    barcodes.push(figure);
+
+
+    // GS1 DL QR Code
+    figure = document.createElement('figure');
+    figure.id = 'qr';
+    img = document.createElement('img');
+    img.alt = 'QR code containing GS1 Digital Link URI for supplied data';
+    img.src = terryScript + 'qrcode&text=' + encodeURIComponent(dlURI);
+    figure.appendChild(img);
+    figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(dlURI));
+    figure.appendChild(figcaption);
+    barcodes.push(figure);
+
+    // Compressed GS1 DL QR Code
+    figure = document.createElement('figure');
+    figure.id = 'compqr';
+    img = document.createElement('img');
+    img.alt = 'QR code containing the compressed GS1 Digital Link URI for supplied data';
+    img.src = terryScript + 'qrcode&text=' + encodeURIComponent(compDL);
+    figure.appendChild(img);
+    figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(compDL));
+    figure.appendChild(figcaption);
+    barcodes.push(figure);
+
+    // GS1 DL Data Matrix
+    figure = document.createElement('figure');
+    figure.id = 'dldm';
+    img = document.createElement('img');
+    img.alt = 'Data Matrix containing GS1 Digital Link URI for supplied data';
+    img.src = terryScript + 'datamatrix&text=' + encodeURIComponent(dlURI);
+    figure.appendChild(img);
+    figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(dlURI));
+    figure.appendChild(figcaption);
+    barcodes.push(figure);
+
+    // Compresed GS1 DL Data Matrix
+    figure = document.createElement('figure');
+    figure.id = 'compdldm';
+    img = document.createElement('img');
+    img.alt = 'Data Matrix containing GS1 Digital Link URI for supplied data';
+    img.src = terryScript + 'datamatrix&text=' + encodeURIComponent(compDL);
+    figure.appendChild(img);
+    figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(compDL));
+    figure.appendChild(figcaption);
+    barcodes.push(figure);
+//  outputArea.appendChild(figure);
+
+
+    // 1D barcode if GTIN
+    if (document.getElementById('primaryKeyAI').value === '01') {
+      let bcType = 'ean14'; let gtin = document.getElementById('primaryKeyValue').value;
+      if (gtin.indexOf('0') === 0) { // might be 13 or 12
+        gtin = gtin.substring(1);
+        bcType = 'ean13';
+      } else {
+        gtin = '(01)' + gtin;
+      }
+      figure = document.createElement('figure');
+      figure.id = 'ean';
+      img = document.createElement('img');
+      img.alt = '1D barcode carrying the GTIN (only)';
+      img.src = terryScript + bcType + '&includetext&text=' + gtin;
+      figure.appendChild(img);
+      barcodes.push(figure);
+      //figcaption = document.createElement('figcaption');
+      //figcaption.appendChild(document.createTextNode(gtin));
+      //figure.appendChild(figcaption);
+      // outputArea.appendChild(figure);
+    }
+    addBarcodes(barcodes);
+
+  } catch(err) {
+  	console.log(err);
+    outputArea.innerHTML = err;
+  }
+}
+
+
+const addBarcodes = async (barcodes) =>
+{
+  for (i in barcodes) {
+    await (outputArea.appendChild(barcodes[i]));
+  }
+}
+
+
+function sortElementString(a) {
+  // Need to sort the array so that the order is:
+  // Primary key
+  // Fixed length
+  // The rest
+
+  // a is an associative array of AIs and their values.
+  // We need to create a version of the string in the right order for sending to the DataMatrix
+  let sorted = ''
+  for (i in a) {    // Look for the primary key
+    if (gs1dlt.aitable.find(x => x.ai == i).type == 'I') {
+      sorted = '(' + i + ')' + a[i];
+    }
+  }
+  for (i in a) {    // Look for fixed length AIs
+    if ((sorted.indexOf('('+ i + ')') == -1) && (gs1dlt.aitable.find(x => x.ai == i).fixedLength == true)) {
+      sorted += '(' + i + ')' + a[i];
+    }
+  }
+  for (i in a) {    // Everything else
+    if (sorted.indexOf('('+ i + ')') == -1) {
+      sorted += '(' + i + ')' + a[i];
+    }
+  }
+  return sorted;
+}
+
+function getResolver() {
+  return ((!document.getElementById('goResolver').checked) && (document.getElementById('userResolver').value != 'https://')) ? document.getElementById('userResolver').value : 'https://id.gs1.org/';
+}
+</script>
+
+</body></html>

@@ -1,0 +1,1 @@
+"use strict";!function(i,t){var s=t.azure_appinsights;new Microsoft.ApplicationInsights.ApplicationInsights({config:s}).loadAppInsights().trackPageView()}(jQuery,drupalSettings);

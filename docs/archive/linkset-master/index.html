@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Linkset visualization demo</title>
+  <meta name="viewport" content="width=device-width" />
+  <script src="gs1LinksetViz.js"></script>
+  <link rel="stylesheet" href="gs1LinksetViz.css" title="Basic linkset layout styles" />
+
+  <style type="text/css">
+    body {font-family: sans-serif}
+
+    span#useDemo {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    #linksetInput {
+      margin-top: 2em;
+      width:1000px;
+      max-width:100%;
+      overflow:auto;
+      white-space: nowrap;
+      height:300px
+    }
+
+    button {
+      background-color: #F26334;
+      color: white;
+      padding: 1em;
+      border: thin solid #002c6c;
+    }
+
+  </style>
+
+<!-- Demo linkset is rendered as this DL
+<dl class="linkList">
+  <dt class="linkType"><a href="https://gs1.org/voc/defaultLink">https://gs1.org/voc/defaultLink</a></dt>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://dalgiardino.com/risotto-rice-with-mushrooms/">https://dalgiardino.com/risotto-rice-with-mushrooms/</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>Product information</dd>
+
+  <dt class="linkType"><a href="https://gs1.org/voc/defaultLinkMulti">https://gs1.org/voc/defaultLinkMulti</a></dt>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.vi">https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.vi</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>Product information</dd>
+  <dd class="hreflang"><span class="toTitle">Language: </span>vi</dd>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.es">https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.es</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>Información del Producto</dd>
+  <dd class="hreflang"><span class="toTitle">Language: </span>es</dd>
+
+  <dt class="linkType"><a href="https://gs1.org/voc/pip">https://gs1.org/voc/pip</a></dt>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://example.com/en/defaultPage">https://example.com/en/defaultPage</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>Product information</dd>
+  <dd class="hreflang"><span class="toTitle">Language: </span>en</dd>
+  <dd class="mediaType"><span class="toTitle">Media type: </span>text/html</dd>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://example.com/fr/defaultPage">https://example.com/fr/defaultPage</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>Information produit</dd>
+  <dd class="hreflang"><span class="toTitle">Language: </span>fr</dd>
+
+  <dt class="linkType"><a href="https://gs1.org/voc/whatsInTheBox">https://gs1.org/voc/whatsInTheBox</a></dt>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://example.com/en/packContents/GB">https://example.com/en/packContents/GB</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>What's in the box?</dd>
+  <dd class="hreflang"><span class="toTitle">Language: </span>en</dd>
+  <dd class="context"><span class="toTitle">Context: </span>GB</dd>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://example.com/fr/packContents/FR">https://example.com/fr/packContents/FR</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>Qu'y a-t-il dans la boite?</dd>
+  <dd class="hreflang"><span class="toTitle">Language: </span>fr</dd>
+  <dd class="context"><span class="toTitle">Context: </span>FR</dd>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://example.com/fr/packContents/CH">https://example.com/fr/packContents/CH</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>Qu'y a-t-il dans la boite?</dd>
+  <dd class="hreflang"><span class="toTitle">Language: </span>fr</dd>
+  <dd class="context"><span class="toTitle">Context: </span>CH</dd>
+  <dt class="linkType"><a href="https://gs1.org/voc/relatedVideo">https://gs1.org/voc/relatedVideo</a></dt>
+  <dd class="href"><span class="toTitle">Target URL: </span><a href="https://video.example">https://video.example</a></dd>
+  <dd class="title"><span class="toTitle">Title: </span>See it in action! (en); Voyez-le en action! (fr)</dd>
+  <dd class="hreflang"><span class="toTitle">Language: </span>en, fr</dd>
+  <dd class="fwqs"><span class="toTitle">Forward query: </span>false</dd>
+</dl>
+-->
+
+</head>
+<body>
+
+<header><h1>Linkset visualization demo</h1></header>
+<main>
+<p>This page demonstrates the GS1 linkset visualization library. Paste your own linkset into the window or <span id="useDemo">use the demo</span>.</p>
+
+<section id="inputArea">
+  <textarea id="linksetInput"></textarea>
+  <button id="refresh">Visualize</button>
+</section>
+
+<section id="linksetVizualization"></section>
+
+</main>
+
+
+<script>
+// Scripting here is just needed for this demo page, it's not part of the actual visualisation library.
+
+const demoLinkset = {
+  "linkset": [
+    {
+      "anchor": "https://example.com/01/614141123452",
+      "itemDescription": "Dal Giardino's world famous Risotto Rice with Mushrooms ",
+      "unixtime":1606376889,
+      "https://gs1.org/voc/defaultLink": [
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/",
+          "title": "Product information"
+        }
+      ],
+      "https://gs1.org/voc/defaultLinkMulti": [
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.vi",
+          "hreflang": ["vi"],
+    		  "title": "Product information"
+        },
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.es",
+          "hreflang": ["es"],
+    		  "title": "Información del Producto"
+        }
+      ],
+      "https://gs1.org/voc/pip": [
+        {
+          "href": "https://example.com/en/defaultPage",
+          "hreflang": ["en"],
+          "type": "text/html",
+    		  "title": "Product information"
+        },
+        {
+          "href": "https://example.com/fr/defaultPage",
+          "hreflang": ["fr"],
+    		  "title": "Information produit"
+        }
+      ],
+      "https://gs1.org/voc/whatsInTheBox": [
+        {
+          "href": "https://example.com/en/packContents/GB",
+          "hreflang": ["en"],
+          "title": "What's in the box?",
+          "context": "GB"
+        },
+        {
+          "href": "https://example.com/fr/packContents/FR",
+          "hreflang": ["fr"],
+          "title": "Qu'y a-t-il dans la boite?",
+          "context": "FR"
+        },
+        {
+          "href": "https://example.com/fr/packContents/CH",
+          "hreflang": ["fr"],
+          "title": "Qu'y a-t-il dans la boite?",
+          "context": "CH"
+        }
+      ],
+      "https://gs1.org/voc/relatedVideo": [
+        {
+          "href": "https://video.example",
+          "hreflang": ["en", "fr"],
+          "title*": [ { "value": "See it in action!" , "language" : "en" }, { "value": "Voyez-le en action!" , "language" : "fr" } ],
+          "fwqs": false
+        }
+      ]
+    }
+  ]
+};
+
+
+window.onload = setup;
+
+function setup() {
+  const displayElement = document.getElementById('linksetVizualization');
+  document.getElementById('refresh').addEventListener('click', function() {
+    linksetViz(JSON.parse(document.getElementById('linksetInput').value), displayElement);
+    displayElement.scrollIntoView();
+  }, false);
+
+  document.getElementById('useDemo').addEventListener('click', function() {
+    document.getElementById('linksetInput').value = JSON.stringify(demoLinkset, undefined, 2);
+  }, false);
+}
+
+</script>
+
+</body></html>

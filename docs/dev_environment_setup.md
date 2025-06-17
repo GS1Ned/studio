@@ -31,9 +31,6 @@ This guide outlines how to configure a local development environment for the Int
    After signing in you can set the active project using the helper script:
    ```bash
    ./scripts/configure_firebase.sh
-   ```
-   This reads `GCP_PROJECT_ID` from your `.env` and configures both the Firebase CLI and gcloud.
-
 4. **Initialize the Firebase emulators**
    ```bash
    firebase emulators:start

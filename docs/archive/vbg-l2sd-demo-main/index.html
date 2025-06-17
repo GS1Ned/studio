@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+  <title id="pagetitle">Key product information with links to other sources of data</title>
+  <meta name="viewport" content="width=device-width"/>
+  <link rel="stylesheet" href="https://gs1.github.io/exampleGTIN/gs1core.css" />
+  <style>
+
+/* Definitions */
+
+  :root {
+    --headHeight: 6em;
+    --bannerHeight: 50px;
+  }
+
+/* Basics */
+    body {font-family: sans-serif}
+
+    header img {
+      height: var(--headHeight);
+      vertical-align: middle;
+    }
+
+    header span#demoTool {
+      color: var(--gs1Orange);
+      font-size: .8em;
+      font-weight: bold;
+    }
+
+    header nav {
+      font-size:80%;
+    }
+
+    header nav span {
+      display: inline-block;
+      padding-left: .5em;
+    }
+
+    header nav span span.longTitle {
+      display: none;
+    }
+
+    header div#banner {
+      height: var(--bannerHeight);
+      background-color: var(--gs1Peach);
+      color: white;
+    }
+
+    header div#banner h2#subtitle {
+      font-size: .8em;
+      line-height: 1.2em;
+      padding: 0 .5em;
+      float:left;
+    }
+
+    header div#banner img {
+      display:none;
+      height:100%;
+    }
+
+    h1 {color: var(--gs1Blue)}
+
+/* VbG section, single column */
+
+    section#vbgHeader {
+      margin-bottom: .5em;
+    }
+
+    section#vbgHeader select#gtinSelector {
+      height:1.5em;
+    }
+
+    section#vbgHeader button {
+      color: white;
+      background-color: var(--gs1Orange);
+      border: none;
+      height: 1.5em;
+    }
+
+/* Status bar */
+    section#status {
+      height: 4em;
+    }
+
+    section#status.isComplete {
+      background-color: var(--gs1Success);
+      border-bottom: 2px solid var(--gs1Grass);
+    }
+
+    section#status.isComplete img {
+      height: var(--bannerHeight);
+      margin: .5em 1em 0 1em;
+      float:left;
+    }
+
+    section#status.notComplete {
+      background-color: var(--gs1Warning);
+      border-bottom: 2px solid var(--gs1Peach);
+    }
+
+    section#status span {
+      font-size: 80%;
+      display:block;
+      padding-left: 1em;
+    }
+
+    section#status span#statusLine {
+      font-weight: bold;
+      padding-top: 1.2em;
+    }
+
+    section#status span#dataSource {
+      margin-top: .3em;
+    }
+
+/* VbG Data section */
+
+    section#vbgData {
+      border-bottom: medium solid var(--gs1Grass);
+    }
+
+    section#vbgData #productImage {
+      width: 200px;
+      display: block;
+      margin: 1em auto;
+    }
+
+    section#vbgData #productImage.div {
+      text-align: center;
+      height: 200px;
+      background-color: var(--gs1LightGray);
+      border: thin solid black;
+    }
+
+    section#vbgData #productImage.div span {
+      margin-top:90px;
+      display: block;
+    }
+
+    /* VbG Output styles */
+
+    ul#vbgOutput {
+      list-style:none;
+      font-size: 80%;
+      padding-left:0.5em;
+    }
+
+    ul#vbgOutput li {
+      padding: 0.5em 0;
+    }
+
+    ul#vbgOutput li span.th {
+      display:block;
+      font-weight: bold;
+    }
+
+    ul#vbgOutput li span.td {
+      display:inline-block;
+      margin-left: 1em;
+      max-width: 70%;
+    }
+    ul#vbgOutput li img.flag {
+      margin-left: 1em;
+      margin-bottom: 1em;
+      float:left;
+      width:15px;
+    }
+
+    ul#vbgOutput li#vbgProductImageUrl span.td {
+      font-size: 6pt;
+    }
+
+/* L2SD section, single column styles */
+
+    section#l2sd {
+      font-size: 80%;
+      background-color: var(--gs1LightGray);
+    }
+
+    section#l2sd h2 {
+      font-size:1em;
+      padding: 1em 0 0 1em;
+    }
+
+    section#l2sd dl#linkset {
+      padding-left:0.2em;
+      margin-left:0;
+    }
+
+
+    section#l2sd dl#linkset dt a.linkType {
+      background-color: var(--gs1Success);
+      width: 8em;
+      height: 2em;
+      border-radius: 0.5em;
+      box-shadow: 5px 5px 5px var(--gs1DarkGray);
+      display: block;
+      text-align: center;
+      padding: 1.5em 0.5em;
+      margin: 0.5em
+    }
+
+    section#l2sd dl#linkset dt {
+      margin-top: 1em;
+    }
+
+    section#l2sd dl#linkset dd {
+      margin-left: 1em;
+    }
+
+    section#l2sd dl#linkset dd.href {
+      border-top: thin dotted black;
+      padding-top: .5em;
+      margin-top: 1em;
+    }
+
+    section#l2sd dl#linkset dd.href a {
+      background-position: center right;
+      background-repeat: no-repeat;
+      background-image: url(external-link-ltr-icon.png);
+      padding-right: 13px;
+    }
+
+
+    section#l2sd dl#linkset dd.first {
+      border-top:none;
+    }
+    section#l2sd dl#linkset dd span.toAttribute {
+      display:block;
+      width:6em;
+    }
+
+    section#l2sd dl#linkset dd span.toValue {
+      padding-left: 1em;
+      display: block;
+    }
+
+/* desktop styles */
+
+   @media (min-width: 800px) {
+
+    div#wrapper {
+      width:95%;
+      box-shadow: 5px 5px 5px var(--gs1DarkGray);
+    }
+
+    header nav {
+      float:right;
+      padding-top: 3em;
+      margin-right: 1em;
+    }
+
+    header nav span {
+      padding-left: 2em;
+    }
+
+    header nav span span.longTitle {
+      display: inline;
+      padding-left: 0;
+    }
+
+    header div#banner h2#subtitle {
+      font-size: 1em;
+      line-height: 1.2em;
+      margin: auto 0;
+      padding: 0.8em 50px 0 .5em;
+    }
+
+    header div#banner img {
+      display:inline-block;
+      height:var(--bannerHeight);
+      margin-left: 1em;
+      vertical-align: middle;
+    }
+
+    main {
+      padding: 0 2em 1em 2em;
+    }
+
+    section#vbgData #productImage.image, section#vbgData #productImage.div {
+      width: 200px;
+      margin: 1em 1em 0 0;
+      display:inline-block;
+    }
+
+    ul#vbgOutput li {
+      padding: .5em 0;
+      border-bottom: thin solid black;
+    }
+
+    ul#vbgOutput li span {
+      display: inline-block;
+    }
+
+    ul#vbgOutput li span.th {
+      width:12em;
+      display:inline-block;
+    }
+
+    ul#vbgOutput li img.flag {
+      width: 20px;
+      margin-right: .5em;
+      display: inline-block;
+      vertical-align: middle;
+      float:none;
+    }
+
+    ul#vbgOutput li#vbgProductImageUrl span.td {
+      font-size:small;
+    }
+
+  /* grid-based styles for linkset in desktop. All modern browsers will use this,
+  The minority of old browsers still in use will see the single column view.
+  NB - we're still in the wide screen bit, so grid os not used on mobile  */
+
+    @supports (display: grid) {
+
+      section#l2sd dl#linkset {
+        display: grid;
+        gap: 0;
+        grid-template-columns: 10em 1fr;
+        --top-gap: 10px;
+      }
+
+      section#l2sd dl#linkset dt {
+        grid-column-start: 1;
+        grid-row-end: span 4;
+      }
+
+      section#l2sd dl#linkset dd {
+        grid-column-start: 2;
+        margin-left: 0;
+        padding-left: 1em;
+      }
+
+      section#l2sd dl#linkset dd span.toAttribute, section#l2sd dl#linkset dd span.toValue {
+        display: inline-block;
+      }
+
+      section#l2sd dl#linkset dt, section#l2sd dl#linkset dd.href {
+        border-top: thin dotted black;
+      }
+    }
+  }
+
+  </style>
+</head>
+<body>
+<div id="wrapper">
+<header>
+  <div id="topLine">
+    <img src="https://gs1.github.io/2d-barcode-generator/gs1logo.png" alt="The GS1 logo" id="gs1Logo" />
+    <span id="demoTool">GS1 Demo Tool</span>
+    <nav>
+<!--      <span>Search GTIN</span>
+      <span id="learnMore">Learn more</span> -->
+      <span id="HowToUse"><a href="https://www.gs1.org/voc/?show=linktypes">GS1 Link types</a></span>
+      <span id="Contact"><a href="https://gs1.wufoo.com/forms/contact-gs1-global-office/">Contact us</a></span>
+    </nav>
+  </div>
+  <div id="banner"><h2 id="subtitle">Get the product identity right and access richer data through links</h2>
+    <img src="vbgIdCardBackground.png" alt="Verified by GS1 product ID card on a background of product category icons" id="idCardBackground" />
+  </div>
+</header>
+<main>
+<section id="vbgHeader"><h1>Key product information with links to other sources of data</h1>
+  <select id="gtinSelector"><option value=''>Select a GTIN</option></select><!--<button id="searchButton">Search</button> -->
+</section>
+
+<section id="status"></section>
+
+<section id="vbgData"></section>
+
+<section id="l2sd"></section>
+
+</main>
+</div> <!-- end wrapper -->
+<script>
+
+// We need to be able to show flag icons.
+// These are from https://www.iconfinder.com/flag-icons?price=free
+// Presumably the GRP front end has something along these lines?
+
+const flags = {
+  'GB':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAYCAYAAACbU/80AAAFJklEQVRIS+2Wa1BUZRjHf2f3wAK7G4iKiOItNRgZawxdaSa/mF3GcHJSKTPvhXjBTEnLQMOAtMQL5XhDx2tZQ5OCHwybRmcSSR2VodEhvCIBXgYW2HV195zTnHfdlU1KqQ/1ofPlvM/7Ppf/+7zPTRpHUvZgKpZacBgAWtcV6j/2bYFfKm+Kddsve10XQVrmzwjY98llzb8vExYmsyQvIoDPJ9eKWa1gcI6UjVnxGW8LYMaECQwftouampa/BcBolCj6diwVl4+2C0DYwqxK+aDpxLThCUhR0Zgzc5AThwmhxiYPKSkXabYrfiWlpQOxWo00xMej2u1i3xAeTrdz52hpURg1qkrsrS+IZWiiGUmSUG9cx/lxJp6fj/n1bD9eKdZ+AFOGDfIeShIhE6cQOisdKTiY5maFjIwazp69LY4fBiA5uZqNG3sRFxcq+O/+WIojdzlasxcsRhl53EQKFy72msteVyg8MF9r4u6+neC+Kw7kAU9gyV6J3H8giqJRVNRIfn7DXwK4fVulsdFDTEwwmqOV1s9yuVPynf/WRtuzmNIXY+jVB1VV2L+/+j6AjLenotbW4CpYhefoD150JhPmOQsIe2MKigpHjrRgs1kwmw0BT2Ds0YOoEyfQNOFA3GdO0Zy5GKX2mveJevclJH0xctIIQZ8+7SQv7xDFxReQYKX2wgt9ycp6iSFDwgSD/lbOtXmoF38VdLAtifDslWidu6EHl26kbQwYY2OJKi9HR9BSkI9jx1ZQFCSLlZDpszGNnwRBQdTXuykpsbN79y3Ky4u9l9QB6AubLZmUlEiSkyPo2TNIKHAV7eX2pvWoLXYMj4UT8eFHhL74shBsD4By4zr1I59BkgyYxrxKaNq7GCI7C/6DB+1s2HAdh0MVtB+ALwYy06f73+pRFu164FEE7/GsWL8tMAj/NQC+OvBa9+4dwP/PWb+qq/N64H8APg9MjIvrkF/V5maRdt5EN2CwWjskv/f8+f9IEPrS8J1pUwQiWZYwmQyi2KCpaE4nmqogBZswhIT4b9leGmoeN6rT2zMMoaEgB4m1x6Phcnnz3/et3b7D64G2hSgjI5rRo8PFQcuhg9QtmoeutNeaz+n0ylixrztdx/ZndcB1oZpLUyfhqqoicmYaUe8vQ5JlysocrF5dz82bHqEnoBJ2725mz57JJCWZ0dxuGnKyuFW4CVPvPvTbsZuwQQniua/WuOjSOfjBXuArxfeup7S2cnleGk3FBwh9eiixG7YR1KMnDQ0e1q5toKys9cFKqDcjd+01rrw1GeeZU4Q/N4rHN29DjohAUTW+L7XzSW49JSUDHpgHjDExRJ08ib1ZISREwhRsQNM06taspjZvBUZrOLEFm7GOfF5A1PvB+PFbAoMwtU83rqan4mlqosfCRfT8IBPJaOSOW+XTVfWUFHv7+cPmgdTUK3yxoRedImTB33S4lOqZ04TebnMXEL0kC0k2cuBAFXPnHr5fiGzWUIwWM/03FdI5eYxX2O5hdtpVLl684w+ehwHQJ6KwMAM5uTGidRskCdflS5x/fQLOykostiT6btnJ1n6xXg/46sCIpxKI//JrwuLihftOnHKw5L1anM7A6H0UAD60k96MZFZqV2TZgOJwUD0njRvf7COoa1eOXam99wR/GErnuRWWLf+J3JyygLTxER2ZinWZxMRoSg+nULBjj1DRdppuxapI+lj+JBVLzffG8n3Dd1F+/Ld2jeubHQWgy3TqFMKC5ZYAALrxChJyfwdy2oeb0oaIwAAAAABJRU5ErkJggg==',
+  'ES':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAYCAYAAACbU/80AAACcUlEQVRIS+2WXUiTYRiGr2/f3NStocycmSxdlgodhBYSHXRglAXRQVBkP2dWEHmgSeRBFBEY/hREQfSDUIRgIWhpBznQ0jCbWNq0hkT+pEu3as5Wn+5bbKkQGHMx9MT37IXnve/rebkfeIQykT0KuAUYWNxjlyFfqBAZXQLz2VbtfgCf/1a4IWNR+6/s6Q34LQMs/Q+8Oo9PjFCSuXfzXxnwyTDi1KLXeVCrvLy3+XhQp2WFVuD0cXegdsCuQ4WTBIMy5Px0PHz5JwP/AnC5lXT0rWbUoWGV3k3T4y40K1NJTE5kTYKLcSdMSjpidT/JyfqENnoqJIigALNq/Y4t2BrHyLz3hLEUI6anzXS3v6Cvsx6FV2D/jjeoVIFBCuksCECWYTq1EWtRASnVj5iKjiJuaIxfnknMtTfYlVeMbDuCQuoPydxfHBRAlgXqzLHk5ldjbX1Ghm0Ql+RBeaUSm07L8Kmj7Dt2jrbaErLXtiCKckgQQQFsAzG0didx4GQF9qEPJKdl4bl5HensGaQoNZbyEnIPFlFXdZF0Qzvrjc7wAvT0x1F66R13W7qxWsy4HKNMfBlm/OodYnI2oc7eGgC4XHCIndscbEx3hRdgxC5Qds1LabUZ6+smulrrAwbeaS+iUiQ+aR2784ppuH+BbGMDer0YXgC/2tveCEzba2hpqOFjbxs+H2h1Gjqfd2JMTaOwvIqvlsPoNYMhmS8ohHOKQgSS5OW7O5Jmi4EM0wSmxG9Eqr0ICiX4Qpv/Wd2gIZyvJfcPFdpoKeRu53vwXwBhcZ4RmQNY3geWf2CJl9LPwsxafhuID2fKF6D1WYYTvwHRVyevJpmofwAAAABJRU5ErkJggg==',
+  'JP':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAYCAYAAACbU/80AAABvklEQVRIS2NsnDTHl/E/42wGBgZxBvqCl/8Z/6cyNk2c+2IALId59SXIAf9BvOL0OLr6v3fmIrB9ow6gKAT+//4NCUZWVpKjj+wo+PftG8OHWdMYPq9bxfDrzm2wxWwqqgy8QWEMAmlZDExcXEQ5hiwH/HnymOFpRCDDr7t3sFrCpqzCIL1iPQOLjCxBR5DsgP+/fjI89nBi+Hn9Kl7D2TW1GWR37GNgZGPHq45kB3xcMIfhVWUJQZ+BFIi19zDwJ6RQ1wFPQ/0Zvh05SJQDuGzsGaRXb6SuA+4baDD8eQkqNAkDFnEJBsULN6jsABMdhj9PnxC2nYGBgUVahkHxzBXqOuBZbBjD1z27iHIAt4sbg9TiVdR1wOc1Kxle5KYT5QDxSTMY+EIjqOsAhn//GJ6E+jN8P3YYr8GcVrYMMqAEyMREZQcwMDD8ff+O4XlSDMP3E8ewGs5pYcUgOXcxA7OQMMGQIrkcgJv47x/D5/VrGD6tXcnw68Z1SFGsocnAFxzOwBsYQtDnMHPIdwBBvxGnYNQBgycEumcu+f/9x0/iIo7Kqrg4ORgYT5y98v/w6QsM33/S1xEgy22M9RkAl7rsi3FqMg8AAAAASUVORK5CYII=',
+  'VN':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAYCAYAAACbU/80AAACtUlEQVRIS8WWvU9TURiHn3Nue0vppUWEVhKIwGICOjC6mzBJ4uLgYGKUxAnjwF9g4mLcFAdMHDTR6Oykf4KJCSbGwYgoafmoQegX7e09x5xbW6pC6bWI79i+fd/n/fqdivtwXgoWNKQ4QhOwpjQz4oFg9aiT1+s0EGJeoM0HFyfHj7B+eP72vZ+vIwClNUKAQASG7xhgPV8kX3H9xPGITX8sGgiiI4Ci67KaK2J1a1RZoD0YTjiELattiI4AMrkCJbfK0BXFzgpkX0kcO0zS6f43AFprPO3vqp94o1DC7tecXvCobsG7ayF0FYYSDtIsBWBJsxn770bbHdgoFMmVa7NuttGbHsfP1aC+zEvWX8o/fHoiNgP77EZbAKbypc1tZJcmnNiNb6fg1G3PrL9v7iZ8mLNA7fpUsrXdGO2L79mJYAARGJvz6D1bq7iVaQXpx5LMC4lRmLG+JvKmH7YFYPzrIxAShmcUyemmMn8j8fLw6Y7F1ptaa1qdZ9sAJlC2UGK7XPGDpi4ohq+qRvvrDKVlwcdbknJGEJKSpBOlKxTat1mBAEyUQsVlLV/0A56c9RiY2h2HmfXiZQv3uyAaDvmLZyBaWWAA1/P4upVH2nDmUZVw76/h008k6aeS7nCIEz2xg1Yl+FtQH0P/lGJkVqFd/IShBKSmFaps9MDC3RQkY1GciH14Haifozm7iXnPF52lu5LS59qyOROakRuK3CIs37P8MQwe0IVAIzDqZ+Q3PqlxxjWZZ9K/8a6QhXkRK57yRzN4SfHttWBnRRz4NgQCaAiSDap2DNRVznyXLZYaamlAjM/osTjipyzvNYtAAM160BMJ49i23+ZmMy+kuRQj28ZnINb6YQoMYJKZaltV1a6P8fsrgANvK4BDA+B//ikF0sL8LReCh0AyQAGH4ZrWmus/AG4nZqDbYMSpAAAAAElFTkSuQmCC'
+}
+
+// Again, someting like this probably exists in the GRP front end anyway but we need a conversion from recorded UoM to
+// The ones that make sense to people.
+
+const displayUoM = {
+  'GRM':'g',
+  'LTR':'l'
+}
+
+// The inevitable set up command
+window.onload = init;
+
+// That calls this simple function.
+
+function init() {
+  // get the data, populate and set up the selector
+  const payload = getPayload();
+  const params = new URLSearchParams(window.location.search);
+  const selector = document.getElementById('gtinSelector');
+  let data;
+  for (let i in payload) {
+    let option = document.createElement('option');
+    option.value = payload[i].gtin;
+    option.appendChild(document.createTextNode(payload[i].gtin));
+    selector.appendChild(option);
+  }
+  selector.addEventListener('change', function () {showResult(payload.find(x => x.gtin === this.value))}, false);
+  if ((params.has('gtin')) && (data = payload.find(x => x.gtin === params.get('gtin')))) {
+    selector.value = data.gtin;
+    showResult(data);
+  }
+}
+
+// When the selector changes, this function is called.
+// Everything is in this one function but it comes in sections and could easily be split up as needed.
+
+function showResult(data) {
+
+  // Define and clear the canvas
+  const status = document.getElementById('status');
+  const vbgData = document.getElementById('vbgData');
+  const l2sd = document.getElementById('l2sd');
+  status.innerHTML = '';
+  vbgData.innerHTML = '';
+  l2sd.innerHTML = '';
+  status.classList.remove('isComplete');
+  status.classList.remove('notComplete');
+
+
+  // For the demo we're using a fixed dataset that we know and can control.
+  // This first line makes the assumption that there is a .gtin property, which is unsafe
+  // especially when dealing with examples where we have a linkset but no VbG data.
+  // Of course the GTIN can always be found in the Linkset's anchor
+
+  //  const data = payload.find(x => x.gtin === g);
+
+  // Deal with the status header
+  const vbgStatusImage = document.createElement('img');
+  vbgStatusImage.src = 'vbg-square-2020-01-02.png';
+  vbgStatusImage.alt = "A stylized checkmark and the name GS1 - the Verified by GS1 logo";
+
+  if (data.isComplete === true) {
+    status.classList.add('isComplete');
+    status.appendChild(vbgStatusImage);
+    let span = document.createElement('span');
+    span.id = 'statusLine';
+    span.appendChild(document.createTextNode('Complete data'));
+    status.appendChild(span);
+    span = document.createElement('span');
+    span.id = 'dataSource';
+    span.appendChild(document.createTextNode(`The number is registered to the company `));
+    let strong = document.createElement('strong');
+    strong.appendChild(document.createTextNode(`${data.licenseeName}`));
+    span.appendChild(strong);
+    status.appendChild(span);
+   } else {
+    status.classList.add('notComplete');
+    let span = document.createElement('span');
+    span.id = 'statusLine';
+    span.appendChild(document.createTextNode('Inomplete data'));
+    status.appendChild(span);
+    span = document.createElement('span');
+    span.id = 'dataSource';
+    span.appendChild(document.createTextNode(data.licenseeName === undefined ? 'No licensee information available' : `The number is registered to ${data.licenseeName}`));
+    status.appendChild(span);
+  }
+
+  // On to the VbG data itself
+
+  // Show the product image if we have one.
+  let image;
+  if (typeof data.productImageUrl === 'object') {
+    image = document.createElement('img');
+    image.src = data.productImageUrl[0].value;
+    image.id = 'productImage';
+    image.alt = "An image of the product";
+    image.classList.add('image');
+  } else {
+    image = document.createElement('div');
+    image.id = 'productImage';
+    let s = document.createElement('span');
+    s.appendChild(document.createTextNode('No image available'));
+    image.appendChild(s);
+    image.classList.add('div');
+  }
+  vbgData.appendChild(image);
+
+  // Now we work through the rest of the VbG data
+
+  // We'll use a ul list styled as a table in desktop and as a DL on mobile
+  let ul = document.createElement('ul');
+  ul.id = 'vbgOutput';
+
+  // GTIN
+
+  let li = document.createElement('li');
+  li.id = 'vbgGtin';
+  let thSpan = document.createElement('span');
+  thSpan.classList.add('th');
+  thSpan.appendChild(document.createTextNode('GTIN'));
+  li.appendChild(thSpan);
+  let tdSpan = document.createElement('span');
+  tdSpan.classList.add('td');
+  tdSpan.appendChild(document.createTextNode(data.gtin));
+  li.appendChild(tdSpan);
+  ul.appendChild(li);
+
+  // Brand name
+  li = document.createElement('li');
+  li.id = 'vbgBrandName';
+  thSpan = document.createElement('span');
+  thSpan.classList.add('th');
+  thSpan.appendChild(document.createTextNode('Brand name'));
+  li.appendChild(thSpan);
+  tdSpan = document.createElement('span');
+  tdSpan.classList.add('td');
+  if (typeof data.brandName === 'object') {tdSpan.appendChild(document.createTextNode(data.brandName[0].value))} // Brittle, obviously
+  li.appendChild(tdSpan);
+  ul.appendChild(li);
+
+  // Product description
+  li = document.createElement('li');
+  li.id = 'vbgProductDescription';
+  thSpan = document.createElement('span');
+  thSpan.classList.add('th');
+  thSpan.appendChild(document.createTextNode('Product description'));
+  li.appendChild(thSpan);
+  if (typeof data.productDescription !== 'undefined') {
+    let flagIcon = document.createElement('img');
+    flagIcon.classList.add('flag');
+    flagIcon.src = flags.GB;                          // Brittle, needs sorting
+    flagIcon.alt = "Flag of GB";
+    li.appendChild(flagIcon);
+    tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    tdSpan.appendChild(document.createTextNode(`${data.productDescription[0].value}`)); // Brittle
+  }
+  li.appendChild(tdSpan);
+  ul.appendChild(li);
+
+  // Product Image URL
+  li = document.createElement('li');
+  li.id = 'vbgProductImageUrl';
+  thSpan = document.createElement('span');
+  thSpan.classList.add('th');
+  thSpan.appendChild(document.createTextNode('Product image URL'));
+  li.appendChild(thSpan);
+  tdSpan = document.createElement('span');
+  tdSpan.classList.add('td');
+  if (typeof data.productImageUrl !== 'undefined') {
+    flagIcon = document.createElement('img');
+    flagIcon.classList.add('flag');
+    flagIcon.src = flags.GB;                          // Brittle, needs sorting
+    flagIcon.alt = "Flag of GB";
+    li.appendChild(flagIcon);
+    let a = document.createElement('a');
+    a.href = data.productImageUrl[0].value;   // All very brittle
+    a.title = `Image for ${data.productDescription[0].value}, GTIN ${data.gtin}`;
+    a.appendChild(document.createTextNode(`${data.productImageUrl[0].value}`)); // Brittle
+    tdSpan.appendChild(a);
+  }
+  li.appendChild(tdSpan);
+  ul.appendChild(li);
+
+  // GPC
+  li = document.createElement('li');
+  li.id = 'vbgGPC';
+  thSpan = document.createElement('span');
+  thSpan.classList.add('th');
+  thSpan.appendChild(document.createTextNode('Global Product Category'));
+  li.appendChild(thSpan);
+  tdSpan = document.createElement('span');
+  tdSpan.classList.add('td');
+  if (data.gpcCategoryCode !== undefined) {tdSpan.appendChild(document.createTextNode(`${data.gpcCategoryCode}`))}
+  li.appendChild(tdSpan);
+  ul.appendChild(li);
+
+  // Net content
+  li = document.createElement('li');
+  li.id = 'vbgNetContent';
+  thSpan = document.createElement('span');
+  thSpan.classList.add('th');
+  thSpan.appendChild(document.createTextNode('Net content'));
+  li.appendChild(thSpan);
+  tdSpan = document.createElement('span');
+  tdSpan.classList.add('td');
+  if (typeof data.netContent !== 'undefined') {
+    tdSpan.appendChild(document.createTextNode(`${data.netContent[0].value} ${displayUoM[data.netContent[0].unitCode]}`));  // Super-brittle!
+  }
+  li.appendChild(tdSpan);
+  ul.appendChild(li);
+
+  // Country of sale
+  li = document.createElement('li');
+  li.id = 'vbgCountryOfSale';
+  thSpan = document.createElement('span');
+  thSpan.classList.add('th');
+  thSpan.appendChild(document.createTextNode('Country of sale'));
+  li.appendChild(thSpan);
+  tdSpan = document.createElement('span');
+  tdSpan.classList.add('td');
+  if (typeof data.countryOfSaleCode !== 'undefined') {
+    tdSpan.appendChild(document.createTextNode(`${data.countryOfSaleCode[0].alpha2}`));
+  }
+  li.appendChild(tdSpan);
+  ul.appendChild(li);
+
+  vbgData.appendChild(ul);
+  if (data.licenseeName !== undefined) {
+    let d = new Date(data.dateUpdated);
+    let p = document.createElement('p');
+    p.appendChild(document.createTextNode(`This data has been provided by ${data.licenseeName} and was last updated on ${d.toDateString()}.`));
+    vbgData.appendChild(p);
+  }
+
+  // Linkset
+
+  // N.B. The linksets provided in the static data used here do not include links typed as defaultLink and defaultLinkMulti.
+  // That's because those link types essentially refer to a resolver function (the default redirection)
+  // It would be easy to include them and, if so, flag the default links accordingly but I've not done that here in the demo
+
+  // We need the set of link types and their properties
+  // See commented out function below the main data block. We should using something like
+  // that to collect the list of link types in real time but for now we'll use a static copy to retain the
+  // 'no live lookup' feature of the demo.
+
+  let dl = document.createElement('dl');
+  dl.id = 'linkset';
+  if (Array.isArray(data.linkset)) {
+    let h2 = document.createElement('h2');
+    h2.id="l2sdHeading";
+    h2.appendChild(document.createTextNode('Links to other sources of data'));
+    l2sd.appendChild(h2);
+    const ls = data.linkset[0];
+    const lsKeys = Object.keys(ls);
+    for (const i in lsKeys) {
+      if (linkTypes.find(x => x.url === lsKeys[i])) {  // So this value of i gives us an object identified by its link type
+        // Create the li element and create the big button that is the link type, hyperlinked to its definition
+        let dt = document.createElement('dt');
+        dt.classList.add('linksetListItem');
+        let a = document.createElement('a');
+        a.classList.add('linkType');
+        a.href = lsKeys[i];
+        a.appendChild(document.createTextNode(linkTypes.find(x => x.url === lsKeys[i]).l2sdTitle)); // Very brittle as uses l2sdTitle, only present in 3 link types
+        dt.appendChild(a);
+        dl.appendChild(dt);
+        // For each link type, we have an arragy of target links - link objects.
+        // So let's gat that array so we can work through it
+        let targetObjects = ls[lsKeys[i]];
+        let firstFlag = true;
+        for (const linkObject in targetObjects) {
+          // For each element in the array, we list the target object properties and values
+          // Target URL is mandatory
+          let dd = document.createElement('dd');
+          dd.className = 'href';
+          if (firstFlag) {
+            dd.classList.add('first');
+            firstFlag = false;
+          }
+          let attSpan = document.createElement('span');
+          attSpan.classList.add('toAttribute');
+          attSpan.appendChild(document.createTextNode('Target URL'));
+          dd.appendChild(attSpan);
+          let vSpan = document.createElement('span');
+          vSpan.classList.add('toValue');
+          a = document.createElement('a');
+          a.href = targetObjects[linkObject].href;
+          a.target = '_blank';
+          a.title = 'Opens in new tab';
+          a.appendChild(document.createTextNode(targetObjects[linkObject].href));
+          vSpan.appendChild(a);
+          dd.appendChild(vSpan);
+          dl.appendChild(dd);
+
+          // Now add the title, also mandatory
+
+          dd = document.createElement('dd');
+          dd.className = 'title';
+          attSpan = document.createElement('span');
+          attSpan.classList.add('toAttribute');
+          attSpan.appendChild(document.createTextNode('Title'));
+          dd.appendChild(attSpan);
+          vSpan = document.createElement('span');
+          vSpan.classList.add('toValue');
+          vSpan.appendChild(document.createTextNode(targetObjects[linkObject].title));
+          dd.appendChild(vSpan);
+          dl.appendChild(dd);
+
+          // The rest are optional, we'll start with media type
+
+          if (targetObjects[linkObject].type !== undefined){
+            dd = document.createElement('dd');
+            dd.className = 'type';
+            attSpan = document.createElement('span');
+            attSpan.classList.add('toAttribute');
+            attSpan.appendChild(document.createTextNode('Media type'));
+            dd.appendChild(attSpan);
+            vSpan = document.createElement('span');
+            vSpan.classList.add('toValue');
+            vSpan.appendChild(document.createTextNode(targetObjects[linkObject].type));
+            dd.appendChild(vSpan);
+            dl.appendChild(dd);
+          }
+
+          // Languages need a little more work as they are in an array
+          if (targetObjects[linkObject].hreflang !== undefined){
+            dd = document.createElement('dd');
+            dd.className = 'hreflang';
+            attSpan = document.createElement('span');
+            attSpan.classList.add('toAttribute');
+            attSpan.appendChild(document.createTextNode('Language(s)'));
+            dd.appendChild(attSpan);
+            vSpan = document.createElement('span');
+            vSpan.classList.add('toValue');
+            const langArray = targetObjects[linkObject].hreflang;
+            let t = '';
+            for (const lang in langArray) {
+              t += `${langArray[lang]}, `
+            }
+            t = t.substring(0, t.lastIndexOf(','));
+            vSpan.appendChild(document.createTextNode(t));
+            dd.appendChild(vSpan);
+            dl.appendChild(dd);
+          }
+
+          // Finally, context
+
+          if (targetObjects[linkObject].context !== undefined){
+            dd = document.createElement('dd');
+            dd.className = 'context';
+            attSpan = document.createElement('span');
+            attSpan.classList.add('toAttribute');
+            attSpan.appendChild(document.createTextNode('Context'));
+            dd.appendChild(attSpan);
+            vSpan = document.createElement('span');
+            vSpan.classList.add('toValue');
+            vSpan.appendChild(document.createTextNode(targetObjects[linkObject].context));
+            dd.appendChild(vSpan);
+            dl.appendChild(dd);
+          }
+        }
+      }
+    }
+    l2sd.appendChild(dl);
+    let d = new Date(ls.unixtime * 1000);
+    let p = document.createElement('p');
+    p.appendChild(document.createTextNode(`Linkset last updated on ${d.toDateString()}. See also `));
+    let a = document.createElement('a');
+    a.href= `https://id.gs1.org/01/${data.gtin}?linkType=all`;
+    a.title = `GS1 Global Office Resolver record for GTIN ${data.gtin}`;
+    a.appendChild(document.createTextNode('GS1 Global Office Resolver'));
+    p.appendChild(a);
+    l2sd.appendChild(p);
+  }
+}
+
+
+
+function getPayload() { // Not strictly necessary to put this in a function but this is with an eye to the future when a 'get the data' function will include lookups etc.
+  const payload = [{
+    "gtin": "09506000134352",
+    "gpcCategoryCode": "50193800 - Ready-Made Combination Meals",
+    "brandName": [{
+        "language": "en-GB",
+        "value": "Dal Giardino"
+    }],
+    "productDescription": [{
+        "language": "en-GB",
+        "value": "Dal Giardino Rice with Mushrooms 411 g"
+    }],
+    "productImageUrl": [{
+        "language": "en-GB",
+        "value": "https://gs1.github.io/vbg-l2sd-demo/Dal_Giardino_Risotto_Rice_With_Nett_260.png"
+    }],
+    "netContent": [{
+        "unitCode": "GRM",
+        "value": "411"
+    }],
+    "countryOfSaleCode": [{
+        "numeric": "826",
+        "alpha2": "GB",
+        "alpha3": "GBR"
+    }],
+    "licenseeName": "Dal Giardino Ltd.",
+    "dateUpdated": "2021-03-04T03:39:35.1560543Z",
+    "isComplete": true,
+    "linkset": [
+    {
+      "anchor": "https://id.gs1.org/01/09506000134352/",
+      "itemDescription": "Dal Giardino Risotto Rice with Mushrooms 411g",
+      "unixtime": 1613175792,
+      "https://gs1.org/voc/pip": [
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/",
+          "title": "Product information",
+          "type": "text/html",
+          "hreflang": [
+            "en", "es", "vi", "ja"
+          ]
+        },
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.es",
+          "title": "Información del Producto",
+          "type": "text/html",
+          "hreflang": [
+            "es"
+          ]
+        },
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.ja",
+          "title": "Product information",
+          "type": "text/html",
+          "hreflang": [
+            "ja"
+          ]
+        },
+        {
+          "href": "https://dalgiardino.com/risotto-rice-with-mushrooms/index.html.vi",
+          "title": "Trang thông tin sản phẩm",
+          "type": "text/html",
+          "hreflang": [
+            "vi"
+          ]
+        }
+      ],
+      "https://gs1.org/voc/productSustainabilityInfo": [
+        {
+          "href": "https://dalgiardino.com/about/",
+          "title": "About Dal Giardino",
+          "type": "text/html",
+          "hreflang": [
+            "en", "vi", "es"
+          ]
+        },
+        {
+          "href": "https://dalgiardino.com/about/index.html.es",
+          "title": "Sobre Dal Giardino",
+          "type": "text/html",
+          "hreflang": [
+            "es"
+          ]
+        },
+        {
+          "href": "https://dalgiardino.com/about/index.html.vi",
+          "title": "Phát triển bền vững và t",
+          "type": "text/html",
+          "hreflang": [
+            "vi"
+          ]
+        }
+      ],
+      "https://gs1.org/voc/recipeInfo": [
+        {
+          "href": "https://dalgiardino.com/mushroom-squash-risotto/",
+          "title": "Wild Mushroom And Butternut Squash Risotto",
+          "type": "text/html",
+          "hreflang": [
+            "en", "es", "ja"
+          ]
+        },
+        {
+          "href": "https://dalgiardino.com/mushroom-squash-risotto/index.html.es",
+          "title": "Recetas",
+          "type": "text/html",
+          "hreflang": [
+            "es"
+          ]
+        },
+        {
+          "href": "https://dalgiardino.com/mushroom-squash-risotto/index.html.ja",
+          "title": "キノコと砕いたバターナッツ入りのリゾット",
+          "type": "text/html",
+          "hreflang": [
+            "ja"
+          ]
+        }
+      ]
+    }
+  ]
+
+  }];
+  return payload;
+}
+
+const linkTypes = [{
+	"title": "Default link",
+	"description": "The default link for a given identified item to which a resolver will redirect unless there is information in the request that is a better match.",
+	"curie": "gs1:defaultLink",
+	"url": "https://gs1.org/voc/defaultLink"
+}, {
+	"title": "Default linkMulti",
+	"description": "A set of 'default links' that may be differentiated by information in the HTTP request headers sent to a resolver to enable a better match than the single default link.",
+	"curie": "gs1:defaultLinkMulti",
+	"url": "https://gs1.org/voc/defaultLinkMulti"
+}, {
+	"title": "Activity Ideas",
+	"description": "A link to ideas for using the product, particularly with children.",
+	"curie": "gs1:activityIdeas",
+	"url": "https://gs1.org/voc/activityIdeas"
+}, {
+	"title": "Allergen information",
+	"description": "A link to a description of the allergens in the product.",
+	"curie": "gs1:allergenInfo",
+	"url": "https://gs1.org/voc/allergenInfo"
+}, {
+	"title": "Information for professionals about this brand",
+	"description": "A link to a brand presence aimed at clinical professionals.",
+	"curie": "gs1:brandHomepageClinical",
+	"url": "https://gs1.org/voc/brandHomepageClinical"
+}, {
+	"title": "Information for patients about this brand",
+	"description": "A link to a brand presence aimed at patients.",
+	"curie": "gs1:brandHomepagePatient",
+	"url": "https://gs1.org/voc/brandHomepagePatient"
+}, {
+	"title": "Certification Information",
+	"description": "A link to certification information about the product.",
+	"curie": "gs1:certificationInfo",
+	"url": "https://gs1.org/voc/certificationInfo"
+}, {
+	"title": "Consumer handling and storage information",
+	"description": "A link to information about safe handling and storage of the product.",
+	"curie": "gs1:consumerHandlingStorageInfo",
+	"url": "https://gs1.org/voc/consumerHandlingStorageInfo"
+}, {
+	"title": "EPC Information Services (EPCIS) repository",
+	"description": "A link to an EPCIS repository of visibility event data.",
+	"curie": "gs1:epcis",
+	"url": "https://gs1.org/voc/epcis"
+}, {
+	"title": "Electronic Patient Information Leaflet",
+	"description": "A link to an electronic patient information leaflet.",
+	"curie": "gs1:epil",
+	"url": "https://gs1.org/voc/epil"
+}, {
+	"title": "Frequently Asked Questions",
+	"description": "A link to a set of frequently asked questions.",
+	"curie": "gs1:faqs",
+	"url": "https://gs1.org/voc/faqs"
+}, {
+	"title": "Handled by",
+	"description": "Used when one resolver redirects all request URIs that match a given pattern without further processing, such as from GS1 to a brand-operated service. See section 7.7.1 of the Digital Link standard, version 1.1. ",
+	"curie": "gs1:handledBy",
+	"url": "https://gs1.org/voc/handledBy"
+}, {
+	"title": "Has Retailers",
+	"description": "A link to a list of retailers for this item",
+	"curie": "gs1:hasRetailers",
+	"url": "https://gs1.org/voc/hasRetailers"
+}, {
+	"title": "Ingredients information",
+	"description": "A link to facts about the product's ingredients.",
+	"curie": "gs1:ingredientsInfo",
+	"url": "https://gs1.org/voc/ingredientsInfo"
+}, {
+	"title": "Instructions",
+	"description": "A link to instructions related to the item, such as assembly instructions, usage tips etc.",
+	"curie": "gs1:instructions",
+	"url": "https://gs1.org/voc/instructions"
+}, {
+	"title": "Leave a review",
+	"description": "A link through which a review can be added.",
+	"curie": "gs1:leaveReview",
+	"url": "https://gs1.org/voc/leaveReview"
+}, {
+	"title": "Master data",
+	"description": "A link to a source of structured master data for the entity. This is typically for B2B applications.",
+	"curie": "gs1:masterData",
+	"url": "https://gs1.org/voc/masterData"
+}, {
+	"title": "Nutritional Information",
+	"description": "A link to nutritional facts about the product.",
+	"curie": "gs1:nutritionalInfo",
+	"url": "https://gs1.org/voc/nutritionalInfo"
+}, {
+	"title": "Product Information Page",
+	"description": "A link to information specifically about the identified item, typically operated by the brand owner or a retailer of the product and aimed at consumers. It may include links to further information, product description, specifications etc.",
+	"curie": "gs1:pip",
+	"url": "https://gs1.org/voc/pip",
+  "l2sdTitle": "Product information"
+}, {
+	"title": "Sustainability and recycling",
+	"description": "A link to information about the product's sustainability of manufacture, recycling information etc.",
+	"curie": "gs1:productSustainabilityInfo",
+	"url": "https://gs1.org/voc/productSustainabilityInfo",
+  "l2sdTitle" : "Sustainability"
+}, {
+	"title": "Promotion",
+	"description": "A link to a promotion for the product.",
+	"curie": "gs1:promotion",
+	"url": "https://gs1.org/voc/promotion"
+}, {
+	"title": "Purchase supplies or accessories",
+	"description": "A link to information about where supplies or accessories for the item can be purchased or ordered.",
+	"curie": "gs1:purchaseSuppliesOrAccessories",
+	"url": "https://gs1.org/voc/purchaseSuppliesOrAccessories"
+}, {
+	"title": "Quick start guide",
+	"description": "A link to a description of the key features needed to be understood to begin using the item.",
+	"curie": "gs1:quickStartGuide",
+	"url": "https://gs1.org/voc/quickStartGuide"
+}, {
+	"title": "Recall status",
+	"description": "A link to information about whether the product has been recalled or not, typically an API.",
+	"curie": "gs1:recallStatus",
+	"url": "https://gs1.org/voc/recallStatus"
+}, {
+	"title": "Recipe website",
+	"description": "A link to a recipe website for the product.",
+	"curie": "gs1:recipeInfo",
+	"url": "https://gs1.org/voc/recipeInfo",
+  "l2sdTitle": "Recipes"
+}, {
+	"title": "Register purchase",
+	"description": "A link to an entry point for registering ownership of a product including for warranty purposes.",
+	"curie": "gs1:registerProduct",
+	"url": "https://gs1.org/voc/registerProduct"
+}, {
+	"title": "Related video",
+	"description": "A link to any video, or document that has an embedded video, that describes or relates to the identified item in some way.",
+	"curie": "gs1:relatedVideo",
+	"url": "https://gs1.org/voc/relatedVideo"
+}, {
+	"title": "Reviews",
+	"description": "A link to reviews of the product or service.",
+	"curie": "gs1:review",
+	"url": "https://gs1.org/voc/review"
+}, {
+	"title": "Safety information",
+	"description": "A link to safety information about the item",
+	"curie": "gs1:safetyInfo",
+	"url": "https://gs1.org/voc/safetyInfo"
+}, {
+	"title": "Service information",
+	"description": "A link to service or maintenance instructions for the item.",
+	"curie": "gs1:serviceInfo",
+	"url": "https://gs1.org/voc/serviceInfo"
+}, {
+	"title": "SmartLabel",
+	"description": "A link to the product's SmartLabel page.",
+	"curie": "gs1:smartLabel",
+	"url": "https://gs1.org/voc/smartLabel"
+}, {
+	"title": "Summary Product Characteristics (SmPC)",
+	"description": "A link to Summary Product Characteristics. To be used specifically when linking to information for healthcare professionals.",
+	"curie": "gs1:smpc",
+	"url": "https://gs1.org/voc/smpc"
+}, {
+	"title": "Social media",
+	"description": "A link to a social media channel. The title will typically be replaced by the name of the channel.",
+	"curie": "gs1:socialMedia",
+	"url": "https://gs1.org/voc/socialMedia"
+}, {
+	"title": "Support",
+	"description": "A link to a source of support such as a helpdesk, chat support, email etc.",
+	"curie": "gs1:support",
+	"url": "https://gs1.org/voc/support"
+}, {
+	"title": "Traceability information",
+	"description": "A link to traceability information about the product (includes track & trace).",
+	"curie": "gs1:traceability",
+	"url": "https://gs1.org/voc/traceability"
+}, {
+	"title": "Tutorial",
+	"description": "A link to a tutorial or set of tutorials, such as online classes, how-to videos etc.",
+	"curie": "gs1:tutorial",
+	"url": "https://gs1.org/voc/tutorial"
+}, {
+	"title": "Verification Service",
+	"description": "A link to a GS1 Lightweight Messaging Service for verifying the status of a product and its identifier . ",
+	"curie": "gs1:verificationService",
+	"url": "https://gs1.org/voc/verificationService"
+}, {
+	"title": "What's in the box?",
+	"description": "A link to a description of all the individual items in a packaged item.",
+	"curie": "gs1:whatsInTheBox",
+	"url": "https://gs1.org/voc/whatsInTheBox"
+}];
+
+
+/* Other Dal Giardino data (not currently used)
+  {
+    "gtin": "09506000134369",
+    "gpcCategoryCode": "50193800",
+    "brandName": [{
+        "language": "en-GB",
+        "value": "Dal Giardino"
+    }],
+    "productDescription": [{
+        "language": "en-GB",
+        "value": "Dal Giardino Extra Virgin Olive Oil 1L"
+    }],
+    "productImageUrl": [{
+        "language": "en-GB",
+        "value": "DG_ExtraVirgin_OliveOil_1L.png"
+    }],
+    "netContent": [{
+        "unitCode": "LTR",
+        "value": "1"
+    }],
+    "countryOfSaleCode": [{
+        "numeric": "826",
+        "alpha2": "GB",
+        "alpha3": "GBR"
+    }],
+    "licenseeName": "Dal Giardino Ltd.",
+    "dateUpdated": "2021-03-04T03:39:35.1560543Z",
+    "isComplete": true
+    },
+    {
+    "gtin": "09506000134376",
+    "linkset": [
+    {
+      "anchor": "https://id.gs1.org/01/09506000134376",
+      "itemDescription": "Dal Giardino Medicinal Compound 50 x 200mg",
+      "unixtime": 1623309064,
+      "https://gs1.org/voc/epil": [
+        {
+          "href": "https://dalgiardino.com/medicinal-compound/pil.html",
+          "title": "Information for patients",
+          "type": "text/html",
+          "hreflang": [
+            "en"
+          ]
+        }
+      ],
+      "https://gs1.org/voc/pip": [
+        {
+          "href": "https://dalgiardino.com/medicinal-compound/",
+          "title": "Product information",
+          "type": "text/html",
+          "hreflang": [
+            "en"
+          ]
+        },
+        {
+          "href": "https://dalgiardino.com/medicinal-compound/index.html.ja",
+          "title": "Product information",
+          "type": "text/html",
+          "hreflang": [
+            "ja"
+          ]
+        }
+      ]
+    }
+  ]
+*/
+
+
+
+
+
+</script>
+</body>
+</html>

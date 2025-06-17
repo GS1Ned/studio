@@ -1,0 +1,396 @@
+/**
+ * @file
+ * Global utilities.
+ *
+ */
+(function ($, Drupal) {
+
+  'use strict';
+
+  let helper;
+
+  helper = {
+    getCookie: function (cname) {
+      let name = cname + "=";
+      let ca = document.cookie.split(';');
+      for(var i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    },
+
+    setCookie:function (cname, cvalue, exdays) {
+      let d = new Date();
+      d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+      let expires = "expires=" + d . toUTCString();
+      document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+  };
+
+  Drupal.behaviors.searchBlock = {
+    attach: function (context, settings) {
+      $('.search-field').click( function(e) {
+        e.preventDefault();
+        if ($("#search-block-form").hasClass( "d-none" )){
+          $('#search-block-form').removeClass('d-none');
+          $('.region-top-header').addClass('special-padding');
+          $('#search-block-form input').focus();
+        }else{
+          $('#search-block-form').addClass('d-none');
+          $('.region-top-header').removeClass('special-padding');
+        }
+      });
+
+
+
+      $('.close-button').click(function(e) {
+        e.preventDefault();
+        $('#search-block-form').addClass('d-none');
+        $('.region-top-header').removeClass('special-padding');
+      });
+    }
+  };
+
+  Drupal.behaviors.EventsNewsMenu = {
+    attach: function (context, settings) {
+      var html = $('.menu-desktop .news-event-template');
+      $('.menu-desktop #news-events-menu').html(html);
+    }
+  };
+
+  Drupal.behaviors.openDiv = {
+    attach: function (context, settings) {
+      $(".open-div").click(function(e) {
+        e.preventDefault();
+        if ($(this).siblings('ul').hasClass('dn')){
+            $(this).siblings('ul').removeClass('dn');
+            $(this).siblings('ul').addClass('ps');
+            $(this).css("transform","rotate(180deg)");
+        }else{
+            $(this).siblings('ul').addClass('dn');
+            $(this).siblings('ul').removeClass('ps');
+            $(this).css("transform","");
+        }
+      });
+    }
+  };
+
+  Drupal.behaviors.listGroupLinks = {
+    attach: function (context, settings) {
+      var isLargeWindow = $( window ).width();
+      $(window).on('resize', function() {
+          isLargeWindow = $(this).width() < 768;
+      });
+      $(".list-group.collapsible-list .title").click(function(e) {
+        if(isLargeWindow < 768){
+          e.preventDefault();
+          $(".list-group.collapsible-list .links").toggle();
+          $(".list-group.collapsible-list .title svg").toggleClass('rotate');
+          $(".list-group.collapsible-list").css('height', 'unset');
+        }
+      });
+    }
+  };
+
+  Drupal.behaviors.videoImage = {
+    attach: function (context, settings) {
+      function remoteVideo(click){
+        click.hide();
+        var siblingVideo = click.siblings();
+        siblingVideo.addClass('d-block');
+        siblingVideo.find('iframe').show();
+        siblingVideo.find('iframe').contents().find('iframe')[0].src += "&autoplay=1"
+      }
+
+      $('.case-study-library-item.remote').on('click', function() {
+        var divId = $(this).data('target');
+        $(divId).find('iframe').contents().find('iframe')[0].src += '&autoplay=1';
+      });
+
+      $(".video-block.video-open-modal .cover-image.remote").on('click', function(event) {
+        $(this).parent().find('iframe').contents().find('iframe')[0].src += "&autoplay=1";
+      });
+
+      $(".video-block.video-open-modal .cover-image.video").on('click', function(event) {
+        var vid= $(this).parent().find('video');
+        vid[0].autoplay = true;
+        vid[0].load();
+      });
+
+      $(".video-open-modal-feature-banner .photo-background .img-wrapper").on('click', function(event) {
+        $(this).closest('.video-open-modal-feature-banner').find('iframe').contents().find('iframe')[0].src += "&autoplay=1";
+        $(this).closest('.video-open-modal-feature-banner').find('.video-modal').modal({
+          backdrop: false
+        });
+      });
+
+
+      $(".video-block.video-open-modal .modal, .video-open-modal-feature-banner .modal").on('hidden.bs.modal', function (e) {
+        if($(this).find('iframe').length > 0){
+          let videoSrc = $(this).find('iframe').contents().find('iframe')[0].src;
+          let newVideoSrc = videoSrc.replaceAll("&autoplay=1", "");
+          $(this).find('iframe').contents().find('iframe')[0].src = newVideoSrc;
+        } else{
+          let vidClose = $(this).find('video');
+          vidClose[0].pause();
+        }
+      });
+
+
+      $(".card-block-with-video-simple .cover-image.remote").click(function(e) {
+        e.preventDefault();
+        remoteVideo($(this));
+      });
+
+      //Hide button for firefox because of PIP
+      if (navigator.userAgent.indexOf("Firefox") > 0) {
+        $('.video-modal .pip-btn').hide();
+      }
+      $('.video-modal .pip-btn').on('click', function(event) {
+        $(this).closest('.video-modal').addClass('pip-styles');
+      });
+    }
+  };
+
+  Drupal.behaviors.videoImageModal = {
+    attach: function (context, settings) {
+      $(".card-block-with-video.video-open-modal").on('click', function(event) {
+        $(this).parent().find('iframe').contents().find('iframe')[0].src += "&autoplay=1";
+      });
+
+      $(".card-block-section .modal").on('hidden.bs.modal', function (e) {
+        let videoSrc = $(this).find('iframe').contents().find('iframe')[0].src;
+        let newVideoSrc = videoSrc.replaceAll("&autoplay=1", "");
+        $(this).find('iframe').contents().find('iframe')[0].src = newVideoSrc;
+      });
+    }
+  };
+
+  Drupal.behaviors.Getslogan = {
+    attach: function (context, settings) {
+      var html = $('.region-top-header .slogan').text();
+      $('.bottom-navigation .site-slogan-div p').html(html);
+
+      var html = $('.region-top-header #block-gsone-revamp-servicemenu .nav').clone();
+      $('.bottom-navigation .service-links').html(html);
+    }
+  };
+
+  Drupal.behaviors.caseStudy = {
+    attach: function (context, settings) {
+      $(".case-study-library-block .filters-box .button-filters").click(function(e) {
+        e.preventDefault();
+        $(".case-study-library-block .filters-wrapper").removeClass('d-none');
+        $('body').addClass('hide-scroll');
+      });
+      $(".case-study-library-block .filters-wrapper .close-button").click(function(e) {
+        e.preventDefault();
+        $(".case-study-library-block .filters-wrapper").addClass('d-none');
+        $('body').removeClass('hide-scroll');
+      });
+
+      $('.case-study-library-block .download-button').once().each(function (index, el) {
+        $(el).on('click', function (e) {
+          e.preventDefault();
+          if($(this).parent().hasClass('show')){
+            $(this).parent().removeClass('show');
+            $(this).next().removeClass('d-block');
+          }else{
+            $(this).next().addClass('d-block');
+            $(this).parent().addClass('show');
+          }
+        });
+      });
+      $('.case-study-library-block .dropdown-options li a').once().each(function (index, el) {
+        $(el).on('click', function (e) {
+          e.preventDefault();
+          $(this).parent().parent().removeClass('d-block');
+          $(this).parent().parent().parent().removeClass('show');
+        });
+      });
+    }
+  };
+
+  Drupal.behaviors.smoothScrool = {
+    attach: function () {
+      $('a[href^="#"]:not(.nav-link, .internal-link, .select-datapool)').on('click', function(e) {
+        var id = $(this).attr('href');
+        var targetOffset = $(id).offset().top;
+        $('html, body').animate({
+          scrollTop: targetOffset - 50
+        }, 500);
+      });
+    }
+  };
+
+  Drupal.behaviors.popupIframe = {
+    attach: function (context, settings) {
+      $(".link-w-popup .link").click(function(e) {
+        e.preventDefault();
+        let videoSrc = $(this).parent().parent().find('iframe').attr("src");
+        $(this).parent().parent().find('iframe').attr("src", videoSrc+"?autoplay=1");
+      });
+      $(".link-w-popup .modal").on('hidden.bs.modal', function (e) {
+        let videoSrc = $(this).find('iframe').attr("src");
+        let newVideoSrc = videoSrc.replace("?autoplay=1", "");
+        $(this).find('iframe').attr("src", newVideoSrc);
+      });
+    }
+  };
+
+  Drupal.behaviors.hashUrlAccordion = {
+    attach: function (context, settings) {
+      var hash = window.location.hash;
+      if (isNaN(parseInt(hash.charAt(1),10)) && hash !== '') {
+        var element = document.querySelector('body');
+        element = element.querySelector(hash);
+
+        //Check if it's a accordion and opens answer
+        if($(hash).parent().hasClass('paragraph--type--accordion')){
+          element.classList.add('show');
+          var yOffset = 200;
+          var y = element.getBoundingClientRect().top + window.pageYOffset - yOffset;
+          window.scrollTo({
+            top: y,
+            behavior: 'smooth'
+          });
+        }
+      }
+    }
+  };
+
+  Drupal.behaviors.matchHeightLibrary = {
+    attach: function (context, settings) {
+      $('.matchheight section > div').matchHeight();
+
+      $('.matchheight .views-height').matchHeight();
+    }
+  };
+
+  Drupal.behaviors.hashUrl = {
+    attach: function (context, settings) {
+        var hash = window.location.hash;
+        if (isNaN(parseInt(hash.charAt(1),10)) && hash !== '') {
+          var hash = window.location.hash;
+          var element = document.querySelector('body');
+          element = element.querySelector(hash);
+
+          //Check if it's a accordion
+          if(element.nextElementSibling.classList.contains('collapse')){
+            element.nextElementSibling.classList.add('show');
+          }
+
+          var yOffset = 200;
+          var y = element.getBoundingClientRect().top + window.pageYOffset - yOffset;
+          window.scrollTo({
+            top: y,
+            behavior: 'smooth'
+          });
+        }
+    }
+  };
+
+  Drupal.behaviors.tabUrlSwitch = {
+    attach: function() {
+
+      var url = document.location.toString();
+      if (url.match('#')) {
+        if ( $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').length ) {
+          $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+          $('a.nav-link').removeClass('active');
+          $('a.nav-link[href="#' + url.split('#')[1] + '"]').addClass('active');
+        }
+      }
+
+      $('.nav-tabs a').click(function (e) {
+        window.location.hash = this.hash;
+      });
+
+    }
+  }
+
+  Drupal.behaviors.dateLettering = {
+    attach: function() {
+
+      $('.healthcare-news-teaser-block .date .datetime').once().each(function (index, el) {
+        var text = el.textContent ? el.textContent : el.innerText;
+        var items = text.split('-');
+        var html = '';
+
+        items.forEach(function(text){
+          html += '<span>'+text+'</span>';
+        });
+
+        el.innerHTML = html;
+      });
+    }
+  }
+
+  Drupal.behaviors.addBreadcrumbsColor= {
+    attach: function () {
+      if($('div').hasClass('bg-breadcrumb-gray')){
+        $('.site-content').addClass('bg-color-gray');
+      }
+    }
+  };
+  Drupal.behaviors.changeBgContacts = {
+    attach: function() {
+      if($('div').hasClass('change-bg-page')){
+        $('.site-content').addClass('bg-color-ui-1');
+      }
+    }
+  }
+
+  Drupal.behaviors.contactsPage = {
+    attach: function() {
+      $('.general-contact-info-wrapper .contacts-info .field--name-field-email-text a').attr('target','_blank');
+    }
+  }
+
+  Drupal.behaviors.accordionScroll = {
+    attach: function() {
+      $(".tabs-block-wrapper #accordion .card-header").click(function(e) {
+        var y = e.target.closest('#accordion').getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: y,
+          behavior: 'smooth'
+        });
+      });
+    }
+  }
+
+  Drupal.behaviors.listGroupParentLink = {
+    attach: function() {
+      $('.list-group .wrapper-parent').once().each(function (index, el) {
+        $(el).on('click', function (e) {
+          e.preventDefault();
+          $('.list-group .wrapper-parent').removeClass('active');
+          $('.list-group .wrapper-childs-links').addClass('d-none');
+          $(this).addClass('active');
+          $(this).siblings().removeClass('d-none');
+        });
+      });
+      $('.list-group .wrapper-childs-links a').once().each(function (index, el) {
+        $(el).on('click', function (e) {
+          e.preventDefault();
+          $('.list-group .wrapper-childs-links a').removeClass('active');
+          $(this).addClass('active');
+        });
+      });
+
+      $('.wrapper-list-group.add-sticky').stickySidebar({
+        containerSelector: ".wrapper-sticky-nav",
+        topSpacing: 60,
+        bottomSpacing: 60
+      });
+    }
+  }
+
+})(jQuery, Drupal);
