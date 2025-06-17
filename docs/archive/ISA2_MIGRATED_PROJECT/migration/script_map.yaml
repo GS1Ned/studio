@@ -1,0 +1,18 @@
+# script_map.yaml
+
+# Scripts die verouderd zijn en kunnen worden verwijderd
+remove:
+  - ISA/old_parser.py
+  - ISA/tmp_legacy_test.py
+
+# Scripts die herschreven moeten worden volgens de nieuwe architectuur
+rewrite:
+  - ISA/validator.py
+  - ISA2/ingest_data.py
+  - ISA/tools/contextualizer.py
+
+# Scripts die gemigreerd kunnen worden naar de nieuwe structuur zonder herschrijven
+migrate:
+  - ISA2/vector_engine.py
+  - ISA2/kg_interface.py
+  - ISA2/cli_interface.py

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+  <title id="pagetitle">GS1 Example GTIN</title>
+  <meta name="viewport" content="width=device-width"/>
+  <script src="https://gs1.github.io/GS1DigitalLinkCompressionPrototype/src/GS1DigitalLinkToolkit.js"></script>
+  <script src="https://gs1.github.io/interpretGS1scan/interpretGS1Scan.js"></script>
+  <script src="https://gs1.github.io/interpretGS1scan/plausibleGS1DL.js"></script>
+  <link rel="stylesheet" href="https://gs1.github.io/exampleGTIN/gs1core.css" />
+  <style type="text/css">
+
+    h1 {
+      background-color: var(--gs1Orange);
+      color: white;
+      padding-left: 0.5em;
+    }
+
+    figure img {
+      width: 116px;
+    }
+
+    figure {
+      margin: 1em .5em;
+    }
+
+    figure figcaption {
+      overflow: auto;
+      height: 2em;
+      padding: .5em;
+    }
+
+    figure img {
+      display: block;
+      margin: 0 0;
+    }
+
+
+    @media (min-width: 600px) {
+
+      figure img {
+        margin: 0 auto;
+      }
+
+      figure {
+        margin: .2em 2em 0 0;
+        float:left;
+      }
+  }
+
+
+  </style>
+</head>
+<body>
+<header><img src="gs1logo.png" alt="GS1 logo" /><h1>GS1 Example GTIN</h1></header>
+<main>
+<p>The GTIN 09506000149301 is for use in illustrative examples in documents. You may use this GTIN in literature without prior coordination or asking for permission (find out more about <a href="https://www.gs1.org/standards/barcodes">GS1 barcodes</a>).</p>
+
+<p>The GTIN may be encoded in a variety of <abbr title="radio frequency">RF</abbr> and optical data carriers. Some examples of the latter are provided below.</p>
+
+<figure id="qr"><img alt="QR code containing GS1 Digital Link URI for GTIN 09506000149301" src="dlQR.png"><figcaption>https://id.gs1.org/01/09506000149301</figcaption></figure>
+<figure id="dldm"><img alt="Data Matrix containing GS1 Digital Link URI for GTIN 09506000149301" src="dlDM.png"><figcaption>https://id.gs1.org/01/09506000149301</figcaption></figure>
+<figure id="dm"><img alt="GS1 Data Matrix for GTIN 09526202134363" src="gs1DM.png"><figcaption>(01)09506000149301</figcaption></figure>
+<figure id="ean"><img alt="1D barcode carrying the GTIN 09506000149301" src="ean.png"></figure>
+
+</main>
+
+<script>
+// I'd really like to capture any incoming referrer header and interpret the GS1 keys, but it doesn't seem to get anything other than the query string from the resolver.
+console.log(document.referrer);
+
+</script>
+
+
+</body>
+</html>
