@@ -18,12 +18,9 @@ See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automa
    ./scripts/setup.sh
    ```
    This installs dependencies, copies `.env.example` to `.env` if needed, runs lint and type checks, and builds the project.
-2. **Configure environment variables** (if you did not run the script or still need to fill values)
-   Copy `.env.example` to `.env` and fill in the required values:
-   - `GOOGLE_API_KEY`
-   - `JIRA_WEBHOOK_SECRET`
-   - `GCP_SA_KEY`
-   - `GROUP_MAPPING`
+2. **Configure environment variables**
+  Copy `.env.example` to `.env` and fill in each placeholder with your credentials. The file lists
+  all variables used for local development, including API keys and emulator settings.
 3. **Run the development server**
    ```bash
    npm run dev
@@ -34,6 +31,8 @@ See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automa
    npm run genkit:dev
    ```
    This starts the Genkit developer UI on http://localhost:4000/dev.
+
+For detailed instructions on configuring Firebase emulators, VS Code, and Roocode integration, see [docs/dev_environment_setup.md](docs/dev_environment_setup.md).
 
 ## Useful Scripts
 - `./scripts/setup.sh` – one-time project setup (installs dependencies and runs checks)
