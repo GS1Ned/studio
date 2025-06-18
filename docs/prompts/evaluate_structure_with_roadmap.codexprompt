@@ -1,0 +1,84 @@
+🎯 ROLE:
+You are Codex, acting as an expert technical auditor and roadmap alignment assistant for the GS1 ISA project.
+
+📍 REPOSITORY UNDER REVIEW:
+🔗 https://github.com/GS1Ned/studio/tree/main-6-juni
+
+🧭 OBJECTIVE:
+Evaluate the current folder and file structure in the repository against the **official ISA Development Roadmap** and determine:
+
+1. Which files/folders align with specific roadmap phases
+2. Which are premature (i.e. belong to future phases not yet underway)
+3. Which are misplaced or redundant
+4. Whether the current layout reflects the current roadmap stage (Epochs 1–2)
+
+---
+
+🗺️ ISA DEVELOPMENT ROADMAP
+
+```mermaid
+gantt
+    title ISA Roadmap (Epochs 1–4)
+    dateFormat  YYYY-MM-DD
+    section Epoch 1: Foundation
+    Phase 1: Core Infrastructure       :a1, 2025-06-01, 7d
+    Phase 2: Security & Secrets        :a2, after a1, 5d
+    Phase 3: Observability             :a3, after a2, 4d
+    Phase 4: Self-Healing Docs (Monitor) :a4, after a1, 6d
+
+    section Epoch 2: Intelligence
+    Phase 5: KG Core                   :b1, after a4, 8d
+    Phase 6: GraphRAG                  :b2, after b1, 6d
+    Phase 7: Explainable AI            :b3, after b2, 4d
+    Phase 8: AI Evaluation             :b4, after b3, 5d
+    Phase 9: Self-Healing Docs (Plan)  :b5, after b4, 5d
+
+    section Epoch 3: Agency
+    Phase 10: Agentic Workflows        :c1, after b5, 7d
+    Phase 11: Multi-Agent Systems      :c2, after c1, 6d
+    Phase 12: Automated Red Teaming    :c3, after b4, 5d
+    Phase 13: Self-Healing Code        :c4, after c2, 5d
+
+    section Epoch 4: Autonomy
+    Phase 14: Autonomous Knowledge     :d1, after c2, 6d
+    Phase 15: Dynamic Workflow Gen     :d2, after c1, 6d
+    Phase 16: GS1 Integration          :d3, after d1, 5d
+    Phase 17: Compliance Evolution     :d4, after d1, 5d
+    Phase 18: DAO Governance           :d5, after d3, 6d
+```
+
+---
+
+🧠 WHAT YOU MUST DO:
+    1.  Traverse all files and folders in the main-6-juni branch.
+    2.  Assign each core file or folder to a roadmap phase if applicable.
+    3.  Flag any premature or not-yet-relevant folders.
+    4.  Suggest correct destinations for misplaced files.
+    5.  Summarize overall alignment with the roadmap.
+
+---
+
+✅ FORMAT YOUR RESPONSE LIKE THIS:
+
+## Repository Phase Mapping
+
+### ✅ Matched to Roadmap
+- `/docs/blueprint.md` → Phase 4: Self-Healing Docs
+- `/src/ai/dev.ts` → Phase 1: Core Infrastructure
+
+### ⚠️ Premature (Not Active Yet)
+- `/src/agents/autonomy/` → Phase 14: Autonomous Knowledge
+- `/dao/structure/` → Phase 18: DAO Governance
+
+### ❌ Misplaced or Unstructured
+- `response.md` → Should be moved to `/docs/notes/`
+- `.modified` → Remove (empty file)
+- `technical_report.md` → Move to `/docs/`
+
+## Summary
+Current roadmap phase: Epochs 1–2
+- ✅ Core structure aligns well
+- 🧹 Cleanup of premature/misplaced folders advised
+- 📘 Consider updating `blueprint.md` with roadmap-based folder-phase mapping
+
+If a file or folder doesn’t match anything in the roadmap, state “Unmapped” and explain your reasoning

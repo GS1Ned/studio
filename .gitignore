@@ -40,11 +40,11 @@ next-env.d.ts
 .genkit/*
 .env*
 !.env.example
+!.env.template
 
 # firebase
 firebase-debug.log
 firestore-debug.log
-
 # Untracked files to ignore
 docs/ISA Archief/
 docs/archive/
