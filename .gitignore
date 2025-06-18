@@ -44,3 +44,9 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# Untracked files to ignore
+docs/ISA Archief/
+docs/archive/
+env_scan_results.txt
+studio.bfg-report/
