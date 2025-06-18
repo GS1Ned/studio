@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Git pre-commit hook to run tests before allowing a commit
+npm test

@@ -17,7 +17,7 @@ See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automa
    ```bash
    ./scripts/setup.sh
    ```
-   This installs dependencies, copies `.env.example` to `.env` if needed, runs lint and type checks, and builds the project.
+   This installs dependencies, copies `.env.example` to `.env` if needed, installs git hooks, runs lint and type checks, and builds the project.
 2. **Configure environment variables**
   Copy `.env.example` to `.env` and fill in each placeholder with your credentials. The file lists
   all variables used for local development, including API keys and emulator settings.
@@ -39,6 +39,7 @@ For detailed instructions on configuring Firebase emulators, VS Code, and Roocod
 - `npm run build` – build the Next.js application
 - `npm run lint` – run ESLint
 - `npm run typecheck` – run TypeScript type checks
+- Git hooks installed by `setup.sh` run `npm test` before each commit.
 
 ## Core Features
 - Document Q&A and standards analysis

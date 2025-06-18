@@ -18,6 +18,13 @@ else
   echo "[setup] npm dependencies already installed"
 fi
 
+# Install git hooks
+if [ -d .git ]; then
+  echo "[setup] Installing git hooks"
+  cp scripts/git-hooks/pre-commit .git/hooks/pre-commit
+  chmod +x .git/hooks/pre-commit
+fi
+
 # Run lint and type checks
 npm run lint || echo "[setup] Lint failed or not configured"
 npm run typecheck || echo "[setup] Typecheck failed"
