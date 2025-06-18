@@ -60,6 +60,12 @@ else
   echo "[setup] npm dependencies already installed"
 fi
 
+# Install git hooks
+if [ -d .git ]; then
+  echo "[setup] Configuring git hooks path"
+  git config core.hooksPath scripts/git-hooks
+fi
+
 # Export environment versions
 export CODEX_ENV_NODE_VERSION="$(node --version)"
 if command -v python3 >/dev/null 2>&1; then
