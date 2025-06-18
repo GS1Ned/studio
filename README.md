@@ -17,7 +17,11 @@ See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automa
    ```bash
    ./scripts/setup.sh
    ```
+<<<<<<< codex/add-pre-commit-git-hook-for-npm-test
    This installs dependencies, copies `.env.example` to `.env` if needed, installs git hooks, runs lint and type checks, and builds the project.
+=======
+   This installs dependencies with `npm ci`, ensures the Codex CLI is present, generates `.env.template` plus `.env.{development,test,production}`, runs lint and type checks, builds the project and runs tests.
+>>>>>>> main-6-juni
 2. **Configure environment variables**
   Copy `.env.example` to `.env` and fill in each placeholder with your credentials. The file lists
   all variables used for local development, including API keys and emulator settings.
@@ -35,7 +39,7 @@ See `docs/blueprint.md` for a complete roadmap and architectural log. IAM automa
 For detailed instructions on configuring Firebase emulators, VS Code, and Roocode integration, see [docs/dev_environment_setup.md](docs/dev_environment_setup.md). Additional guidance for setting environment variables and selecting your Firebase project is available in [docs/environment_configuration.md](docs/environment_configuration.md).
 
 ## Useful Scripts
-- `./scripts/setup.sh` – one-time project setup (installs dependencies and runs checks)
+- `./scripts/setup.sh` – one-time project setup (installs dependencies, creates env files and runs checks)
 - `npm run build` – build the Next.js application
 - `npm run lint` – run ESLint
 - `npm run typecheck` – run TypeScript type checks
@@ -53,6 +57,6 @@ For more details on phases and planned work, consult the [Strategic Roadmap](doc
 - **OpenTelemetry build warnings**: During `npm run build`, Next.js may warn about missing `@opentelemetry/exporter-jaeger` or the `require.extensions` API. These come from Genkit's optional tracing setup. The warnings are harmless but can be silenced by installing the Jaeger exporter:
   ```bash
   npm install --save-dev @opentelemetry/exporter-jaeger
-```md
+```
 For detailed instructions on configuring Firebase emulators, VS Code, and Roocode integration, see [docs/dev_environment_setup.md](docs/dev_environment_setup.md). Additional guidance for setting environment variables and selecting your Firebase project is available in [docs/environment_configuration.md](docs/environment_configuration.md).
 
