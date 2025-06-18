@@ -62,9 +62,8 @@ fi
 
 # Install git hooks
 if [ -d .git ]; then
-  echo "[setup] Installing git hooks"
-  cp scripts/git-hooks/pre-commit .git/hooks/pre-commit
-  chmod +x .git/hooks/pre-commit
+  echo "[setup] Configuring git hooks path"
+  git config core.hooksPath scripts/git-hooks
 fi
 
 # Export environment versions
