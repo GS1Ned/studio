@@ -1,0 +1,28 @@
+# Roo Mode Definitions for ISA Project
+
+This file defines the custom Roo modes and their operational parameters for the ISA project.
+
+## SafeDev Mode
+- **Description**: Operates exclusively on the `backup-main-6-juni` branch, ensuring all development activities are confined to the canonical base branch.
+- **Branch Lock**: `backup-main-6-juni`
+- **Allowed Operations**: All standard code development, refactoring, and testing operations.
+- **Restrictions**: Cannot commit directly to `main` or other protected branches.
+
+## RAGMapper Mode
+- **Description**: Responsible for indexing and embedding specific project directories for Retrieval-Augmented Generation (RAG) purposes. Prioritizes high-quality embeddings for critical documentation and source code.
+- **Target Directories**:
+    - `/docs` (high-priority embedding)
+    - `/scripts` (high-priority embedding)
+    - `/src` (high-priority embedding)
+    - `/memory_bank` (standard embedding)
+- **Embedding Model**: `mxbai-embed-large`
+- **Functionality**: Generates and updates vector embeddings for specified content, facilitating accurate information retrieval for AI models.
+
+## InfraAudit Mode
+- **Description**: Executes security and infrastructure integrity checks, including secret scanning, environment variable validation, and `.rooignore` diffs to maintain repository hygiene.
+- **Checks Performed**:
+    - Secret checks across the repository.
+    - Validation of `.env` and `.env.example` consistency.
+    - Diff analysis of `.rooignore` against a baseline to detect unauthorized changes.
+    - Runtime environment validation (e.g., `.venv` activation, `python-dotenv` presence).
+- **Reporting**: Logs audit results to `isa/logs/` and updates `status_dashboard.md`.
