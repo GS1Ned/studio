@@ -1,0 +1,47 @@
+{
+  "modes": [
+    {
+      "slug": "architect",
+      "name": "🏗️ Architect",
+      "model": "gemini-2.5-pro",
+      "thinkingBudget": -1,
+      "description": "For deep reasoning, complex planning, and strategic design tasks."
+    },
+    {
+      "slug": "code",
+      "name": "💻 Code",
+      "model": "gemini-2.5-flash",
+      "thinkingBudget": 5000,
+      "description": "For routine development, feature implementation, and refactoring."
+    },
+    {
+      "slug": "ask",
+      "name": "❓ Ask",
+      "model": "gemini-2.5-flash-lite-preview-06-17",
+      "thinkingBudget": 1000,
+      "description": "For quick lookups, simple queries, and basic explanations."
+    },
+    {
+      "slug": "debug",
+      "name": "🪲 Debug",
+      "model": "gemini-2.5-pro",
+      "thinkingBudget": -1,
+      "description": "For complex problem diagnosis, error investigation, and root cause analysis."
+    },
+    {
+      "slug": "orchestrator",
+      "name": "🪃 Orchestrator",
+      "model": "gemini-2.5-pro",
+      "thinkingBudget": -1,
+      "description": "For task decomposition, subtask delegation, and multi-mode coordination."
+    },
+    {
+      "slug": "claude-browser-mode-v2-0",
+      "name": "Claude Browser Mode v2.0",
+      "model": "gemini-2.5-flash",
+      "thinkingBudget": 7000,
+      "description": "For browser interactions, web research, and information gathering."
+    }
+  ],
+  "mcpServers": []
+}

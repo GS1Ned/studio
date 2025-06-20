@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "phases": {
+    "phase1": "/docs/phases/phase1.md",
+    "phase2": "/docs/phases/phase2.md",
+    "phase3": "/docs/phases/phase3.md",
+    "phase4": "/docs/phases/phase4.md",
+    "phase5": "/docs/phases/phase5.md",
+    "phase6": "/docs/phases/phase6.md",
+    "phase7": "/docs/phases/phase7.md",
+    "phase8": "isa/docs/phases/phase_8_federated_learning.md",
+    "phase9": "isa/docs/phases/phase_9_multi_objective_reasoning.md",
+    "phase10": "isa/docs/phases/phase_10_autonomous_ecosystem_evolution.md",
+    "phase12": "isa/docs/phases/phase_12_living_ontologies_semantic_contracts.md"
+  },
+  "dashboard": "/docs/dashboard/governance_roadmap.png",
+  "reports": {
+    "gemini_model_optimization_plan": "isa/reports/gemini_model_optimization_plan.md"
+  }
+}

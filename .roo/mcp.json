@@ -1,5 +1,7 @@
 {
   "embeddingModel": "mxbai-embed-large",
+  "model": "gemini-2.5-flash",
+  "thinkingBudget": 5000,
   "memoryBank": true,
   "concurrentReads": 2,
   "embeddedFolders": [
